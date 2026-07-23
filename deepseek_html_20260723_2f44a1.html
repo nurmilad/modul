@@ -1,0 +1,2468 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modul NBS - Dashboard</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js">
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ===== RESET & VARIABLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a5f7a;
+            --primary-light: #2a7f9a;
+            --primary-dark: #0d3f5a;
+            --secondary: #f39c12;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.25s ease;
+            --sidebar-width: 240px;
+            --header-height: 64px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 8px;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary-dark);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 1000;
+            transition: transform var(--transition);
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            padding: 20px 24px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-brand i {
+            font-size: 26px;
+            color: var(--secondary);
+        }
+        .sidebar-brand span {
+            color: #fff;
+        }
+        .sidebar-brand small {
+            font-size: 12px;
+            font-weight: 400;
+            opacity: 0.7;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .sidebar-menu {
+            padding: 16px 12px;
+            flex: 1;
+        }
+        .sidebar-menu .menu-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.5;
+            padding: 8px 12px 4px;
+            font-weight: 600;
+        }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: var(--transition);
+            cursor: pointer;
+            margin-bottom: 2px;
+        }
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+        .sidebar-menu a.active {
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+        }
+        .sidebar-menu a i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+            opacity: 0.6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-footer i {
+            font-size: 14px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        .topbar {
+            height: var(--header-height);
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 500;
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.92);
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-left .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .topbar-left h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-right .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg);
+            padding: 6px 14px 6px 10px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .topbar-right .user-badge i {
+            font-size: 18px;
+            color: var(--primary);
+        }
+        .topbar-right .logout-btn {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .topbar-right .logout-btn:hover {
+            background: #fee2e2;
+            border-color: #f87171;
+            color: #dc2626;
+        }
+
+        /* ===== PAGE CONTENT ===== */
+        .page-content {
+            padding: 28px 32px 40px;
+            flex: 1;
+        }
+
+        /* ===== VIEWS ===== */
+        .view {
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== DASHBOARD VIEW ===== */
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .dash-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+        }
+        .dash-header h1 small {
+            font-weight: 400;
+            font-size: 16px;
+            color: var(--text-light);
+            display: block;
+            margin-top: 4px;
+        }
+
+        .dash-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .dash-controls input,
+        .dash-controls select {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+            transition: var(--transition);
+            min-width: 140px;
+        }
+        .dash-controls input:focus,
+        .dash-controls select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.12);
+        }
+        .dash-controls .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .dash-controls .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .stat-card .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        /* ===== CARDS GRID ===== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .module-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+        }
+        .module-card .card-cover {
+            padding: 18px 20px 14px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            color: #fff;
+            position: relative;
+        }
+        .module-card .card-cover .card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .module-card .card-cover .card-sub {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        .module-card .card-cover .card-badge {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .module-card .card-body {
+            padding: 16px 20px 20px;
+        }
+        .module-card .card-body .card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+        .module-card .card-body .card-meta i {
+            width: 16px;
+            margin-right: 4px;
+        }
+        .module-card .card-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .module-card .card-actions button {
+            padding: 5px 14px;
+            border: 1px solid var(--border);
+            background: #fff;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text);
+        }
+        .module-card .card-actions button:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .module-card .card-actions .btn-atp {
+            border-color: #8b5cf6;
+            color: #8b5cf6;
+        }
+        .module-card .card-actions .btn-atp:hover {
+            background: #8b5cf6;
+            color: #fff;
+        }
+        .module-card .card-actions .btn-prota {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        .module-card .card-actions .btn-prota:hover {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .module-card .card-actions .btn-prosem {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .module-card .card-actions .btn-prosem:hover {
+            background: #10b981;
+            color: #fff;
+        }
+        .module-card .card-actions .btn-rpm {
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+        .module-card .card-actions .btn-rpm:hover {
+            background: #f59e0b;
+            color: #fff;
+        }
+        .module-card .card-actions .btn-delete {
+            border-color: #ef4444;
+            color: #ef4444;
+            margin-left: auto;
+        }
+        .module-card .card-actions .btn-delete:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+        .empty-state i {
+            font-size: 56px;
+            opacity: 0.3;
+            margin-bottom: 16px;
+        }
+        .empty-state h3 {
+            font-size: 20px;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        /* ===== ADMIN VIEW ===== */
+        .admin-section {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .admin-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-section h3 i {
+            color: var(--primary);
+        }
+        .admin-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .admin-form label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .admin-form input,
+        .admin-form select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+            transition: var(--transition);
+        }
+        .admin-form input:focus,
+        .admin-form select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.10);
+        }
+        .admin-form .form-actions {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .admin-form .form-actions button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--primary);
+            color: #fff;
+            height: 40px;
+        }
+        .admin-form .form-actions button:hover {
+            background: var(--primary-light);
+        }
+        .admin-form .form-actions .btn-danger {
+            background: #ef4444;
+        }
+        .admin-form .form-actions .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .admin-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .admin-list .tag {
+            background: var(--bg);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+        }
+        .admin-list .tag .remove {
+            cursor: pointer;
+            color: #ef4444;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .admin-list .tag .remove:hover {
+            color: #dc2626;
+        }
+
+        .admin-table-wrap {
+            overflow-x: auto;
+            margin-top: 12px;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .admin-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--bg);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+        .admin-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .admin-table .actions button {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 6px;
+        }
+        .admin-table .actions button:hover {
+            color: #dc2626;
+        }
+
+        /* ===== GURU VIEW ===== */
+        .guru-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .guru-toolbar .btn-plus {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .guru-toolbar .btn-plus:hover {
+            background: var(--primary-light);
+            transform: scale(1.02);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: var(--radius);
+            max-width: 640px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 32px 36px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .modal-box h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .modal-box .modal-sub {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .modal-box .form-group {
+            margin-bottom: 14px;
+        }
+        .modal-box .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .modal-box .form-group input,
+        .modal-box .form-group select {
+            width: 100%;
+            padding: 9px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+            transition: var(--transition);
+        }
+        .modal-box .form-group input:focus,
+        .modal-box .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.10);
+        }
+        .modal-box .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .modal-box .modal-actions button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-box .modal-actions .btn-cancel {
+            background: var(--bg);
+            color: var(--text);
+        }
+        .modal-box .modal-actions .btn-cancel:hover {
+            background: var(--border);
+        }
+        .modal-box .modal-actions .btn-submit {
+            background: var(--primary);
+            color: #fff;
+        }
+        .modal-box .modal-actions .btn-submit:hover {
+            background: var(--primary-light);
+        }
+
+        /* ===== DATA VIEW ===== */
+        .data-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .data-tabs button {
+            padding: 10px 22px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            margin-bottom: -2px;
+        }
+        .data-tabs button:hover {
+            color: var(--text);
+        }
+        .data-tabs button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .data-tab-content {
+            display: none;
+            animation: fadeUp 0.25s ease;
+        }
+        .data-tab-content.active {
+            display: block;
+        }
+
+        .data-table-wrap {
+            overflow-x: auto;
+            margin-top: 8px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .data-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--bg);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .data-table .actions button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 6px;
+        }
+        .data-table .actions button:hover {
+            color: var(--primary-light);
+        }
+
+        .data-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .ai-generate-btn {
+            background: #7c3aed;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .ai-generate-btn:hover {
+            background: #6d28d9;
+        }
+        .ai-generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .rpm-preview {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.7;
+            min-height: 120px;
+            margin-top: 8px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .modal-box .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main {
+                margin-left: 0;
+            }
+            .topbar-left .hamburger {
+                display: block;
+            }
+            .page-content {
+                padding: 16px;
+            }
+            .topbar {
+                padding: 0 16px;
+            }
+            .dash-header h1 {
+                font-size: 20px;
+            }
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            .modal-box {
+                padding: 20px;
+            }
+            .admin-form {
+                grid-template-columns: 1fr;
+            }
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            .dash-controls {
+                width: 100%;
+            }
+            .dash-controls input,
+            .dash-controls select {
+                flex: 1;
+                min-width: 100px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+            .topbar-right .user-badge span {
+                display: none;
+            }
+            .module-card .card-actions button {
+                font-size: 11px;
+                padding: 4px 10px;
+            }
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.3s ease;
+            max-width: 360px;
+        }
+        .toast-success {
+            background: #10b981;
+        }
+        .toast-error {
+            background: #ef4444;
+        }
+        .toast-info {
+            background: var(--primary);
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== SPINNER ===== */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn-with-spinner {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-book-open"></i>
+            <div>
+                Modul NBS
+                <small>Pembelajaran Mendalam</small>
+            </div>
+        </div>
+        <nav class="sidebar-menu">
+            <div class="menu-label">Navigasi</div>
+            <a class="active" data-view="dashboard" onclick="switchView('dashboard')">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a data-view="admin" onclick="switchView('admin')">
+                <i class="fas fa-user-shield"></i> Admin
+            </a>
+            <a data-view="guru" onclick="switchView('guru')">
+                <i class="fas fa-chalkboard-teacher"></i> Guru
+            </a>
+            <div class="menu-label" style="margin-top:20px;">Modul</div>
+            <a data-view="data" onclick="switchView('data')">
+                <i class="fas fa-table"></i> Data Modul
+            </a>
+            <a data-view="rpm" onclick="switchView('rpm')">
+                <i class="fas fa-robot"></i> RPM AI
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#10b981;font-size:10px;"></i>
+            <span id="sidebarUser">Belum login</span>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <div class="main">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <h2 id="pageTitle">Dashboard</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="user-badge">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="topbarUser">Guest</span>
+                </div>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <div class="page-content">
+
+            <!-- ==================== VIEW: DASHBOARD ==================== -->
+            <div class="view active" id="view-dashboard">
+                <div class="dash-header">
+                    <div>
+                        <h1>Dashboard Modul NBS <small>Semua perangkat ajar yang telah dibuat</small></h1>
+                    </div>
+                    <div class="dash-controls">
+                        <input type="text" id="dashSearch" placeholder="Cari mapel / kelas..." oninput="filterDashboard()" />
+                        <select id="dashFilterJenjang" onchange="filterDashboard()">
+                            <option value="">Semua Jenjang</option>
+                            <option value="SMP">SMP</option>
+                            <option value="SMAS">SMAS</option>
+                        </select>
+                        <select id="dashFilterMapel" onchange="filterDashboard()">
+                            <option value="">Semua Mapel</option>
+                        </select>
+                        <button class="btn-primary" onclick="refreshDashboard()"><i class="fas fa-sync"></i> Refresh</button>
+                    </div>
+                </div>
+
+                <div class="stats-row" id="dashStats">
+                    <div class="stat-card"><div class="stat-number" id="statTotal">0</div><div class="stat-label">Total Modul</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statMapel">0</div><div class="stat-label">Mata Pelajaran</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statGuru">0</div><div class="stat-label">Guru</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statRPM">0</div><div class="stat-label">Dengan RPM</div></div>
+                </div>
+
+                <div class="cards-grid" id="dashCards">
+                    <!-- Cards rendered by JS -->
+                </div>
+            </div>
+
+            <!-- ==================== VIEW: ADMIN ==================== -->
+            <div class="view" id="view-admin">
+                <h1 style="font-size:24px;font-weight:700;margin-bottom:6px;">Panel Admin</h1>
+                <p style="color:var(--text-light);margin-bottom:24px;">Kelola guru, kelas, mata pelajaran, dan kepala sekolah.</p>
+
+                <!-- Guru Management -->
+                <div class="admin-section">
+                    <h3><i class="fas fa-users"></i> Kelola Guru</h3>
+                    <div class="admin-form">
+                        <div>
+                            <label>Nama Guru</label>
+                            <input type="text" id="adminGuruName" placeholder="Nama lengkap" />
+                        </div>
+                        <div>
+                            <label>Password</label>
+                            <input type="text" id="adminGuruPass" placeholder="Password" value="guru123" />
+                        </div>
+                        <div class="form-actions">
+                            <button onclick="addGuru()"><i class="fas fa-plus"></i> Tambah</button>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead><tr><th>Nama</th><th>Password</th><th>Aksi</th></tr></thead>
+                            <tbody id="adminGuruTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Kelas Management -->
+                <div class="admin-section">
+                    <h3><i class="fas fa-school"></i> Kelola Kelas &amp; Fase</h3>
+                    <div class="admin-form">
+                        <div>
+                            <label>Nama Kelas (contoh: VII-A, X-1)</label>
+                            <input type="text" id="adminKelasInput" placeholder="VII-A" />
+                        </div>
+                        <div>
+                            <label>Jenjang</label>
+                            <select id="adminKelasJenjang"><option value="SMP">SMP</option><option value="SMAS">SMAS</option></select>
+                        </div>
+                        <div>
+                            <label>Fase (opsional)</label>
+                            <input type="text" id="adminFaseInput" placeholder="D, E, F" />
+                        </div>
+                        <div class="form-actions">
+                            <button onclick="addKelas()"><i class="fas fa-plus"></i> Tambah</button>
+                        </div>
+                    </div>
+                    <div class="admin-list" id="adminKelasList"></div>
+                </div>
+
+                <!-- Mata Pelajaran -->
+                <div class="admin-section">
+                    <h3><i class="fas fa-book"></i> Kelola Mata Pelajaran</h3>
+                    <div class="admin-form">
+                        <div>
+                            <label>Nama Mata Pelajaran</label>
+                            <input type="text" id="adminMapelInput" placeholder="Matematika" />
+                        </div>
+                        <div class="form-actions">
+                            <button onclick="addMapel()"><i class="fas fa-plus"></i> Tambah</button>
+                        </div>
+                    </div>
+                    <div class="admin-list" id="adminMapelList"></div>
+                </div>
+
+                <!-- Kepala Sekolah -->
+                <div class="admin-section">
+                    <h3><i class="fas fa-user-tie"></i> Kelola Kepala Sekolah</h3>
+                    <div class="admin-form">
+                        <div>
+                            <label>Nama Kepala Sekolah</label>
+                            <input type="text" id="adminKsName" placeholder="Nama" />
+                        </div>
+                        <div>
+                            <label>NIP</label>
+                            <input type="text" id="adminKsNip" placeholder="NIP" />
+                        </div>
+                        <div class="form-actions">
+                            <button onclick="addKepsek()"><i class="fas fa-plus"></i> Tambah</button>
+                        </div>
+                    </div>
+                    <div class="admin-list" id="adminKsList"></div>
+                </div>
+
+                <!-- Reset Data -->
+                <div class="admin-section" style="border-left:4px solid #ef4444;">
+                    <h3 style="color:#ef4444;"><i class="fas fa-trash"></i> Data Berbahaya</h3>
+                    <button onclick="resetAllData()" style="background:#ef4444;color:#fff;border:none;padding:10px 24px;border-radius:var(--radius-sm);font-weight:600;cursor:pointer;">Reset Semua Data</button>
+                    <span style="margin-left:12px;font-size:13px;color:var(--text-light);">(Hapus semua modul &amp; data admin)</span>
+                </div>
+            </div>
+
+            <!-- ==================== VIEW: GURU ==================== -->
+            <div class="view" id="view-guru">
+                <div class="guru-toolbar">
+                    <div>
+                        <h1 style="font-size:24px;font-weight:700;">Dashboard Guru</h1>
+                        <p style="color:var(--text-light);">Kelola modul ajar yang Anda buat.</p>
+                    </div>
+                    <button class="btn-plus" onclick="openModal()"><i class="fas fa-plus-circle"></i> Buat Modul Baru</button>
+                </div>
+
+                <div class="dash-controls" style="margin-bottom:20px;">
+                    <input type="text" id="guruSearch" placeholder="Cari mapel / kelas..." oninput="filterGuru()" />
+                    <select id="guruFilterJenjang" onchange="filterGuru()">
+                        <option value="">Semua Jenjang</option>
+                        <option value="SMP">SMP</option>
+                        <option value="SMAS">SMAS</option>
+                    </select>
+                    <select id="guruFilterMapel" onchange="filterGuru()">
+                        <option value="">Semua Mapel</option>
+                    </select>
+                </div>
+
+                <div class="cards-grid" id="guruCards">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <!-- ==================== VIEW: DATA ==================== -->
+            <div class="view" id="view-data">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                    <div>
+                        <h1 style="font-size:24px;font-weight:700;" id="dataModuleTitle">Data Modul</h1>
+                        <p style="color:var(--text-light);font-size:14px;" id="dataModuleSub">Pilih modul dari dashboard atau guru.</p>
+                    </div>
+                    <div>
+                        <select id="dataModuleSelect" onchange="loadDataModule()" style="padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;min-width:200px;">
+                            <option value="">-- Pilih Modul --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="data-tabs">
+                    <button class="active" data-tab="tab-data" onclick="switchDataTab('tab-data')">📋 Data</button>
+                    <button data-tab="tab-atp" onclick="switchDataTab('tab-atp')">📈 ATP</button>
+                    <button data-tab="tab-prota" onclick="switchDataTab('tab-prota')">📅 Prota</button>
+                    <button data-tab="tab-prosem" onclick="switchDataTab('tab-prosem')">📆 Prosem</button>
+                    <button data-tab="tab-rpm" onclick="switchDataTab('tab-rpm')">🤖 RPM</button>
+                </div>
+
+                <!-- TAB: Data -->
+                <div class="data-tab-content active" id="tab-data">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                        <button class="btn-primary" onclick="addDataRow()"><i class="fas fa-plus"></i> Tambah Baris</button>
+                        <button class="ai-generate-btn" onclick="generateDataWithAI()"><i class="fas fa-magic"></i> Generate dengan AI</button>
+                    </div>
+                    <div class="data-table-wrap">
+                        <table class="data-table">
+                            <thead><tr>
+                                    <th style="width:50px;">No</th>
+                                    <th>Pertemuan ke-</th>
+                                    <th style="width:80px;">Semester</th>
+                                    <th>Alokasi Waktu</th>
+                                    <th>Tujuan Pembelajaran</th>
+                                    <th>Materi Pokok / Topik</th>
+                                    <th style="width:80px;">Aksi</th>
+                            </tr></thead>
+                            <tbody id="dataTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="dataEmpty" class="data-empty">
+                        <i class="fas fa-inbox" style="font-size:32px;opacity:0.3;"></i>
+                        <p>Belum ada data. Tambahkan baris atau gunakan AI.</p>
+                    </div>
+                </div>
+
+                <!-- TAB: ATP -->
+                <div class="data-tab-content" id="tab-atp">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                        <button class="ai-generate-btn" onclick="generateATP()"><i class="fas fa-magic"></i> Generate ATP dengan AI</button>
+                        <button class="btn-primary" onclick="saveATP()"><i class="fas fa-save"></i> Simpan ATP</button>
+                    </div>
+                    <textarea id="atpContent" rows="12" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;" placeholder="ATP akan muncul di sini..."></textarea>
+                </div>
+
+                <!-- TAB: Prota -->
+                <div class="data-tab-content" id="tab-prota">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                        <button class="ai-generate-btn" onclick="generateProta()"><i class="fas fa-magic"></i> Generate Prota dengan AI</button>
+                        <button class="btn-primary" onclick="saveProta()"><i class="fas fa-save"></i> Simpan Prota</button>
+                    </div>
+                    <textarea id="protaContent" rows="12" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;" placeholder="Prota akan muncul di sini..."></textarea>
+                </div>
+
+                <!-- TAB: Prosem -->
+                <div class="data-tab-content" id="tab-prosem">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                        <button class="ai-generate-btn" onclick="generateProsem()"><i class="fas fa-magic"></i> Generate Prosem dengan AI</button>
+                        <button class="btn-primary" onclick="saveProsem()"><i class="fas fa-save"></i> Simpan Prosem</button>
+                    </div>
+                    <textarea id="prosemContent" rows="12" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;" placeholder="Prosem akan muncul di sini..."></textarea>
+                </div>
+
+                <!-- TAB: RPM -->
+                <div class="data-tab-content" id="tab-rpm">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                        <button class="ai-generate-btn" onclick="generateRPM()"><i class="fas fa-magic"></i> Generate RPM dengan AI</button>
+                        <button class="btn-primary" onclick="saveRPM()"><i class="fas fa-save"></i> Simpan RPM</button>
+                        <button class="btn-primary" onclick="openRPMFull()" style="background:#7c3aed;"><i class="fas fa-external-link-alt"></i> Buka RPM Full</button>
+                    </div>
+                    <div id="rpmPreview" class="rpm-preview">Klik "Generate RPM dengan AI" untuk membuat Rencana Pembelajaran Mendalam.</div>
+                    <input type="hidden" id="rpmContent" value="" />
+                </div>
+            </div>
+
+            <!-- ==================== VIEW: RPM FULL ==================== -->
+            <div class="view" id="view-rpm">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                    <div>
+                        <h1 style="font-size:24px;font-weight:700;">RPM - Rencana Pembelajaran Mendalam</h1>
+                        <p style="color:var(--text-light);">Dihasilkan dengan AI DeepSeek</p>
+                    </div>
+                    <div>
+                        <button class="btn-primary" onclick="switchView('data')"><i class="fas fa-arrow-left"></i> Kembali ke Data</button>
+                    </div>
+                </div>
+                <div id="rpmFullContent" class="rpm-preview" style="min-height:300px;background:#fff;border:2px solid var(--border);padding:28px;font-size:15px;line-height:1.8;">
+                    Pilih modul dan generate RPM terlebih dahulu.
+                </div>
+            </div>
+
+        </div><!-- /page-content -->
+    </div><!-- /main -->
+
+    <!-- ===== MODAL ===== -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <h2>Buat Modul Ajar Baru</h2>
+            <p class="modal-sub">Lengkapi data di bawah ini untuk memulai.</p>
+            <form id="modalForm" onsubmit="submitModule(event)">
+                <div class="form-group">
+                    <label>Jenjang</label>
+                    <select id="mJenjang" required>
+                        <option value="">Pilih Jenjang</option>
+                        <option value="SMP">SMP</option>
+                        <option value="SMAS">SMAS</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mata Pelajaran</label>
+                        <select id="mMapel" required><option value="">-- Pilih --</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kelas</label>
+                        <select id="mKelas" required><option value="">-- Pilih --</option></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Fase</label>
+                    <input type="text" id="mFase" placeholder="Contoh: D, E, F" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tahun Penyusunan</label>
+                        <input type="number" id="mTahun" value="2026" required />
+                    </div>
+                    <div class="form-group">
+                        <label>JP / Minggu</label>
+                        <input type="number" id="mJp" value="4" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Alokasi Waktu (menit)</label>
+                    <input type="number" id="mAlokasi" value="45" required />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Kepala Sekolah</label>
+                        <select id="mKepsek" required><option value="">-- Pilih --</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>NIP Kepala Sekolah</label>
+                        <input type="text" id="mNip" placeholder="NIP" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tempat Pembuatan</label>
+                        <input type="text" id="mTempat" placeholder="Kota / Kabupaten" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Pembuatan</label>
+                        <input type="date" id="mTanggal" required />
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
+                    <button type="submit" class="btn-submit"><i class="fas fa-check"></i> Buat Modul</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ===== FIREBASE CONFIG ===== -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A",
+            authDomain: "modul-fae5a.firebaseapp.com",
+            projectId: "modul-fae5a",
+            storageBucket: "modul-fae5a.firebasestorage.app",
+            messagingSenderId: "837647902643",
+            appId: "1:837647902643:web:adfa809d9f8adbeaeacdc6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ===== DEEPSEEK API =====
+        const DEEPSEEK_API_KEY = "sk-b6b352ea4f58415d89fd9b3b2619b149";
+        const DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions";
+
+        // ===== STATE =====
+        let currentUser = null; // { username, role, name }
+        let currentModuleId = null;
+        let allModules = [];
+        let allGuru = [];
+        let allKelas = [];
+        let allMapel = [];
+        let allKepsek = [];
+        let editingDataRow = null;
+
+        // ===== AUTH =====
+        function checkAuth() {
+            const saved = localStorage.getItem('nbs_user');
+            if (saved) {
+                try {
+                    currentUser = JSON.parse(saved);
+                    updateUIForUser();
+                    return true;
+                } catch (e) { localStorage.removeItem('nbs_user'); }
+            }
+            // Auto-login as admin for demo (since no login screen)
+            // But we'll show a simple login prompt via modal
+            showLoginPrompt();
+            return false;
+        }
+
+        function showLoginPrompt() {
+            const role = prompt('Masuk sebagai:\n1. Admin (admin123)\n2. Guru (masukkan nama)', 'admin');
+            if (role === 'admin') {
+                const pass = prompt('Password Admin:');
+                if (pass === 'admin123') {
+                    currentUser = { username: 'admin', role: 'admin', name: 'Administrator' };
+                    localStorage.setItem('nbs_user', JSON.stringify(currentUser));
+                    updateUIForUser();
+                    toast('Selamat datang, Admin!', 'success');
+                    loadAllData();
+                    return;
+                } else {
+                    alert('Password salah!');
+                    location.reload();
+                    return;
+                }
+            } else if (role) {
+                // Try to find guru
+                db.collection('guru').where('name', '==', role).get().then(snap => {
+                    if (!snap.empty) {
+                        const doc = snap.docs[0];
+                        const data = doc.data();
+                        const pass = prompt('Password untuk ' + role + ':');
+                        if (pass === data.password) {
+                            currentUser = { username: data.name, role: 'guru', name: data.name, id: doc.id };
+                            localStorage.setItem('nbs_user', JSON.stringify(currentUser));
+                            updateUIForUser();
+                            toast('Selamat datang, ' + data.name + '!', 'success');
+                            loadAllData();
+                            return;
+                        } else {
+                            alert('Password salah!');
+                            location.reload();
+                            return;
+                        }
+                    } else {
+                        alert('Guru "' + role + '" tidak ditemukan. Silakan daftar di Admin.');
+                        location.reload();
+                        return;
+                    }
+                });
+            } else {
+                // Guest - only view
+                currentUser = { username: 'guest', role: 'guest', name: 'Pengunjung' };
+                localStorage.setItem('nbs_user', JSON.stringify(currentUser));
+                updateUIForUser();
+                loadAllData();
+            }
+        }
+
+        function updateUIForUser() {
+            const name = currentUser ? currentUser.name : 'Guest';
+            document.getElementById('sidebarUser').textContent = name;
+            document.getElementById('topbarUser').textContent = name;
+            // Show/hide admin menu
+            const adminLink = document.querySelector('[data-view="admin"]');
+            if (adminLink) {
+                adminLink.style.display = (currentUser && currentUser.role === 'admin') ? 'flex' : 'none';
+            }
+            // Show/hide guru menu based on role
+            const guruLink = document.querySelector('[data-view="guru"]');
+            if (guruLink) {
+                guruLink.style.display = (currentUser && (currentUser.role === 'admin' || currentUser.role === 'guru')) ?
+                    'flex' : 'none';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('nbs_user');
+            currentUser = null;
+            toast('Telah keluar.', 'info');
+            location.reload();
+        }
+
+        // ===== TOAST =====
+        function toast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = 'toast toast-' + type;
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0';
+                setTimeout(() => el.remove(), 400); }, 3000);
+        }
+
+        // ===== SIDEBAR =====
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function switchView(view) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            const target = document.getElementById('view-' + view);
+            if (target) target.classList.add('active');
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            const link = document.querySelector('[data-view="' + view + '"]');
+            if (link) link.classList.add('active');
+            // Titles
+            const titles = {
+                dashboard: 'Dashboard',
+                admin: 'Admin Panel',
+                guru: 'Dashboard Guru',
+                data: 'Data Modul',
+                rpm: 'RPM AI'
+            };
+            document.getElementById('pageTitle').textContent = titles[view] || 'Modul NBS';
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+            // Load data on view switch
+            if (view === 'dashboard') renderDashboard();
+            if (view === 'guru') renderGuru();
+            if (view === 'admin') loadAdminData();
+            if (view === 'data') populateDataSelect();
+            if (view === 'rpm') loadRPMFull();
+        }
+
+        // ===== LOAD ALL DATA =====
+        async function loadAllData() {
+            try {
+                await Promise.all([
+                    loadGuru(),
+                    loadKelas(),
+                    loadMapel(),
+                    loadKepsek(),
+                    loadModules()
+                ]);
+                renderDashboard();
+                renderGuru();
+                populateDataSelect();
+                populateDropdowns();
+                loadAdminData();
+            } catch (e) {
+                console.error(e);
+                toast('Gagal memuat data: ' + e.message, 'error');
+            }
+        }
+
+        // ===== LOAD GURU =====
+        async function loadGuru() {
+            const snap = await db.collection('guru').orderBy('name').get();
+            allGuru = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            return allGuru;
+        }
+
+        // ===== LOAD KELAS =====
+        async function loadKelas() {
+            const snap = await db.collection('kelas').orderBy('name').get();
+            allKelas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            return allKelas;
+        }
+
+        // ===== LOAD MAPEL =====
+        async function loadMapel() {
+            const snap = await db.collection('mapel').orderBy('name').get();
+            allMapel = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            return allMapel;
+        }
+
+        // ===== LOAD KEPSEK =====
+        async function loadKepsek() {
+            const snap = await db.collection('kepsek').orderBy('name').get();
+            allKepsek = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            return allKepsek;
+        }
+
+        // ===== LOAD MODULES =====
+        async function loadModules() {
+            const snap = await db.collection('modules').orderBy('createdAt', 'desc').get();
+            allModules = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            return allModules;
+        }
+
+        // ===== POPULATE DROPDOWNS =====
+        function populateDropdowns() {
+            // Mapel
+            const sel = document.getElementById('mMapel');
+            sel.innerHTML = '<option value="">-- Pilih --</option>';
+            allMapel.forEach(m => {
+                sel.innerHTML += `<option value="${m.name}">${m.name}</option>`;
+            });
+            // Kelas
+            const selK = document.getElementById('mKelas');
+            selK.innerHTML = '<option value="">-- Pilih --</option>';
+            allKelas.forEach(k => {
+                selK.innerHTML += `<option value="${k.name}">${k.name} (${k.jenjang})</option>`;
+            });
+            // Kepsek
+            const selKs = document.getElementById('mKepsek');
+            selKs.innerHTML = '<option value="">-- Pilih --</option>';
+            allKepsek.forEach(k => {
+                selKs.innerHTML += `<option value="${k.name}" data-nip="${k.nip || ''}">${k.name}</option>`;
+            });
+            // Filter mapel for dashboard & guru
+            ['dashFilterMapel', 'guruFilterMapel'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const val = el.value;
+                    el.innerHTML = '<option value="">Semua Mapel</option>';
+                    allMapel.forEach(m => {
+                        el.innerHTML += `<option value="${m.name}">${m.name}</option>`;
+                    });
+                    el.value = val;
+                }
+            });
+            // Update NIP when kepsek selected
+            document.getElementById('mKepsek').onchange = function() {
+                const opt = this.options[this.selectedIndex];
+                const nip = opt ? opt.dataset.nip || '' : '';
+                document.getElementById('mNip').value = nip;
+            };
+        }
+
+        // ===== MODAL =====
+        function openModal() {
+            if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'guru')) {
+                toast('Silakan login sebagai Admin atau Guru.', 'error');
+                return;
+            }
+            document.getElementById('modalOverlay').classList.add('open');
+            // Set default date
+            document.getElementById('mTanggal').value = new Date().toISOString().split('T')[0];
+            document.getElementById('mTempat').value = '';
+            populateDropdowns();
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('open');
+        }
+
+        async function submitModule(e) {
+            e.preventDefault();
+            const data = {
+                jenjang: document.getElementById('mJenjang').value,
+                mapel: document.getElementById('mMapel').value,
+                kelas: document.getElementById('mKelas').value,
+                fase: document.getElementById('mFase').value || '-',
+                tahunPenyusunan: parseInt(document.getElementById('mTahun').value),
+                jpPerMinggu: parseInt(document.getElementById('mJp').value),
+                alokasiWaktu: parseInt(document.getElementById('mAlokasi').value),
+                kepalaSekolah: document.getElementById('mKepsek').value,
+                nipKepalaSekolah: document.getElementById('mNip').value,
+                tempatPembuatan: document.getElementById('mTempat').value,
+                tanggalPembuatan: document.getElementById('mTanggal').value,
+                guru: currentUser ? currentUser.name : 'Unknown',
+                data: [],
+                atp: '',
+                prota: '',
+                prosem: '',
+                rpm: '',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            if (!data.jenjang || !data.mapel || !data.kelas || !data.kepalaSekolah) {
+                toast('Lengkapi semua field yang wajib!', 'error');
+                return;
+            }
+            try {
+                const ref = await db.collection('modules').add(data);
+                toast('Modul berhasil dibuat!', 'success');
+                closeModal();
+                await loadModules();
+                renderDashboard();
+                renderGuru();
+                populateDataSelect();
+                // Auto navigate to data
+                currentModuleId = ref.id;
+                switchView('data');
+                loadDataModule();
+            } catch (e) {
+                toast('Gagal membuat modul: ' + e.message, 'error');
+            }
+        }
+
+        // ===== DASHBOARD =====
+        function renderDashboard() {
+            const container = document.getElementById('dashCards');
+            const search = document.getElementById('dashSearch').value.toLowerCase();
+            const filterJenjang = document.getElementById('dashFilterJenjang').value;
+            const filterMapel = document.getElementById('dashFilterMapel').value;
+
+            let filtered = allModules.filter(m => {
+                const matchSearch = (m.mapel || '').toLowerCase().includes(search) ||
+                    (m.kelas || '').toLowerCase().includes(search);
+                const matchJenjang = filterJenjang ? m.jenjang === filterJenjang : true;
+                const matchMapel = filterMapel ? m.mapel === filterMapel : true;
+                return matchSearch && matchJenjang && matchMapel;
+            });
+
+            // Stats
+            document.getElementById('statTotal').textContent = allModules.length;
+            const mapelSet = new Set(allModules.map(m => m.mapel));
+            document.getElementById('statMapel').textContent = mapelSet.size;
+            const guruSet = new Set(allModules.map(m => m.guru));
+            document.getElementById('statGuru').textContent = guruSet.size;
+            const rpmCount = allModules.filter(m => m.rpm && m.rpm.length > 20).length;
+            document.getElementById('statRPM').textContent = rpmCount;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column:1/-1;">
+                        <i class="fas fa-box-open"></i>
+                        <h3>Tidak ada modul</h3>
+                        <p>Belum ada perangkat ajar yang dibuat. Guru dapat membuat modul baru.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(m => `
+                <div class="module-card" data-id="${m.id}">
+                    <div class="card-cover">
+                        <div class="card-title">${m.mapel || 'Tanpa Mapel'}</div>
+                        <div class="card-sub">${m.kelas || 'Tanpa Kelas'} • ${m.jenjang || '-'}</div>
+                        <div class="card-badge">${m.fase || '-'}</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-meta">
+                            <span><i class="fas fa-user"></i> ${m.guru || 'Unknown'}</span>
+                            <span><i class="fas fa-calendar"></i> ${m.tahunPenyusunan || '-'}</span>
+                            <span><i class="fas fa-clock"></i> ${m.jpPerMinggu || '?'} JP/mg</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-atp" onclick="openDataTab('${m.id}','tab-atp')">ATP</button>
+                            <button class="btn-prota" onclick="openDataTab('${m.id}','tab-prota')">Prota</button>
+                            <button class="btn-prosem" onclick="openDataTab('${m.id}','tab-prosem')">Prosem</button>
+                            <button class="btn-rpm" onclick="openDataTab('${m.id}','tab-rpm')">RPM</button>
+                            ${currentUser && (currentUser.role === 'admin' || currentUser.name === m.guru) ? `
+                                <button class="btn-delete" onclick="deleteModule('${m.id}')"><i class="fas fa-trash"></i></button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterDashboard() { renderDashboard(); }
+
+        function refreshDashboard() { loadModules().then(renderDashboard);
+            toast('Dashboard diperbarui', 'info'); }
+
+        // ===== GURU VIEW =====
+        function renderGuru() {
+            const container = document.getElementById('guruCards');
+            const search = document.getElementById('guruSearch').value.toLowerCase();
+            const filterJenjang = document.getElementById('guruFilterJenjang').value;
+            const filterMapel = document.getElementById('guruFilterMapel').value;
+
+            let filtered = allModules;
+            if (currentUser && currentUser.role === 'guru') {
+                filtered = filtered.filter(m => m.guru === currentUser.name);
+            }
+            filtered = filtered.filter(m => {
+                const matchSearch = (m.mapel || '').toLowerCase().includes(search) ||
+                    (m.kelas || '').toLowerCase().includes(search);
+                const matchJenjang = filterJenjang ? m.jenjang === filterJenjang : true;
+                const matchMapel = filterMapel ? m.mapel === filterMapel : true;
+                return matchSearch && matchJenjang && matchMapel;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column:1/-1;">
+                        <i class="fas fa-plus-circle" style="font-size:48px;opacity:0.3;"></i>
+                        <h3>Belum ada modul</h3>
+                        <p>Klik tombol "Buat Modul Baru" untuk memulai.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(m => `
+                <div class="module-card" data-id="${m.id}">
+                    <div class="card-cover">
+                        <div class="card-title">${m.mapel || 'Tanpa Mapel'}</div>
+                        <div class="card-sub">${m.kelas || 'Tanpa Kelas'} • ${m.jenjang || '-'}</div>
+                        <div class="card-badge">${m.fase || '-'}</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-meta">
+                            <span><i class="fas fa-user"></i> ${m.guru || 'Unknown'}</span>
+                            <span><i class="fas fa-calendar"></i> ${m.tahunPenyusunan || '-'}</span>
+                            <span><i class="fas fa-clock"></i> ${m.jpPerMinggu || '?'} JP/mg</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-atp" onclick="openDataTab('${m.id}','tab-atp')">ATP</button>
+                            <button class="btn-prota" onclick="openDataTab('${m.id}','tab-prota')">Prota</button>
+                            <button class="btn-prosem" onclick="openDataTab('${m.id}','tab-prosem')">Prosem</button>
+                            <button class="btn-rpm" onclick="openDataTab('${m.id}','tab-rpm')">RPM</button>
+                            ${currentUser && (currentUser.role === 'admin' || currentUser.name === m.guru) ? `
+                                <button class="btn-delete" onclick="deleteModule('${m.id}')"><i class="fas fa-trash"></i></button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterGuru() { renderGuru(); }
+
+        // ===== DELETE MODULE =====
+        async function deleteModule(id) {
+            if (!confirm('Hapus modul ini? Semua data akan hilang.')) return;
+            try {
+                await db.collection('modules').doc(id).delete();
+                toast('Modul dihapus.', 'info');
+                await loadModules();
+                renderDashboard();
+                renderGuru();
+                populateDataSelect();
+            } catch (e) {
+                toast('Gagal hapus: ' + e.message, 'error');
+            }
+        }
+
+        // ===== OPEN DATA TAB =====
+        function openDataTab(moduleId, tabId) {
+            currentModuleId = moduleId;
+            switchView('data');
+            // Wait for view to render
+            setTimeout(() => {
+                document.getElementById('dataModuleSelect').value = moduleId;
+                loadDataModule();
+                switchDataTab(tabId);
+            }, 200);
+        }
+
+        // ===== DATA VIEW =====
+        function populateDataSelect() {
+            const sel = document.getElementById('dataModuleSelect');
+            const current = sel.value;
+            sel.innerHTML = '<option value="">-- Pilih Modul --</option>';
+            allModules.forEach(m => {
+                sel.innerHTML += `<option value="${m.id}">${m.mapel || '?'} - ${m.kelas || '?'} (${m.guru || '?'})</option>`;
+            });
+            if (current) sel.value = current;
+            if (currentModuleId) sel.value = currentModuleId;
+        }
+
+        function loadDataModule() {
+            const id = document.getElementById('dataModuleSelect').value;
+            if (!id) {
+                document.getElementById('dataModuleTitle').textContent = 'Data Modul';
+                document.getElementById('dataModuleSub').textContent = 'Pilih modul dari dropdown.';
+                document.getElementById('dataTableBody').innerHTML = '';
+                document.getElementById('dataEmpty').style.display = 'block';
+                document.getElementById('atpContent').value = '';
+                document.getElementById('protaContent').value = '';
+                document.getElementById('prosemContent').value = '';
+                document.getElementById('rpmPreview').textContent = 'Pilih modul terlebih dahulu.';
+                document.getElementById('rpmContent').value = '';
+                return;
+            }
+            currentModuleId = id;
+            const mod = allModules.find(m => m.id === id);
+            if (!mod) {
+                toast('Modul tidak ditemukan.', 'error');
+                return;
+            }
+            document.getElementById('dataModuleTitle').textContent = `${mod.mapel || '?'} - ${mod.kelas || '?'}`;
+            document.getElementById('dataModuleSub').textContent =
+                `Guru: ${mod.guru || '?'} • ${mod.jenjang || '?'} • ${mod.tahunPenyusunan || '?'}`;
+
+            // Data table
+            const rows = mod.data || [];
+            const tbody = document.getElementById('dataTableBody');
+            const empty = document.getElementById('dataEmpty');
+            if (rows.length === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+            } else {
+                empty.style.display = 'none';
+                tbody.innerHTML = rows.map((r, i) => `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td><input type="number" value="${r.pertemuanKe || i+1}" data-idx="${i}" data-field="pertemuanKe" class="data-cell" style="width:70px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;" /></td>
+                        <td>
+                            <select data-idx="${i}" data-field="semester" class="data-cell" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;">
+                                <option value="1" ${r.semester === 1 ? 'selected' : ''}>1</option>
+                                <option value="2" ${r.semester === 2 ? 'selected' : ''}>2</option>
+                            </select>
+                        </td>
+                        <td><input type="number" value="${r.alokasiWaktu || 45}" data-idx="${i}" data-field="alokasiWaktu" class="data-cell" style="width:80px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;" /></td>
+                        <td><input type="text" value="${r.tujuanPembelajaran || ''}" data-idx="${i}" data-field="tujuanPembelajaran" class="data-cell" style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:4px;" /></td>
+                        <td><input type="text" value="${r.materiPokok || ''}" data-idx="${i}" data-field="materiPokok" class="data-cell" style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:4px;" /></td>
+                        <td class="actions">
+                            <button onclick="removeDataRow(${i})"><i class="fas fa-times" style="color:#ef4444;"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Attach change events
+                document.querySelectorAll('.data-cell').forEach(el => {
+                    el.addEventListener('change', function() {
+                        const idx = parseInt(this.dataset.idx);
+                        const field = this.dataset.field;
+                        const val = this.value;
+                        updateDataCell(idx, field, val);
+                    });
+                });
+            }
+
+            // ATP, Prota, Prosem, RPM
+            document.getElementById('atpContent').value = mod.atp || '';
+            document.getElementById('protaContent').value = mod.prota || '';
+            document.getElementById('prosemContent').value = mod.prosem || '';
+            const rpm = mod.rpm || '';
+            document.getElementById('rpmPreview').textContent = rpm || 'Klik "Generate RPM dengan AI" untuk membuat Rencana Pembelajaran Mendalam.';
+            document.getElementById('rpmContent').value = rpm;
+        }
+
+        function updateDataCell(idx, field, val) {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) return;
+            if (!mod.data) mod.data = [];
+            if (!mod.data[idx]) mod.data[idx] = {};
+            if (field === 'semester') mod.data[idx][field] = parseInt(val);
+            else if (field === 'pertemuanKe' || field === 'alokasiWaktu') mod.data[idx][field] = parseInt(val) || 0;
+            else mod.data[idx][field] = val;
+            saveModuleData(mod);
+        }
+
+        async function saveModuleData(mod) {
+            try {
+                await db.collection('modules').doc(mod.id).update({
+                    data: mod.data,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                // Update local cache
+                const idx = allModules.findIndex(m => m.id === mod.id);
+                if (idx >= 0) allModules[idx] = mod;
+            } catch (e) {
+                toast('Gagal simpan data: ' + e.message, 'error');
+            }
+        }
+
+        function addDataRow() {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) { toast('Pilih modul terlebih dahulu.', 'error'); return; }
+            if (!mod.data) mod.data = [];
+            const newRow = {
+                pertemuanKe: mod.data.length + 1,
+                semester: 1,
+                alokasiWaktu: 45,
+                tujuanPembelajaran: '',
+                materiPokok: ''
+            };
+            mod.data.push(newRow);
+            saveModuleData(mod).then(() => {
+                loadDataModule();
+                toast('Baris ditambahkan.', 'success');
+            });
+        }
+
+        function removeDataRow(idx) {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) return;
+            if (!confirm('Hapus baris ini?')) return;
+            mod.data.splice(idx, 1);
+            saveModuleData(mod).then(() => {
+                loadDataModule();
+                toast('Baris dihapus.', 'info');
+            });
+        }
+
+        function switchDataTab(tabId) {
+            document.querySelectorAll('.data-tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.data-tabs button').forEach(el => el.classList.remove('active'));
+            const content = document.getElementById(tabId);
+            if (content) content.classList.add('active');
+            const btn = document.querySelector(`[data-tab="${tabId}"]`);
+            if (btn) btn.classList.add('active');
+        }
+
+        // ===== AI GENERATE DATA =====
+        async function generateDataWithAI() {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) { toast('Pilih modul terlebih dahulu.', 'error'); return; }
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Menghasilkan...';
+
+            try {
+                const prompt = `Buatkan data rencana pembelajaran untuk mata pelajaran ${mod.mapel} kelas ${mod.kelas} (${mod.jenjang}) dengan alokasi ${mod.jpPerMinggu} JP/minggu. 
+                Hasilkan dalam format JSON array dengan field: pertemuanKe (number), semester (1 atau 2), alokasiWaktu (number, menit), tujuanPembelajaran (string), materiPokok (string). 
+                Buat sekitar 8-12 pertemuan. Hanya output JSON array, tanpa teks lain.`;
+
+                const resp = await callDeepSeek(prompt);
+                let jsonStr = resp.trim();
+                // Clean markdown
+                jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
+                const data = JSON.parse(jsonStr);
+                if (Array.isArray(data) && data.length > 0) {
+                    mod.data = data;
+                    await saveModuleData(mod);
+                    loadDataModule();
+                    toast('Data berhasil digenerate!', 'success');
+                } else {
+                    toast('Hasil AI tidak valid.', 'error');
+                }
+            } catch (e) {
+                toast('Gagal generate: ' + e.message, 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> Generate dengan AI';
+        }
+
+        // ===== AI GENERATE ATP =====
+        async function generateATP() {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) { toast('Pilih modul terlebih dahulu.', 'error'); return; }
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Menghasilkan...';
+
+            try {
+                const prompt = `Buatkan Alur Tujuan Pembelajaran (ATP) untuk mata pelajaran ${mod.mapel} kelas ${mod.kelas} (${mod.jenjang}) dengan jumlah JP ${mod.jpPerMinggu} per minggu. 
+                Tuliskan secara terstruktur dalam format naratif yang jelas, mencakup tujuan pembelajaran per pertemuan dan alur capaian.`;
+                const resp = await callDeepSeek(prompt);
+                document.getElementById('atpContent').value = resp;
+                toast('ATP berhasil digenerate!', 'success');
+            } catch (e) {
+                toast('Gagal generate ATP: ' + e.message, 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> Generate ATP dengan AI';
+        }
+
+        async function saveATP() {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) { toast('Pilih modul.', 'error'); return; }
+            mod.atp = document.getElementById('atpContent').value;
+            try {
+                await db.collection('modules').doc(mod.id).update({ atp: mod.atp, updatedAt: firebase.firestore.FieldValue
+                        .serverTimestamp() });
+                toast('ATP disimpan!', 'success');
+            } catch (e) { toast('Gagal simpan: ' + e.message, 'error'); }
+        }
+
+        // ===== AI GENERATE PROTA =====
+        async function generateProta() {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) { toast('Pilih modul.', 'error'); return; }
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Menghasilkan...';
+            try {
+                const prompt =
+                    `Buatkan Program Tahunan (Prota) untuk mata pelajaran ${mod.mapel} kelas ${mod.kelas} (${mod.jenjang}) dengan alokasi ${mod.jpPerMinggu} JP/minggu. 
+                Tuliskan dalam format tabel atau naratif yang jelas, mencakup distribusi materi per semester dan per minggu.`;
+                const resp = await callDeepSeek(prompt);
+                document.getElementById('protaContent').value = resp;
+                toast('Prota berhasil digenerate!', 'success');
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> Generate Prota dengan AI';
+        }
+
+        async function saveProta() {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) { toast('Pilih modul.', 'error'); return; }
+            mod.prota = document.getElementById('protaContent').value;
+            try {
+                await db.collection('modules').doc(mod.id).update({ prota: mod.prota, updatedAt: firebase.firestore.FieldValue
+                        .serverTimestamp() });
+                toast('Prota disimpan!', 'success');
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        // ===== AI GENERATE PROSEM =====
+        async function generateProsem() {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) { toast('Pilih modul.', 'error'); return; }
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Menghasilkan...';
+            try {
+                const prompt =
+                    `Buatkan Program Semester (Prosem) untuk mata pelajaran ${mod.mapel} kelas ${mod.kelas} (${mod.jenjang}) dengan alokasi ${mod.jpPerMinggu} JP/minggu. 
+                Tuliskan dalam format tabel atau naratif yang jelas, mencakup distribusi materi per minggu dalam satu semester.`;
+                const resp = await callDeepSeek(prompt);
+                document.getElementById('prosemContent').value = resp;
+                toast('Prosem berhasil digenerate!', 'success');
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> Generate Prosem dengan AI';
+        }
+
+        async function saveProsem() {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) { toast('Pilih modul.', 'error'); return; }
+            mod.prosem = document.getElementById('prosemContent').value;
+            try {
+                await db.collection('modules').doc(mod.id).update({ prosem: mod.prosem, updatedAt: firebase.firestore
+                        .FieldValue.serverTimestamp() });
+                toast('Prosem disimpan!', 'success');
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        // ===== AI GENERATE RPM =====
+        async function generateRPM() {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) { toast('Pilih modul terlebih dahulu.', 'error'); return; }
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Menghasilkan...';
+
+            try {
+                // Build context from data
+                const dataSummary = (mod.data || []).map((d, i) =>
+                    `Pertemuan ${i+1}: ${d.tujuanPembelajaran || 'Tujuan belum diisi'} (Materi: ${d.materiPokok || '-'})`
+                ).join('\n');
+
+                const prompt = `Buatkan Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan komprehensif untuk mata pelajaran ${mod.mapel} kelas ${mod.kelas} (${mod.jenjang}) dengan alokasi ${mod.jpPerMinggu} JP/minggu, ${mod.alokasiWaktu} menit per pertemuan.
+
+                Data pembelajaran:
+                ${dataSummary || 'Belum ada data pertemuan.'}
+
+                Tuliskan RPM dengan struktur:
+                1. Identitas Sekolah & Modul
+                2. Capaian Pembelajaran (CP)
+                3. Tujuan Pembelajaran (TP) per pertemuan
+                4. Alur Tujuan Pembelajaran (ATP)
+                5. Materi Pokok & Sub-materi
+                6. Metode & Strategi Pembelajaran (dengan pendekatan saintifik, PBL, dll)
+                7. Media & Sumber Belajar
+                8. Langkah-langkah Pembelajaran (Pendahuluan, Inti, Penutup) per pertemuan
+                9. Penilaian (Formatif & Sumatif)
+                10. Pengayaan & Remedial
+
+                Buatlah sangat detail, profesional, dan siap pakai.`;
+
+                const resp = await callDeepSeek(prompt);
+                document.getElementById('rpmPreview').textContent = resp;
+                document.getElementById('rpmContent').value = resp;
+                toast('RPM berhasil digenerate!', 'success');
+            } catch (e) {
+                toast('Gagal generate RPM: ' + e.message, 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> Generate RPM dengan AI';
+        }
+
+        async function saveRPM() {
+            const mod = allModules.find(m => m.id === currentModuleId);
+            if (!mod) { toast('Pilih modul.', 'error'); return; }
+            mod.rpm = document.getElementById('rpmContent').value;
+            try {
+                await db.collection('modules').doc(mod.id).update({ rpm: mod.rpm, updatedAt: firebase.firestore.FieldValue
+                        .serverTimestamp() });
+                toast('RPM disimpan!', 'success');
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        function openRPMFull() {
+            const rpm = document.getElementById('rpmContent').value;
+            if (!rpm || rpm.length < 20) {
+                toast('Generate RPM terlebih dahulu!', 'error');
+                return;
+            }
+            document.getElementById('rpmFullContent').textContent = rpm;
+            switchView('rpm');
+        }
+
+        function loadRPMFull() {
+            const rpm = document.getElementById('rpmContent').value;
+            if (rpm && rpm.length > 20) {
+                document.getElementById('rpmFullContent').textContent = rpm;
+            }
+        }
+
+        // ===== CALL DEEPSEEK API =====
+        async function callDeepSeek(prompt) {
+            const response = await fetch(DEEPSEEK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + DEEPSEEK_API_KEY
+                },
+                body: JSON.stringify({
+                    model: 'deepseek-chat',
+                    messages: [
+                        { role: 'system',
+                            content: 'Anda adalah asisten AI yang membantu guru membuat perangkat pembelajaran yang profesional, detail, dan siap pakai. Berikan jawaban dalam bahasa Indonesia yang baik dan benar.' },
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 4096
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.text();
+                throw new Error(`DeepSeek API error (${response.status}): ${err}`);
+            }
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        // ===== ADMIN FUNCTIONS =====
+        async function loadAdminData() {
+            if (currentUser && currentUser.role !== 'admin') {
+                document.getElementById('view-admin').innerHTML =
+                    `<div class="empty-state"><i class="fas fa-lock"></i><h3>Akses Ditolak</h3><p>Hanya admin yang dapat mengakses halaman ini.</p></div>`;
+                return;
+            }
+            await loadGuru();
+            await loadKelas();
+            await loadMapel();
+            await loadKepsek();
+            renderAdminGuru();
+            renderAdminKelas();
+            renderAdminMapel();
+            renderAdminKepsek();
+        }
+
+        function renderAdminGuru() {
+            const tbody = document.getElementById('adminGuruTable');
+            tbody.innerHTML = allGuru.map(g => `
+                <tr>
+                    <td>${g.name}</td>
+                    <td>${g.password || '****'}</td>
+                    <td class="actions">
+                        <button onclick="deleteGuru('${g.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAdminKelas() {
+            const container = document.getElementById('adminKelasList');
+            container.innerHTML = allKelas.map(k =>
+                `<span class="tag">${k.name} (${k.jenjang}) ${k.fase ? '• Fase '+k.fase : ''} <span class="remove" onclick="deleteKelas('${k.id}')">×</span></span>`
+            ).join('');
+        }
+
+        function renderAdminMapel() {
+            const container = document.getElementById('adminMapelList');
+            container.innerHTML = allMapel.map(m =>
+                `<span class="tag">${m.name} <span class="remove" onclick="deleteMapel('${m.id}')">×</span></span>`
+            ).join('');
+        }
+
+        function renderAdminKepsek() {
+            const container = document.getElementById('adminKsList');
+            container.innerHTML = allKepsek.map(k =>
+                `<span class="tag">${k.name} (NIP: ${k.nip || '-'}) <span class="remove" onclick="deleteKepsek('${k.id}')">×</span></span>`
+            ).join('');
+        }
+
+        async function addGuru() {
+            const name = document.getElementById('adminGuruName').value.trim();
+            const pass = document.getElementById('adminGuruPass').value.trim() || 'guru123';
+            if (!name) { toast('Masukkan nama guru.', 'error'); return; }
+            if (allGuru.some(g => g.name === name)) { toast('Guru sudah ada.', 'error'); return; }
+            try {
+                await db.collection('guru').add({ name, password: pass });
+                toast('Guru ditambahkan!', 'success');
+                document.getElementById('adminGuruName').value = '';
+                await loadGuru();
+                renderAdminGuru();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function deleteGuru(id) {
+            if (!confirm('Hapus guru ini?')) return;
+            try {
+                await db.collection('guru').doc(id).delete();
+                toast('Guru dihapus.', 'info');
+                await loadGuru();
+                renderAdminGuru();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function addKelas() {
+            const name = document.getElementById('adminKelasInput').value.trim();
+            const jenjang = document.getElementById('adminKelasJenjang').value;
+            const fase = document.getElementById('adminFaseInput').value.trim();
+            if (!name) { toast('Masukkan nama kelas.', 'error'); return; }
+            try {
+                await db.collection('kelas').add({ name, jenjang, fase });
+                toast('Kelas ditambahkan!', 'success');
+                document.getElementById('adminKelasInput').value = '';
+                document.getElementById('adminFaseInput').value = '';
+                await loadKelas();
+                renderAdminKelas();
+                populateDropdowns();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function deleteKelas(id) {
+            if (!confirm('Hapus kelas ini?')) return;
+            try {
+                await db.collection('kelas').doc(id).delete();
+                toast('Kelas dihapus.', 'info');
+                await loadKelas();
+                renderAdminKelas();
+                populateDropdowns();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function addMapel() {
+            const name = document.getElementById('adminMapelInput').value.trim();
+            if (!name) { toast('Masukkan nama mapel.', 'error'); return; }
+            if (allMapel.some(m => m.name === name)) { toast('Mapel sudah ada.', 'error'); return; }
+            try {
+                await db.collection('mapel').add({ name });
+                toast('Mapel ditambahkan!', 'success');
+                document.getElementById('adminMapelInput').value = '';
+                await loadMapel();
+                renderAdminMapel();
+                populateDropdowns();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function deleteMapel(id) {
+            if (!confirm('Hapus mapel ini?')) return;
+            try {
+                await db.collection('mapel').doc(id).delete();
+                toast('Mapel dihapus.', 'info');
+                await loadMapel();
+                renderAdminMapel();
+                populateDropdowns();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function addKepsek() {
+            const name = document.getElementById('adminKsName').value.trim();
+            const nip = document.getElementById('adminKsNip').value.trim();
+            if (!name) { toast('Masukkan nama kepala sekolah.', 'error'); return; }
+            try {
+                await db.collection('kepsek').add({ name, nip });
+                toast('Kepala sekolah ditambahkan!', 'success');
+                document.getElementById('adminKsName').value = '';
+                document.getElementById('adminKsNip').value = '';
+                await loadKepsek();
+                renderAdminKepsek();
+                populateDropdowns();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function deleteKepsek(id) {
+            if (!confirm('Hapus kepala sekolah ini?')) return;
+            try {
+                await db.collection('kepsek').doc(id).delete();
+                toast('Kepala sekolah dihapus.', 'info');
+                await loadKepsek();
+                renderAdminKepsek();
+                populateDropdowns();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function resetAllData() {
+            if (!confirm('RESET SEMUA DATA? Semua modul, guru, kelas, mapel, dan kepsek akan hilang. Yakin?')) return;
+            if (!confirm('Ketik "YA" untuk konfirmasi.')) return;
+            try {
+                // Delete all modules
+                const modSnap = await db.collection('modules').get();
+                for (const doc of modSnap.docs) await db.collection('modules').doc(doc.id).delete();
+                // Delete all guru
+                const guruSnap = await db.collection('guru').get();
+                for (const doc of guruSnap.docs) await db.collection('guru').doc(doc.id).delete();
+                // Delete all kelas
+                const kelasSnap = await db.collection('kelas').get();
+                for (const doc of kelasSnap.docs) await db.collection('kelas').doc(doc.id).delete();
+                // Delete all mapel
+                const mapelSnap = await db.collection('mapel').get();
+                for (const doc of mapelSnap.docs) await db.collection('mapel').doc(doc.id).delete();
+                // Delete all kepsek
+                const kepsekSnap = await db.collection('kepsek').get();
+                for (const doc of kepsekSnap.docs) await db.collection('kepsek').doc(doc.id).delete();
+
+                toast('Semua data telah direset.', 'info');
+                await loadAllData();
+                renderDashboard();
+                renderGuru();
+                loadAdminData();
+                populateDropdowns();
+            } catch (e) { toast('Gagal reset: ' + e.message, 'error'); }
+        }
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            // Close sidebar on outside click
+            document.addEventListener('click', function(e) {
+                const sidebar = document.getElementById('sidebar');
+                if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                    if (!sidebar.contains(e.target) && !e.target.closest('.hamburger')) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+            // Close modal on overlay click
+            document.getElementById('modalOverlay').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+        });
+
+        // Expose functions globally
+        window.switchView = switchView;
+        window.toggleSidebar = toggleSidebar;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.submitModule = submitModule;
+        window.filterDashboard = filterDashboard;
+        window.refreshDashboard = refreshDashboard;
+        window.filterGuru = filterGuru;
+        window.openDataTab = openDataTab;
+        window.loadDataModule = loadDataModule;
+        window.switchDataTab = switchDataTab;
+        window.addDataRow = addDataRow;
+        window.removeDataRow = removeDataRow;
+        window.generateDataWithAI = generateDataWithAI;
+        window.generateATP = generateATP;
+        window.saveATP = saveATP;
+        window.generateProta = generateProta;
+        window.saveProta = saveProta;
+        window.generateProsem = generateProsem;
+        window.saveProsem = saveProsem;
+        window.generateRPM = generateRPM;
+        window.saveRPM = saveRPM;
+        window.openRPMFull = openRPMFull;
+        window.loadRPMFull = loadRPMFull;
+        window.deleteModule = deleteModule;
+        window.addGuru = addGuru;
+        window.deleteGuru = deleteGuru;
+        window.addKelas = addKelas;
+        window.deleteKelas = deleteKelas;
+        window.addMapel = addMapel;
+        window.deleteMapel = deleteMapel;
+        window.addKepsek = addKepsek;
+        window.deleteKepsek = deleteKepsek;
+        window.resetAllData = resetAllData;
+        window.logout = logout;
+        window.loadAdminData = loadAdminData;
+        window.populateDataSelect = populateDataSelect;
+        window.renderDashboard = renderDashboard;
+        window.renderGuru = renderGuru;
+        window.loadAllData = loadAllData;
+        window.toast = toast;
+    </script>
+
+</body>
+</html>
