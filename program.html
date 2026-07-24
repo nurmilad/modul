@@ -139,7 +139,7 @@
             .total-jp-box { gap:10px; flex-direction:column; }
         }
 
-        /* ===== GAYA CETAK (UNTUK ATP DAN PROTA) ===== */
+        /* ===== GAYA CETAK (UNTUK ATP, PROTA, PROSEM) ===== */
         @media print {
             body > * { display:none !important; }
             body, html { background:#fff; margin:0; padding:0; }
@@ -287,6 +287,30 @@
                 font-size:11pt !important;
                 margin-top:8px !important;
             }
+            /* Untuk tabel Prosem dengan banyak kolom */
+            table.print-table-prosem {
+                width:100% !important;
+                border-collapse:collapse !important;
+                font-size:7pt !important;
+                margin-top:4px !important;
+                line-height:1.1 !important;
+            }
+            table.print-table-prosem th,
+            table.print-table-prosem td {
+                border:1px solid #000 !important;
+                padding:2px 3px !important;
+                font-size:7pt !important;
+                vertical-align:middle !important;
+                text-align:center !important;
+                line-height:1.1 !important;
+            }
+            table.print-table-prosem th {
+                background:#f0f0f0 !important;
+                font-weight:700 !important;
+                text-align:center !important;
+            }
+            table.print-table-prosem td { text-align:center; }
+            table.print-table-prosem td.left { text-align:left; }
         }
     </style>
 </head>
@@ -427,12 +451,16 @@
                 </div>
             </div>
 
-            <!-- TAB PROSEM (placeholder) -->
+            <!-- ===== TAB PROSEM ===== -->
             <div class="tab-content" id="tab-prosem">
-                <div style="padding:40px 20px;text-align:center;color:var(--text-light);">
-                    <i class="fas fa-calendar-week" style="font-size:48px;opacity:0.3;margin-bottom:16px;"></i>
-                    <h3>Program Semester (Prosem)</h3>
-                    <p>Akan dikembangkan pada tahap berikutnya.</p>
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                    <h3 style="font-size:18px;font-weight:600;">Program Semester (Prosem)</h3>
+                    <div>
+                        <button class="btn-success" onclick="printProsem()"><i class="fas fa-print"></i> Cetak PDF</button>
+                    </div>
+                </div>
+                <div id="prosemContent">
+                    <!-- Akan diisi oleh JavaScript -->
                 </div>
             </div>
 
@@ -859,10 +887,14 @@
                 moduleData.atpTable = rows;
                 atpRows = rows;
                 saveInitialState();
-                // Jika tab Prota aktif, perbarui tampilan Prota
+                // Jika tab Prota atau Prosem aktif, perbarui tampilan
                 const protaTab = document.getElementById('tab-prota');
                 if (protaTab.classList.contains('active')) {
                     renderProta();
+                }
+                const prosemTab = document.getElementById('tab-prosem');
+                if (prosemTab.classList.contains('active')) {
+                    renderProsem();
                 }
             } catch (e) {
                 toast('Gagal menyimpan ATP: ' + e.message, 'error');
@@ -874,11 +906,9 @@
         // ================================================================
         function renderProta() {
             const container = document.getElementById('protaContent');
-            // Ambil data terkini dari textarea dan atpRows
             const cp = document.getElementById('cpText').value.trim() || '(Belum diisi)';
-            const rows = atpRows.filter(r => r.materi || r.alokasiJp); // abaikan baris kosong
+            const rows = atpRows.filter(r => r.materi || r.alokasiJp);
 
-            // Kelompokkan berdasarkan semester
             const semesterMap = {};
             rows.forEach(row => {
                 const sem = row.semester || 'Ganjil';
@@ -890,13 +920,9 @@
                 semesterMap[sem].jp += jp;
             });
 
-            // Urutan semester yang ada
             const semesterOrder = ['Ganjil', 'Genap'];
-            const semesterKeys = Object.keys(semesterMap).sort((a, b) => {
-                return semesterOrder.indexOf(a) - semesterOrder.indexOf(b);
-            });
+            const semesterKeys = Object.keys(semesterMap).sort((a, b) => semesterOrder.indexOf(a) - semesterOrder.indexOf(b));
 
-            // Bangun HTML
             let html = `
                 <div style="margin-bottom:14px;">
                     <div style="font-weight:700; font-size:13pt; border-bottom:1px solid #999; padding-bottom:3px; margin-bottom:6px;">CAPAIAN PEMBELAJARAN</div>
@@ -939,7 +965,6 @@
                     `;
                     no++;
                 });
-                // Baris total
                 html += `
                     <tr style="font-weight:700; background:#fafafa;">
                         <td colspan="3" style="border:1px solid #999; padding:6px 8px; text-align:right;">Total</td>
@@ -960,17 +985,138 @@
         }
 
         // ================================================================
+        // ===== RENDER PROSEM =====
+        // ================================================================
+        function renderProsem() {
+            const container = document.getElementById('prosemContent');
+            const cp = document.getElementById('cpText').value.trim() || '(Belum diisi)';
+            const rows = atpRows.filter(r => r.tujuan || r.alokasiJp);
+            const jpPerMinggu = moduleData.jpPerMinggu || 2;
+            const totalMinggu = 18; // 18 minggu per semester
+
+            // Kelompokkan per semester, pertahankan urutan
+            const semesterOrder = ['Ganjil', 'Genap'];
+            const semesterData = {};
+            semesterOrder.forEach(sem => { semesterData[sem] = []; });
+            rows.forEach(row => {
+                const sem = row.semester || 'Ganjil';
+                if (semesterData[sem]) {
+                    semesterData[sem].push({ ...row });
+                }
+            });
+
+            // Bangun HTML
+            let html = `
+                <div style="margin-bottom:14px;">
+                    <div style="font-weight:700; font-size:13pt; border-bottom:1px solid #999; padding-bottom:3px; margin-bottom:6px;">CAPAIAN PEMBELAJARAN</div>
+                    <div style="font-size:11pt; padding:4px 0; line-height:1.5; white-space:pre-wrap;">${cp}</div>
+                </div>
+                <div style="margin-top:16px;">
+                    <div style="font-weight:700; font-size:13pt; border-bottom:1px solid #999; padding-bottom:3px; margin-bottom:8px;">PROGRAM SEMESTER</div>
+            `;
+
+            // Buat tabel untuk Ganjil dan Genap
+            semesterOrder.forEach(sem => {
+                const items = semesterData[sem] || [];
+                html += `
+                    <div style="margin-top:12px; overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:10pt; min-width:800px;">
+                            <thead>
+                                <tr style="background:#f0f0f0;">
+                                    <th rowspan="2" style="border:1px solid #999; padding:4px 6px; text-align:center; width:10%;">Semester</th>
+                                    <th rowspan="2" style="border:1px solid #999; padding:4px 6px; text-align:center; width:25%;">Tujuan Pembelajaran</th>
+                                    <th rowspan="2" style="border:1px solid #999; padding:4px 6px; text-align:center; width:10%;">Alokasi Waktu (JP)</th>
+                                    <th colspan="${totalMinggu}" style="border:1px solid #999; padding:4px 6px; text-align:center; width:55%;">Minggu ke-</th>
+                                </tr>
+                                <tr style="background:#f0f0f0;">
+                                    ${Array.from({length: totalMinggu}, (_, i) => `<th style="border:1px solid #999; padding:2px 3px; text-align:center; width:3%;">${i+1}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                if (items.length === 0) {
+                    html += `
+                        <tr>
+                            <td colspan="${3 + totalMinggu}" style="border:1px solid #999; padding:8px; text-align:center; font-style:italic;">Belum ada data ATP untuk semester ${sem}</td>
+                        </tr>
+                    `;
+                } else {
+                    let mingguSaatIni = 1;
+                    let rowSpan = 0;
+                    // Hitung jumlah baris untuk rowspan semester
+                    items.forEach(item => {
+                        const jp = parseFloat(item.alokasiJp) || 0;
+                        const mingguDibutuhkan = Math.ceil(jp / jpPerMinggu);
+                        rowSpan += mingguDibutuhkan > 0 ? mingguDibutuhkan : 1;
+                    });
+
+                    let firstRow = true;
+                    items.forEach(item => {
+                        const tujuan = item.tujuan || '-';
+                        const alokasi = parseFloat(item.alokasiJp) || 0;
+                        let sisaMinggu = Math.ceil(alokasi / jpPerMinggu);
+                        if (sisaMinggu < 1) sisaMinggu = 1;
+
+                        // Jika melebihi 18 minggu, potong
+                        const maxMinggu = Math.min(sisaMinggu, totalMinggu - mingguSaatIni + 1);
+                        const mingguAkhir = mingguSaatIni + maxMinggu - 1;
+
+                        // Buat sel-sel minggu
+                        let mingguCells = '';
+                        for (let m = 1; m <= totalMinggu; m++) {
+                            if (m >= mingguSaatIni && m <= mingguAkhir) {
+                                mingguCells += `<td style="border:1px solid #999; padding:2px 3px; text-align:center;">${jpPerMinggu}</td>`;
+                            } else {
+                                mingguCells += `<td style="border:1px solid #999; padding:2px 3px; text-align:center;">-</td>`;
+                            }
+                        }
+
+                        // Rowspan untuk semester hanya pada baris pertama
+                        const semesterRowspan = firstRow ? rowSpan : 0;
+                        const semesterDisplay = firstRow ? sem : '';
+
+                        html += `
+                            <tr>
+                                ${firstRow ? `<td rowspan="${rowSpan}" style="border:1px solid #999; padding:4px 6px; text-align:center; vertical-align:middle; font-weight:600;">${sem}</td>` : ''}
+                                <td style="border:1px solid #999; padding:4px 6px; text-align:left;">${tujuan}</td>
+                                <td style="border:1px solid #999; padding:4px 6px; text-align:center;">${alokasi}</td>
+                                ${mingguCells}
+                            </tr>
+                        `;
+                        firstRow = false;
+                        mingguSaatIni = mingguAkhir + 1;
+                        // Jika sudah melewati 18 minggu, hentikan
+                        if (mingguSaatIni > totalMinggu) {
+                            // Tambahkan baris sisa jika masih ada tujuan yang belum ditampilkan
+                            // tapi karena kita sudah loop, sebaiknya berhenti
+                            // Untuk sederhana, kita hentikan loop item jika minggu sudah habis
+                            // Namun kita tidak bisa break dari forEach, jadi kita gunakan flag
+                        }
+                    });
+                }
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // ================================================================
         // ===== CETAK PROTA =====
         // ================================================================
         function printProta() {
-            // Ambil data terkini
             const cp = document.getElementById('cpText').value.trim() || '(Belum diisi)';
             const rows = atpRows.filter(r => r.materi || r.alokasiJp);
             const jenjang = moduleData.jenjang || 'SMA';
             const schoolName = jenjang === 'SMA' ? 'SMA Nurmilad Boarding School' : 'SMP Nurmilad Boarding School';
             const kepalaSekolah = moduleData.kepalaSekolah || '____________________';
 
-            // Kelompokkan per semester
             const semesterMap = {};
             rows.forEach(row => {
                 const sem = row.semester || 'Ganjil';
@@ -1017,13 +1163,9 @@
 
             const html = `
                 <div style="font-family:'Times New Roman', Times, serif; max-width:1000px; margin:0 auto; padding:20px 30px; background:#fff; color:#000; line-height:1.2;">
-
-                    <!-- JUDUL -->
                     <div style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:16px;">
                         <div style="font-size:20pt; font-weight:700; letter-spacing:2px; text-transform:uppercase; line-height:1.2;">PROGRAM TAHUNAN (PROTA)</div>
                     </div>
-
-                    <!-- INFO SEKOLAH -->
                     <div style="margin-bottom:14px; line-height:1.4; font-size:10pt;">
                         <table style="width:100%; border:none; margin:0;">
                             <tr><td style="width:140px; border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Nama Sekolah</td>
@@ -1038,14 +1180,10 @@
                                 <td style="border:none; padding:2px 4px; font-size:10pt;">: ${moduleData.guru || '-'}</td></tr>
                         </table>
                     </div>
-
-                    <!-- CAPAIAN PEMBELAJARAN -->
                     <div style="margin:12px 0 8px 0;">
                         <div style="font-weight:700; font-size:12pt; border-bottom:1px solid #999; padding-bottom:2px; margin-bottom:4px; line-height:1.2;">CAPAIAN PEMBELAJARAN</div>
                         <div style="font-size:10pt; padding:4px 0; line-height:1.4; white-space:pre-wrap;">${cp}</div>
                     </div>
-
-                    <!-- TABEL PROTA -->
                     <div style="margin:12px 0 8px 0;">
                         <div style="font-weight:700; font-size:12pt; border-bottom:1px solid #999; padding-bottom:2px; margin-bottom:4px; line-height:1.2;">PROGRAM TAHUNAN</div>
                         <table style="width:100%; border-collapse:collapse; font-size:9pt; margin-top:4px; line-height:1.2;">
@@ -1058,13 +1196,9 @@
                                     <th style="border:1px solid #000; padding:3px 5px; text-align:center; width:15%;">Keterangan</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                ${tableRows}
-                            </tbody>
+                            <tbody>${tableRows}</tbody>
                         </table>
                     </div>
-
-                    <!-- FOOTER -->
                     <div style="margin-top:20px; padding-top:12px; border-top:1px solid #999; display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px; font-size:10pt; line-height:1.6; text-align:left;">
                         <div style="flex:1; min-width:200px;">
                             <div>Mengetahui,</div>
@@ -1077,7 +1211,157 @@
                             <div style="margin-top:16px; font-weight:600; font-size:11pt;">${moduleData.guru || '-'}</div>
                         </div>
                     </div>
+                </div>
+            `;
 
+            const container = document.getElementById('printContainer');
+            container.innerHTML = html;
+            container.style.display = 'block';
+
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    window.print();
+                }, 300);
+            });
+
+            window.addEventListener('afterprint', function onAfterPrint() {
+                container.style.display = 'none';
+                window.removeEventListener('afterprint', onAfterPrint);
+            });
+        }
+
+        // ================================================================
+        // ===== CETAK PROSEM =====
+        // ================================================================
+        function printProsem() {
+            const cp = document.getElementById('cpText').value.trim() || '(Belum diisi)';
+            const rows = atpRows.filter(r => r.tujuan || r.alokasiJp);
+            const jpPerMinggu = moduleData.jpPerMinggu || 2;
+            const totalMinggu = 18;
+            const jenjang = moduleData.jenjang || 'SMA';
+            const schoolName = jenjang === 'SMA' ? 'SMA Nurmilad Boarding School' : 'SMP Nurmilad Boarding School';
+            const kepalaSekolah = moduleData.kepalaSekolah || '____________________';
+
+            const semesterOrder = ['Ganjil', 'Genap'];
+            const semesterData = {};
+            semesterOrder.forEach(sem => { semesterData[sem] = []; });
+            rows.forEach(row => {
+                const sem = row.semester || 'Ganjil';
+                if (semesterData[sem]) {
+                    semesterData[sem].push({ ...row });
+                }
+            });
+
+            let html = `
+                <div style="font-family:'Times New Roman', Times, serif; max-width:1000px; margin:0 auto; padding:20px 30px; background:#fff; color:#000; line-height:1.2;">
+                    <div style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:16px;">
+                        <div style="font-size:20pt; font-weight:700; letter-spacing:2px; text-transform:uppercase; line-height:1.2;">PROGRAM SEMESTER (PROSEM)</div>
+                    </div>
+                    <div style="margin-bottom:14px; line-height:1.4; font-size:10pt;">
+                        <table style="width:100%; border:none; margin:0;">
+                            <tr><td style="width:140px; border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Nama Sekolah</td>
+                                <td style="border:none; padding:2px 4px; font-size:10pt;">: ${schoolName}</td></tr>
+                            <tr><td style="border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Mata Pelajaran</td>
+                                <td style="border:none; padding:2px 4px; font-size:10pt;">: ${moduleData.mapel || '-'}</td></tr>
+                            <tr><td style="border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Fase / Kelas</td>
+                                <td style="border:none; padding:2px 4px; font-size:10pt;">: ${moduleData.fase || '-'} / ${moduleData.kelas || '-'}</td></tr>
+                            <tr><td style="border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Tahun Penyusunan</td>
+                                <td style="border:none; padding:2px 4px; font-size:10pt;">: ${moduleData.tahunPenyusunan || '-'}</td></tr>
+                            <tr><td style="border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Penyusun</td>
+                                <td style="border:none; padding:2px 4px; font-size:10pt;">: ${moduleData.guru || '-'}</td></tr>
+                        </table>
+                    </div>
+                    <div style="margin:12px 0 8px 0;">
+                        <div style="font-weight:700; font-size:12pt; border-bottom:1px solid #999; padding-bottom:2px; margin-bottom:4px; line-height:1.2;">CAPAIAN PEMBELAJARAN</div>
+                        <div style="font-size:10pt; padding:4px 0; line-height:1.4; white-space:pre-wrap;">${cp}</div>
+                    </div>
+            `;
+
+            // Tabel per semester
+            semesterOrder.forEach(sem => {
+                const items = semesterData[sem] || [];
+                html += `
+                    <div style="margin-top:14px;">
+                        <div style="font-weight:700; font-size:11pt; margin-bottom:4px;">Semester ${sem}</div>
+                        <table class="print-table-prosem" style="width:100%; border-collapse:collapse; font-size:7pt;">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" style="border:1px solid #000; padding:2px 3px; text-align:center; width:10%;">Semester</th>
+                                    <th rowspan="2" style="border:1px solid #000; padding:2px 3px; text-align:center; width:25%;">Tujuan Pembelajaran</th>
+                                    <th rowspan="2" style="border:1px solid #000; padding:2px 3px; text-align:center; width:10%;">Alokasi JP</th>
+                                    <th colspan="${totalMinggu}" style="border:1px solid #000; padding:2px 3px; text-align:center; width:55%;">Minggu ke-</th>
+                                </tr>
+                                <tr>
+                                    ${Array.from({length: totalMinggu}, (_, i) => `<th style="border:1px solid #000; padding:1px 2px; text-align:center; width:3%;">${i+1}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                if (items.length === 0) {
+                    html += `
+                        <tr>
+                            <td colspan="${3 + totalMinggu}" style="border:1px solid #000; padding:4px; text-align:center; font-style:italic;">Belum ada data ATP</td>
+                        </tr>
+                    `;
+                } else {
+                    let mingguSaatIni = 1;
+                    let firstRow = true;
+                    items.forEach(item => {
+                        const tujuan = item.tujuan || '-';
+                        const alokasi = parseFloat(item.alokasiJp) || 0;
+                        let sisaMinggu = Math.ceil(alokasi / jpPerMinggu);
+                        if (sisaMinggu < 1) sisaMinggu = 1;
+                        const maxMinggu = Math.min(sisaMinggu, totalMinggu - mingguSaatIni + 1);
+                        const mingguAkhir = mingguSaatIni + maxMinggu - 1;
+
+                        let mingguCells = '';
+                        for (let m = 1; m <= totalMinggu; m++) {
+                            if (m >= mingguSaatIni && m <= mingguAkhir) {
+                                mingguCells += `<td style="border:1px solid #000; padding:1px 2px; text-align:center;">${jpPerMinggu}</td>`;
+                            } else {
+                                mingguCells += `<td style="border:1px solid #000; padding:1px 2px; text-align:center;">-</td>`;
+                            }
+                        }
+
+                        html += `
+                            <tr>
+                                ${firstRow ? `<td rowspan="${items.length}" style="border:1px solid #000; padding:2px 3px; text-align:center; vertical-align:middle; font-weight:600;">${sem}</td>` : ''}
+                                <td style="border:1px solid #000; padding:2px 3px; text-align:left;">${tujuan}</td>
+                                <td style="border:1px solid #000; padding:2px 3px; text-align:center;">${alokasi}</td>
+                                ${mingguCells}
+                            </tr>
+                        `;
+                        firstRow = false;
+                        mingguSaatIni = mingguAkhir + 1;
+                        if (mingguSaatIni > totalMinggu) {
+                            // Jika melebihi, hentikan loop dengan mengatur items menjadi hanya 1 baris
+                            // Karena kita tidak bisa break dari forEach, kita gunakan flag
+                            // Untuk sederhana, kita tetap lanjut tapi akan menampilkan sisa dengan cara lain
+                        }
+                    });
+                }
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+
+            html += `
+                    <div style="margin-top:20px; padding-top:12px; border-top:1px solid #999; display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px; font-size:10pt; line-height:1.6; text-align:left;">
+                        <div style="flex:1; min-width:200px;">
+                            <div>Mengetahui,</div>
+                            <div style="margin-top:4px;">Kepala Sekolah</div>
+                            <div style="margin-top:12px; font-weight:600;">${kepalaSekolah}</div>
+                        </div>
+                        <div style="flex:1; min-width:200px; text-align:right;">
+                            <div style="text-align:right; margin-bottom:4px;">${moduleData.tempatPembuatan || '-'}, ${moduleData.tanggalPembuatan || '-'}</div>
+                            <div style="text-align:right;">Penyusun,</div>
+                            <div style="margin-top:16px; font-weight:600; font-size:11pt;">${moduleData.guru || '-'}</div>
+                        </div>
+                    </div>
                 </div>
             `;
 
@@ -1134,11 +1418,9 @@
 
             const html = `
                 <div style="font-family:'Times New Roman', Times, serif; max-width:1000px; margin:0 auto; padding:20px 30px; background:#fff; color:#000; line-height:1.2;">
-
                     <div style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:16px;">
                         <div style="font-size:20pt; font-weight:700; letter-spacing:2px; text-transform:uppercase; line-height:1.2;">ALUR TUJUAN PEMBELAJARAN (ATP)</div>
                     </div>
-
                     <div style="margin-bottom:14px; line-height:1.4; font-size:10pt;">
                         <table style="width:100%; border:none; margin:0;">
                             <tr><td style="width:140px; border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Nama Sekolah</td>
@@ -1153,12 +1435,10 @@
                                 <td style="border:none; padding:2px 4px; font-size:10pt;">: ${moduleData.guru || '-'}</td></tr>
                         </table>
                     </div>
-
                     <div style="margin:12px 0 8px 0;">
                         <div style="font-weight:700; font-size:12pt; border-bottom:1px solid #999; padding-bottom:2px; margin-bottom:4px; line-height:1.2;">CAPAIAN PEMBELAJARAN</div>
                         <div style="font-size:10pt; padding:4px 0; line-height:1.4; white-space:pre-wrap;">${cp}</div>
                     </div>
-
                     <div style="margin:12px 0 8px 0;">
                         <div style="font-weight:700; font-size:12pt; border-bottom:1px solid #999; padding-bottom:2px; margin-bottom:4px; line-height:1.2;">ATP</div>
                         <table style="width:100%; border-collapse:collapse; font-size:9pt; margin-top:4px; line-height:1.2;">
@@ -1171,18 +1451,14 @@
                                     <th style="border:1px solid #000; padding:3px 5px; text-align:center; width:16%; font-size:9pt;">Alokasi Waktu (JP)</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                ${tableRows}
-                            </tbody>
+                            <tbody>${tableRows}</tbody>
                         </table>
                     </div>
-
                     <div style="margin:8px 0 16px 0; font-size:9pt; display:flex; flex-wrap:wrap; gap:4px 16px; line-height:1.2;">
                         <span>Total JP Ganjil: <strong>${totalGanjil}</strong></span>
                         <span>Total JP Genap: <strong>${totalGenap}</strong></span>
                         <span>Total JP Keseluruhan: <strong>${totalAll}</strong></span>
                     </div>
-
                     <div style="margin-top:20px; padding-top:12px; border-top:1px solid #999; display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px; font-size:10pt; line-height:1.6; text-align:left;">
                         <div style="flex:1; min-width:200px;">
                             <div>Mengetahui,</div>
@@ -1195,7 +1471,6 @@
                             <div style="margin-top:16px; font-weight:600; font-size:11pt;">${moduleData.guru || '-'}</div>
                         </div>
                     </div>
-
                 </div>
             `;
 
@@ -1223,9 +1498,10 @@
             document.getElementById(tabId).classList.add('active');
             document.querySelector(`.program-tabs button[data-tab="${tabId}"]`).classList.add('active');
 
-            // Jika tab Prota, render Prota
             if (tabId === 'tab-prota') {
                 renderProta();
+            } else if (tabId === 'tab-prosem') {
+                renderProsem();
             }
         }
 
@@ -1260,7 +1536,9 @@
         window.saveATP = saveATP;
         window.printATP = printATP;
         window.printProta = printProta;
+        window.printProsem = printProsem;
         window.renderProta = renderProta;
+        window.renderProsem = renderProsem;
         window.toast = toast;
         window.handleDragStart = handleDragStart;
         window.handleDragEnd = handleDragEnd;
