@@ -502,10 +502,10 @@
                                     <span><i class="fas fa-clock"></i> ${m.jpPerMinggu || '?'} JP/mg</span>
                                 </div>
                                 <div class="card-actions">
-                                    <button class="btn-atp" onclick="alert('Buka ATP untuk modul ${m.id}')">ATP</button>
-                                    <button class="btn-prota" onclick="alert('Buka Prota untuk modul ${m.id}')">Prota</button>
-                                    <button class="btn-prosem" onclick="alert('Buka Prosem untuk modul ${m.id}')">Prosem</button>
-                                    <button class="btn-rpm" onclick="alert('Buka RPM untuk modul ${m.id}')">RPM</button>
+                                    <button class="btn-atp" onclick="window.location.href='program.html?module=${m.id}&tab=atp'">ATP</button>
+                                    <button class="btn-prota" onclick="window.location.href='program.html?module=${m.id}&tab=prota'">Prota</button>
+                                    <button class="btn-prosem" onclick="window.location.href='program.html?module=${m.id}&tab=prosem'">Prosem</button>
+                                    <button class="btn-rpm" onclick="window.location.href='program.html?module=${m.id}&tab=rpm'">RPM</button>
                                     <button class="btn-delete" onclick="deleteModule('${m.id}')"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
