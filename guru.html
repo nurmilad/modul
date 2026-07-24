@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* Reset & variables sama seperti sebelumnya, disini saya singkat */
+        /* (CSS sama seperti sebelumnya, tidak diubah) */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -52,7 +52,6 @@
 
         .page-content { padding:28px 32px 40px; flex:1; }
 
-        /* Login Overlay */
         .login-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(6px); z-index:9999; display:flex; align-items:center; justify-content:center; }
         .login-box { background:#fff; padding:40px 48px; border-radius:var(--radius); box-shadow:0 24px 64px rgba(0,0,0,0.2); max-width:420px; width:100%; text-align:center; }
         .login-box h2 { font-size:24px; margin-bottom:8px; }
@@ -63,7 +62,6 @@
         .login-box button:hover { background:var(--primary-light); }
         .login-box .error { color:#ef4444; font-size:14px; margin-top:8px; display:none; }
 
-        /* Dashboard */
         .guru-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px; }
         .guru-header h1 { font-size:26px; font-weight:700; }
         .guru-header h1 small { font-weight:400; font-size:16px; color:var(--text-light); display:block; margin-top:4px; }
@@ -103,7 +101,6 @@
         .empty-state i { font-size:56px; opacity:0.3; margin-bottom:16px; }
         .empty-state h3 { font-size:20px; color:var(--text); margin-bottom:6px; }
 
-        /* Modal */
         .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:10000; display:none; align-items:center; justify-content:center; padding:20px; }
         .modal-overlay.open { display:flex; }
         .modal-box { background:#fff; border-radius:var(--radius); max-width:640px; width:100%; max-height:90vh; overflow-y:auto; padding:32px 36px; box-shadow:0 24px 64px rgba(0,0,0,0.2); animation:modalIn 0.25s ease; }
@@ -122,7 +119,6 @@
         .modal-box .modal-actions .btn-submit { background:var(--primary); color:#fff; }
         .modal-box .modal-actions .btn-submit:hover { background:var(--primary-light); }
 
-        /* Toast */
         .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
         .toast { padding:12px 24px; border-radius:var(--radius-sm); color:#fff; font-weight:500; font-size:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; max-width:360px; }
         .toast-success { background:#10b981; }
@@ -204,27 +200,20 @@
             <h2>Buat Modul Ajar Baru</h2>
             <p class="modal-sub">Lengkapi data di bawah ini untuk memulai.</p>
             <form id="modalForm" onsubmit="submitModule(event)">
+                <!-- Pilih Kelas (sudah mencakup jenjang dan fase) -->
                 <div class="form-group">
-                    <label>Jenjang</label>
-                    <select id="mJenjang" required>
-                        <option value="">Pilih Jenjang</option>
-                        <option value="SMP">SMP</option>
-                        <option value="SMAS">SMAS</option>
+                    <label>Kelas (Jenjang - Fase)</label>
+                    <select id="mKelas" required>
+                        <option value="">-- Pilih Kelas --</option>
                     </select>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Mata Pelajaran</label>
-                        <select id="mMapel" required><option value="">-- Pilih --</option></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Kelas</label>
-                        <select id="mKelas" required><option value="">-- Pilih --</option></select>
-                    </div>
-                </div>
+                <!-- Hidden fields untuk jenjang dan fase yang akan diisi otomatis -->
+                <input type="hidden" id="mJenjang" value="" />
+                <input type="hidden" id="mFase" value="" />
+
                 <div class="form-group">
-                    <label>Fase</label>
-                    <input type="text" id="mFase" placeholder="Contoh: D, E, F" />
+                    <label>Mata Pelajaran</label>
+                    <select id="mMapel" required><option value="">-- Pilih --</option></select>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -365,12 +354,12 @@
         }
 
         async function loadModules() {
-            // Tidak pakai orderBy untuk menghindari index error, diurutkan di client
+            // Tanpa orderBy untuk menghindari index error
             const snap = await db.collection('modules')
                 .where('guru', '==', currentGuru.name)
                 .get();
             allModules = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            // Urutkan berdasarkan createdAt descending
+            // Urutkan manual berdasarkan createdAt descending
             allModules.sort((a, b) => {
                 const t1 = a.createdAt ? a.createdAt.toMillis() : 0;
                 const t2 = b.createdAt ? b.createdAt.toMillis() : 0;
@@ -395,31 +384,46 @@
 
         // ===== POPULATE DROPDOWNS =====
         function populateDropdowns() {
+            // Populate kelas dropdown dengan format: Nama (Jenjang) - Fase X
+            const selKelas = document.getElementById('mKelas');
+            selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            allKelas.forEach(k => {
+                const label = `${k.name} (${k.jenjang})${k.fase ? ' - Fase '+k.fase : ''}`;
+                selKelas.innerHTML += `<option value="${k.id}" data-jenjang="${k.jenjang}" data-fase="${k.fase || ''}">${label}</option>`;
+            });
+
+            // Saat kelas dipilih, isi hidden fields
+            selKelas.onchange = function() {
+                const opt = this.options[this.selectedIndex];
+                if (opt && opt.value) {
+                    document.getElementById('mJenjang').value = opt.dataset.jenjang || '';
+                    document.getElementById('mFase').value = opt.dataset.fase || '';
+                } else {
+                    document.getElementById('mJenjang').value = '';
+                    document.getElementById('mFase').value = '';
+                }
+            };
+
+            // Mapel
             const selMapel = document.getElementById('mMapel');
             selMapel.innerHTML = '<option value="">-- Pilih --</option>';
             allMapel.forEach(m => {
                 selMapel.innerHTML += `<option value="${m.name}">${m.name}</option>`;
             });
 
-            const selKelas = document.getElementById('mKelas');
-            selKelas.innerHTML = '<option value="">-- Pilih --</option>';
-            allKelas.forEach(k => {
-                selKelas.innerHTML += `<option value="${k.name}">${k.name} (${k.jenjang})</option>`;
-            });
-
+            // Kepsek
             const selKepsek = document.getElementById('mKepsek');
             selKepsek.innerHTML = '<option value="">-- Pilih --</option>';
             allKepsek.forEach(k => {
                 selKepsek.innerHTML += `<option value="${k.name}" data-nip="${k.nip || ''}">${k.name}</option>`;
             });
-
-            document.getElementById('mKepsek').onchange = function() {
+            selKepsek.onchange = function() {
                 const opt = this.options[this.selectedIndex];
                 const nip = opt ? opt.dataset.nip || '' : '';
                 document.getElementById('mNip').value = nip;
             };
 
-            // Filter dropdown di dashboard
+            // Filter dropdowns di dashboard
             const filterMapel = document.getElementById('guruFilterMapel');
             if (filterMapel) {
                 const val = filterMapel.value;
@@ -508,7 +512,7 @@
 
             html += `</div>`;
             container.innerHTML = html;
-            // Re-populate filter dropdowns
+            // Re-populate filter dropdowns (jika ada perubahan)
             populateDropdowns();
         }
 
@@ -542,11 +546,16 @@
 
         async function submitModule(e) {
             e.preventDefault();
+            const kelasId = document.getElementById('mKelas').value;
+            if (!kelasId) { toast('Pilih kelas terlebih dahulu.', 'error'); return; }
+            const kelasData = allKelas.find(k => k.id === kelasId);
+            if (!kelasData) { toast('Data kelas tidak valid.', 'error'); return; }
+
             const data = {
-                jenjang: document.getElementById('mJenjang').value,
+                jenjang: kelasData.jenjang,
+                kelas: kelasData.name,
+                fase: kelasData.fase || '-',
                 mapel: document.getElementById('mMapel').value,
-                kelas: document.getElementById('mKelas').value,
-                fase: document.getElementById('mFase').value || '-',
                 tahunPenyusunan: parseInt(document.getElementById('mTahun').value),
                 jpPerMinggu: parseInt(document.getElementById('mJp').value),
                 alokasiWaktu: parseInt(document.getElementById('mAlokasi').value),
@@ -563,7 +572,7 @@
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
-            if (!data.jenjang || !data.mapel || !data.kelas || !data.kepalaSekolah) {
+            if (!data.mapel || !data.kepalaSekolah || !data.tempatPembuatan) {
                 toast('Lengkapi semua field yang wajib!', 'error');
                 return;
             }
