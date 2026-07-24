@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== GAYA UTAMA (tidak berubah) ===== */
+        /* ===== GAYA UTAMA ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -141,7 +141,6 @@
 
         /* ===== GAYA CETAK (DIPERBAIKI) ===== */
         @media print {
-            /* Sembunyikan semua elemen di body kecuali printContainer */
             body > * { display:none !important; }
             body, html { background:#fff; margin:0; padding:0; }
 
@@ -156,34 +155,97 @@
                 left:0 !important;
                 top:0 !important;
                 width:100% !important;
-                padding:20px 30px !important;
+                padding:25px 35px !important;
                 background:#fff !important;
                 z-index:9999 !important;
+                font-family:'Times New Roman',serif !important;
             }
 
-            /* Gaya untuk konten cetak */
-            .print-title { font-size:20pt; font-weight:700; text-align:center; margin-bottom:4px; letter-spacing:2px; }
-            .print-subtitle { text-align:center; font-size:11pt; margin-bottom:16px; border-bottom:2px solid #333; padding-bottom:12px; }
-            .print-info { font-size:10pt; margin-bottom:10px; line-height:1.6; }
-            .print-info table { border:none; width:100%; }
-            .print-info td { border:none !important; padding:2px 4px !important; font-size:10pt; }
-            .print-section-title { font-weight:700; font-size:12pt; margin:12px 0 6px; border-bottom:1px solid #999; padding-bottom:3px; }
-            .print-cp { font-size:10pt; padding:6px 0; line-height:1.5; white-space:pre-wrap; }
-            .print-footer { margin-top:20px; font-size:10pt; text-align:right; padding-top:16px; border-top:1px solid #999; }
-            .print-footer .signature { margin-top:20px; }
-            .print-footer .signature-name { margin-top:28px; font-weight:600; }
+            .print-title {
+                font-size:22pt !important;
+                font-weight:700 !important;
+                text-align:center !important;
+                letter-spacing:2px !important;
+                margin-bottom:6px !important;
+            }
+            .print-subtitle {
+                text-align:center !important;
+                font-size:11pt !important;
+                border-bottom:2px solid #000 !important;
+                padding-bottom:10px !important;
+                margin-bottom:14px !important;
+            }
+            .print-info {
+                font-size:11pt !important;
+                line-height:1.8 !important;
+                margin-bottom:12px !important;
+            }
+            .print-info table { width:100%; border:none; }
+            .print-info td {
+                border:none !important;
+                padding:2px 4px !important;
+                font-size:11pt !important;
+                vertical-align:top;
+            }
+            .print-info .label { font-weight:600; width:140px; }
 
-            /* Tabel cetak */
-            table.print-table { width:100%; border-collapse:collapse; font-size:10pt; }
-            table.print-table th, table.print-table td {
-                border:1px solid #333 !important;
-                padding:4px 6px !important;
+            .print-section-title {
+                font-weight:700 !important;
+                font-size:13pt !important;
+                border-bottom:1px solid #999 !important;
+                padding-bottom:4px !important;
+                margin:16px 0 8px 0 !important;
+            }
+            .print-cp {
+                font-size:11pt !important;
+                padding:4px 0 !important;
+                line-height:1.6 !important;
+                white-space:pre-wrap !important;
+            }
+
+            table.print-table {
+                width:100% !important;
+                border-collapse:collapse !important;
                 font-size:10pt !important;
-                text-align:left;
+                margin-top:6px !important;
             }
-            table.print-table th { background:#f0f0f0 !important; font-weight:600; }
-            table.print-table td { vertical-align:top; }
+            table.print-table th,
+            table.print-table td {
+                border:1px solid #000 !important;
+                padding:5px 8px !important;
+                font-size:10pt !important;
+                vertical-align:top !important;
+            }
+            table.print-table th {
+                background:#f0f0f0 !important;
+                font-weight:600 !important;
+                text-align:center !important;
+            }
+            table.print-table td { text-align:left; }
             table.print-table td.center { text-align:center; }
+
+            .print-total {
+                margin-top:8px !important;
+                font-size:10pt !important;
+                display:flex !important;
+                flex-wrap:wrap !important;
+                gap:10px 30px !important;
+            }
+            .print-total span { display:inline-block; }
+
+            .print-footer {
+                margin-top:28px !important;
+                padding-top:16px !important;
+                border-top:1px solid #999 !important;
+                font-size:11pt !important;
+                line-height:1.8 !important;
+                text-align:left !important;
+            }
+            .print-footer .signature-name {
+                margin-top:24px !important;
+                font-weight:600 !important;
+                font-size:12pt !important;
+            }
         }
     </style>
 </head>
@@ -768,15 +830,12 @@
 
         // ===== CETAK PDF (DIPERBAIKI) =====
         function printATP() {
-            // Ambil data terkini
             const cp = document.getElementById('cpText').value.trim();
             const rows = atpRows.map(row => ({ ...row }));
 
-            // Tentukan nama sekolah
             const jenjang = moduleData.jenjang || 'SMA';
             const schoolName = jenjang === 'SMA' ? 'SMA Nurmilad Boarding School' : 'SMP Nurmilad Boarding School';
 
-            // Siapkan data tabel
             let tableRows = '';
             if (rows.length > 0) {
                 rows.forEach(row => {
@@ -794,7 +853,6 @@
                 tableRows = `<tr><td colspan="5" style="text-align:center;font-style:italic;">Belum ada data ATP</td></tr>`;
             }
 
-            // Hitung total JP
             let totalGanjil = 0, totalGenap = 0;
             rows.forEach(row => {
                 const jp = parseFloat(row.alokasiJp) || 0;
@@ -807,67 +865,57 @@
                 <div style="font-family:'Times New Roman',serif;max-width:1000px;margin:0 auto;padding:20px 30px;background:#fff;">
                     <div class="print-title">ALUR TUJUAN PEMBELAJARAN (ATP)</div>
 
-                    <table style="width:100%;border:none;font-size:11pt;margin-bottom:12px;line-height:1.6;">
-                        <tr><td style="width:180px;border:none;padding:2px 4px;font-weight:600;">Nama Sekolah</td>
-                            <td style="border:none;padding:2px 4px;">: ${schoolName}</td></tr>
-                        <tr><td style="border:none;padding:2px 4px;font-weight:600;">Mata Pelajaran</td>
-                            <td style="border:none;padding:2px 4px;">: ${moduleData.mapel || '-'}</td></tr>
-                        <tr><td style="border:none;padding:2px 4px;font-weight:600;">Fase / Kelas</td>
-                            <td style="border:none;padding:2px 4px;">: ${moduleData.fase || '-'} / ${moduleData.kelas || '-'}</td></tr>
-                        <tr><td style="border:none;padding:2px 4px;font-weight:600;">Tahun Penyusunan</td>
-                            <td style="border:none;padding:2px 4px;">: ${moduleData.tahunPenyusunan || '-'}</td></tr>
-                        <tr><td style="border:none;padding:2px 4px;font-weight:600;">Penyusun</td>
-                            <td style="border:none;padding:2px 4px;">: ${moduleData.guru || '-'}</td></tr>
-                    </table>
-
-                    <div style="margin-top:14px;">
-                        <div class="print-section-title">CAPAIAN PEMBELAJARAN</div>
-                        <div style="font-size:11pt;padding:4px 0;line-height:1.6;white-space:pre-wrap;">${cp || '(Belum diisi)'}</div>
-                    </div>
-
-                    <div style="margin-top:18px;">
-                        <div class="print-section-title">TABEL ATP</div>
-                        <table class="print-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:12%;text-align:center;">Minggu ke-</th>
-                                    <th style="width:12%;text-align:center;">Semester</th>
-                                    <th style="width:30%;">Tujuan Pembelajaran</th>
-                                    <th style="width:30%;">Materi Pokok</th>
-                                    <th style="width:16%;text-align:center;">Alokasi Waktu (JP)</th>
-                                </tr>
-                            </thead>
-                            <tbody>${tableRows}</tbody>
+                    <div class="print-info">
+                        <table>
+                            <tr><td class="label">Nama Sekolah</td><td>: ${schoolName}</td></tr>
+                            <tr><td class="label">Mata Pelajaran</td><td>: ${moduleData.mapel || '-'}</td></tr>
+                            <tr><td class="label">Fase / Kelas</td><td>: ${moduleData.fase || '-'} / ${moduleData.kelas || '-'}</td></tr>
+                            <tr><td class="label">Tahun Penyusunan</td><td>: ${moduleData.tahunPenyusunan || '-'}</td></tr>
+                            <tr><td class="label">Penyusun</td><td>: ${moduleData.guru || '-'}</td></tr>
                         </table>
                     </div>
 
-                    <div style="margin-top:10px;font-size:10pt;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;">
+                    <div class="print-section-title">CAPAIAN PEMBELAJARAN</div>
+                    <div class="print-cp">${cp || '(Belum diisi)'}</div>
+
+                    <div class="print-section-title">TABEL ATP</div>
+                    <table class="print-table">
+                        <thead>
+                            <tr>
+                                <th style="width:12%;text-align:center;">Minggu ke-</th>
+                                <th style="width:12%;text-align:center;">Semester</th>
+                                <th style="width:30%;">Tujuan Pembelajaran</th>
+                                <th style="width:30%;">Materi Pokok</th>
+                                <th style="width:16%;text-align:center;">Alokasi Waktu (JP)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+
+                    <div class="print-total">
                         <span>Total JP Ganjil: <strong>${totalGanjil}</strong></span>
                         <span>Total JP Genap: <strong>${totalGenap}</strong></span>
                         <span>Total JP Keseluruhan: <strong>${totalAll}</strong></span>
                     </div>
 
-                    <div style="margin-top:28px;border-top:1px solid #999;padding-top:16px;text-align:right;font-size:11pt;line-height:1.8;">
+                    <div class="print-footer">
                         <div>${moduleData.tempatPembuatan || '-'}, ${moduleData.tanggalPembuatan || '-'}</div>
                         <div style="margin-top:4px;">Penyusun,</div>
-                        <div style="margin-top:28px;font-weight:600;font-size:12pt;">${moduleData.guru || '-'}</div>
+                        <div class="signature-name">${moduleData.guru || '-'}</div>
                     </div>
                 </div>
             `;
 
-            // Masukkan ke container print
             const container = document.getElementById('printContainer');
             container.innerHTML = html;
             container.style.display = 'block';
 
-            // Tunggu render lalu print
             requestAnimationFrame(() => {
                 setTimeout(() => {
                     window.print();
                 }, 300);
             });
 
-            // Sembunyikan setelah print selesai
             window.addEventListener('afterprint', function onAfterPrint() {
                 container.style.display = 'none';
                 window.removeEventListener('afterprint', onAfterPrint);
