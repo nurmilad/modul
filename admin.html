@@ -47,7 +47,6 @@
             display: flex;
             min-height: 100vh;
         }
-        /* SIDEBAR */
         .sidebar {
             width: 240px;
             background: var(--primary-dark);
@@ -137,7 +136,6 @@
             font-size: 14px;
         }
 
-        /* MAIN */
         .main {
             margin-left: 240px;
             flex: 1;
@@ -146,7 +144,6 @@
             min-height: 100vh;
         }
 
-        /* TOPBAR */
         .topbar {
             height: var(--header-height);
             background: var(--card-bg);
@@ -213,13 +210,11 @@
             color: #dc2626;
         }
 
-        /* PAGE CONTENT */
         .page-content {
             padding: 28px 32px 40px;
             flex: 1;
         }
 
-        /* ADMIN SECTIONS */
         .admin-section {
             background: var(--card-bg);
             border-radius: var(--radius);
@@ -312,13 +307,32 @@
             gap: 8px;
             border: 1px solid var(--border);
         }
-        .admin-list .tag .remove {
-            cursor: pointer;
-            color: #ef4444;
-            font-weight: 700;
-            font-size: 14px;
+        .admin-list .tag .actions {
+            display: inline-flex;
+            gap: 4px;
         }
-        .admin-list .tag .remove:hover {
+        .admin-list .tag .actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 0 2px;
+            color: var(--text-light);
+            transition: var(--transition);
+        }
+        .admin-list .tag .actions button:hover {
+            color: var(--primary);
+        }
+        .admin-list .tag .actions .btn-edit {
+            color: #3b82f6;
+        }
+        .admin-list .tag .actions .btn-edit:hover {
+            color: #2563eb;
+        }
+        .admin-list .tag .actions .btn-delete {
+            color: #ef4444;
+        }
+        .admin-list .tag .actions .btn-delete:hover {
             color: #dc2626;
         }
 
@@ -342,15 +356,28 @@
             padding: 10px 12px;
             border-bottom: 1px solid var(--border);
         }
+        .admin-table .actions {
+            display: flex;
+            gap: 6px;
+        }
         .admin-table .actions button {
             background: none;
             border: none;
-            color: #ef4444;
             cursor: pointer;
             font-size: 14px;
             padding: 2px 6px;
+            transition: var(--transition);
         }
-        .admin-table .actions button:hover {
+        .admin-table .actions .btn-edit {
+            color: #3b82f6;
+        }
+        .admin-table .actions .btn-edit:hover {
+            color: #2563eb;
+        }
+        .admin-table .actions .btn-delete {
+            color: #ef4444;
+        }
+        .admin-table .actions .btn-delete:hover {
             color: #dc2626;
         }
 
@@ -417,6 +444,101 @@
             display: none;
         }
 
+        /* EDIT MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: var(--radius);
+            max-width: 500px;
+            width: 100%;
+            padding: 32px 36px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-box h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .modal-box .modal-sub {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .modal-box .form-group {
+            margin-bottom: 14px;
+        }
+        .modal-box .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .modal-box .form-group input,
+        .modal-box .form-group select {
+            width: 100%;
+            padding: 9px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+            transition: var(--transition);
+        }
+        .modal-box .form-group input:focus,
+        .modal-box .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.10);
+        }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .modal-box .modal-actions button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-box .modal-actions .btn-cancel {
+            background: var(--bg);
+            color: var(--text);
+        }
+        .modal-box .modal-actions .btn-cancel:hover {
+            background: var(--border);
+        }
+        .modal-box .modal-actions .btn-submit {
+            background: var(--primary);
+            color: #fff;
+        }
+        .modal-box .modal-actions .btn-submit:hover {
+            background: var(--primary-light);
+        }
+
         /* TOAST */
         .toast-container {
             position: fixed;
@@ -445,7 +567,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
@@ -455,6 +576,7 @@
             .topbar { padding: 0 16px; }
             .admin-form { grid-template-columns: 1fr; }
             .login-box { padding: 24px; }
+            .modal-box { padding: 20px; }
         }
     </style>
 </head>
@@ -604,6 +726,23 @@
         </div>
     </div>
 
+    <!-- EDIT MODAL -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-box">
+            <h2 id="editModalTitle">Edit Data</h2>
+            <p class="modal-sub" id="editModalSub">Ubah data sesuai kebutuhan.</p>
+            <form id="editForm" onsubmit="submitEdit(event)">
+                <div id="editFormFields">
+                    <!-- Fields will be generated by JavaScript -->
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Batal</button>
+                    <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- TOAST CONTAINER -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -626,6 +765,7 @@
         let allMapel = [];
         let allKepsek = [];
         let isAdmin = false;
+        let editingItem = null; // { collection, id, data }
 
         // ===== LOGIN =====
         function verifyAdmin() {
@@ -640,7 +780,6 @@
             }
         }
 
-        // Enter key on password field
         document.getElementById('adminPasswordInput').addEventListener('keyup', function(e) {
             if (e.key === 'Enter') verifyAdmin();
         });
@@ -655,7 +794,7 @@
             setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
         }
 
-        // ===== SIDEBAR TOGGLE =====
+        // ===== SIDEBAR =====
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
@@ -720,7 +859,8 @@
                     <td>${g.name}</td>
                     <td>${g.password || '****'}</td>
                     <td class="actions">
-                        <button onclick="deleteGuru('${g.id}')"><i class="fas fa-trash"></i></button>
+                        <button class="btn-edit" onclick="openEditModal('guru', '${g.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteGuru('${g.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
@@ -728,23 +868,152 @@
 
         function renderKelas() {
             const container = document.getElementById('adminKelasList');
-            container.innerHTML = allKelas.map(k =>
-                `<span class="tag">${k.name} (${k.jenjang}) ${k.fase ? '• Fase '+k.fase : ''} <span class="remove" onclick="deleteKelas('${k.id}')">×</span></span>`
-            ).join('');
+            container.innerHTML = allKelas.map(k => `
+                <span class="tag">
+                    ${k.name} (${k.jenjang}) ${k.fase ? '• Fase '+k.fase : ''}
+                    <span class="actions">
+                        <button class="btn-edit" onclick="openEditModal('kelas', '${k.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteKelas('${k.id}')"><i class="fas fa-times"></i></button>
+                    </span>
+                </span>
+            `).join('');
         }
 
         function renderMapel() {
             const container = document.getElementById('adminMapelList');
-            container.innerHTML = allMapel.map(m =>
-                `<span class="tag">${m.name} <span class="remove" onclick="deleteMapel('${m.id}')">×</span></span>`
-            ).join('');
+            container.innerHTML = allMapel.map(m => `
+                <span class="tag">
+                    ${m.name}
+                    <span class="actions">
+                        <button class="btn-edit" onclick="openEditModal('mapel', '${m.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteMapel('${m.id}')"><i class="fas fa-times"></i></button>
+                    </span>
+                </span>
+            `).join('');
         }
 
         function renderKepsek() {
             const container = document.getElementById('adminKsList');
-            container.innerHTML = allKepsek.map(k =>
-                `<span class="tag">${k.name} (NIP: ${k.nip || '-'}) <span class="remove" onclick="deleteKepsek('${k.id}')">×</span></span>`
-            ).join('');
+            container.innerHTML = allKepsek.map(k => `
+                <span class="tag">
+                    ${k.name} (NIP: ${k.nip || '-'})
+                    <span class="actions">
+                        <button class="btn-edit" onclick="openEditModal('kepsek', '${k.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete" onclick="deleteKepsek('${k.id}')"><i class="fas fa-times"></i></button>
+                    </span>
+                </span>
+            `).join('');
+        }
+
+        // ===== EDIT MODAL =====
+        function openEditModal(collection, id) {
+            let item;
+            if (collection === 'guru') item = allGuru.find(g => g.id === id);
+            else if (collection === 'kelas') item = allKelas.find(k => k.id === id);
+            else if (collection === 'mapel') item = allMapel.find(m => m.id === id);
+            else if (collection === 'kepsek') item = allKepsek.find(k => k.id === id);
+            if (!item) { toast('Data tidak ditemukan.', 'error'); return; }
+
+            editingItem = { collection, id, data: { ...item } };
+            document.getElementById('editModalTitle').textContent = 'Edit ' + collection.charAt(0).toUpperCase() + collection.slice(1);
+            document.getElementById('editModalSub').textContent = 'Ubah data ' + (item.name || item.nama || '');
+
+            let fields = '';
+            if (collection === 'guru') {
+                fields = `
+                    <div class="form-group">
+                        <label>Nama Guru</label>
+                        <input type="text" id="editGuruName" value="${item.name || ''}" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="text" id="editGuruPass" value="${item.password || ''}" />
+                    </div>
+                `;
+            } else if (collection === 'kelas') {
+                fields = `
+                    <div class="form-group">
+                        <label>Nama Kelas</label>
+                        <input type="text" id="editKelasName" value="${item.name || ''}" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Jenjang</label>
+                        <select id="editKelasJenjang">
+                            <option value="SMP" ${item.jenjang === 'SMP' ? 'selected' : ''}>SMP</option>
+                            <option value="SMAS" ${item.jenjang === 'SMAS' ? 'selected' : ''}>SMAS</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fase (opsional)</label>
+                        <input type="text" id="editKelasFase" value="${item.fase || ''}" />
+                    </div>
+                `;
+            } else if (collection === 'mapel') {
+                fields = `
+                    <div class="form-group">
+                        <label>Nama Mata Pelajaran</label>
+                        <input type="text" id="editMapelName" value="${item.name || ''}" required />
+                    </div>
+                `;
+            } else if (collection === 'kepsek') {
+                fields = `
+                    <div class="form-group">
+                        <label>Nama Kepala Sekolah</label>
+                        <input type="text" id="editKepsekName" value="${item.name || ''}" required />
+                    </div>
+                    <div class="form-group">
+                        <label>NIP</label>
+                        <input type="text" id="editKepsekNip" value="${item.nip || ''}" />
+                    </div>
+                `;
+            }
+            document.getElementById('editFormFields').innerHTML = fields;
+            document.getElementById('editModal').classList.add('open');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('open');
+            editingItem = null;
+        }
+
+        function submitEdit(e) {
+            e.preventDefault();
+            if (!editingItem) return;
+            const { collection, id } = editingItem;
+            let updateData = {};
+
+            if (collection === 'guru') {
+                const name = document.getElementById('editGuruName').value.trim();
+                const pass = document.getElementById('editGuruPass').value.trim();
+                if (!name) { toast('Nama guru wajib diisi.', 'error'); return; }
+                updateData = { name, password: pass || 'guru123' };
+            } else if (collection === 'kelas') {
+                const name = document.getElementById('editKelasName').value.trim();
+                const jenjang = document.getElementById('editKelasJenjang').value;
+                const fase = document.getElementById('editKelasFase').value.trim();
+                if (!name) { toast('Nama kelas wajib diisi.', 'error'); return; }
+                updateData = { name, jenjang, fase };
+            } else if (collection === 'mapel') {
+                const name = document.getElementById('editMapelName').value.trim();
+                if (!name) { toast('Nama mapel wajib diisi.', 'error'); return; }
+                updateData = { name };
+            } else if (collection === 'kepsek') {
+                const name = document.getElementById('editKepsekName').value.trim();
+                const nip = document.getElementById('editKepsekNip').value.trim();
+                if (!name) { toast('Nama kepala sekolah wajib diisi.', 'error'); return; }
+                updateData = { name, nip };
+            }
+
+            // Update Firestore
+            db.collection(collection).doc(id).update(updateData)
+                .then(() => {
+                    toast('Data berhasil diperbarui!', 'success');
+                    closeEditModal();
+                    loadAllData();
+                })
+                .catch(err => {
+                    toast('Gagal update: ' + err.message, 'error');
+                });
         }
 
         // ===== CRUD OPERATIONS =====
@@ -861,7 +1130,6 @@
 
         // ===== INIT =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Cek apakah sudah login dari localStorage (misal dari index.html)
             const saved = localStorage.getItem('nbs_user');
             if (saved) {
                 try {
@@ -874,7 +1142,6 @@
                     }
                 } catch (e) {}
             }
-            // Tampilkan login
             document.getElementById('loginOverlay').style.display = 'flex';
         });
 
@@ -892,6 +1159,9 @@
         window.resetAllData = resetAllData;
         window.verifyAdmin = verifyAdmin;
         window.toast = toast;
+        window.openEditModal = openEditModal;
+        window.closeEditModal = closeEditModal;
+        window.submitEdit = submitEdit;
     </script>
 
 </body>
