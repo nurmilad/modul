@@ -297,35 +297,44 @@
             background: var(--bg);
             font-weight: 600;
             border-bottom: 2px solid var(--border);
+            font-size: 13px;
         }
         table.atp-table td {
-            padding: 8px 12px;
+            padding: 6px 8px;
             border-bottom: 1px solid var(--border);
             vertical-align: middle;
         }
         table.atp-table td input,
         table.atp-table td select {
             width: 100%;
-            padding: 6px 8px;
+            padding: 4px 6px;
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            font-size: 13px;
+            font-size: 11px; /* lebih kecil 2pt dari sebelumnya 13px */
             background: #fff;
             color: var(--text);
             outline: none;
+            font-family: inherit;
         }
         table.atp-table td input:focus,
         table.atp-table td select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.10);
         }
+        /* Kolom Tujuan Pembelajaran dibuat lebih lebar */
+        table.atp-table th:nth-child(4),
+        table.atp-table td:nth-child(4) {
+            min-width: 300px;
+            width: auto;
+        }
+
         table.atp-table td .btn-delete-row {
             background: none;
             border: none;
             color: #ef4444;
             cursor: pointer;
-            font-size: 16px;
-            padding: 4px;
+            font-size: 14px;
+            padding: 2px 4px;
         }
         table.atp-table td .btn-delete-row:hover {
             color: #dc2626;
@@ -334,8 +343,8 @@
         .drag-handle {
             cursor: grab;
             color: var(--text-light);
-            font-size: 16px;
-            padding: 4px 8px;
+            font-size: 14px;
+            padding: 2px 4px;
             user-select: none;
         }
         .drag-handle:hover {
@@ -502,8 +511,12 @@
             }
             table.atp-table td input,
             table.atp-table td select {
-                font-size: 12px;
-                padding: 4px;
+                font-size: 11px;
+                padding: 3px 4px;
+            }
+            table.atp-table th:nth-child(4),
+            table.atp-table td:nth-child(4) {
+                min-width: 180px;
             }
             .total-jp-box {
                 gap: 10px;
@@ -598,13 +611,13 @@
                         <table class="atp-table" id="atpTable">
                             <thead>
                                 <tr>
-                                    <th style="width:50px;">#</th>
-                                    <th style="width:100px;">Minggu ke-</th>
-                                    <th style="width:100px;">Semester</th>
+                                    <th style="width:40px;">#</th>
+                                    <th style="width:90px;">Minggu ke-</th>
+                                    <th style="width:90px;">Semester</th>
                                     <th>Tujuan Pembelajaran</th>
                                     <th>Materi Pokok</th>
-                                    <th style="width:120px;">Alokasi Waktu (JP)</th>
-                                    <th style="width:80px;">Aksi</th>
+                                    <th style="width:110px;">Alokasi Waktu (JP)</th>
+                                    <th style="width:70px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="atpTableBody">
@@ -875,9 +888,7 @@
             processGroup(genap);
 
             // Gabungkan kembali berdasarkan indeks asli
-            const merged = [];
             const allItems = [...ganjil, ...genap];
-            // Urutkan berdasarkan _idx asli untuk mempertahankan urutan
             allItems.sort((a, b) => a._idx - b._idx);
             allItems.forEach(item => {
                 const rowIndex = item._idx;
@@ -969,15 +980,15 @@
                         ondragleave="handleDragLeave(event)" 
                         ondrop="handleDrop(event)">
                         <td><span class="drag-handle" title="Seret untuk mengubah urutan">⠿</span></td>
-                        <td><input type="text" class="minggu-input" data-index="${index}" value="${row.minggu || ''}" readonly style="background:#f0f0f0;text-align:center;" /></td>
+                        <td><input type="text" class="minggu-input" data-index="${index}" value="${row.minggu || ''}" readonly style="background:#f0f0f0;text-align:center;font-size:11px;" /></td>
                         <td>
-                            <select class="semester-select" data-index="${index}">
+                            <select class="semester-select" data-index="${index}" style="font-size:11px;">
                                 ${semesterSelect}
                             </select>
                         </td>
-                        <td><input type="text" class="tujuan-input" data-index="${index}" value="${row.tujuan || ''}" placeholder="Tujuan pembelajaran" /></td>
-                        <td><input type="text" class="materi-input" data-index="${index}" value="${row.materi || ''}" placeholder="Materi pokok" /></td>
-                        <td><input type="text" class="alokasi-input" data-index="${index}" value="${row.alokasiJp || ''}" placeholder="Jumlah JP" /></td>
+                        <td><input type="text" class="tujuan-input" data-index="${index}" value="${row.tujuan || ''}" placeholder="Tujuan pembelajaran" style="font-size:11px;" /></td>
+                        <td><input type="text" class="materi-input" data-index="${index}" value="${row.materi || ''}" placeholder="Materi pokok" style="font-size:11px;" /></td>
+                        <td><input type="text" class="alokasi-input" data-index="${index}" value="${row.alokasiJp || ''}" placeholder="Jumlah JP" style="font-size:11px;" /></td>
                         <td><button class="btn-delete-row" onclick="deleteRowATP(${index})"><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `;
@@ -989,8 +1000,7 @@
                 el.addEventListener('change', function() {
                     const idx = parseInt(this.dataset.index);
                     atpRows[idx].semester = this.value;
-                    updateMinggu(); // Update minggu karena semester berubah
-                    // Perbarui tampilan kolom minggu
+                    updateMinggu();
                     document.querySelectorAll('.minggu-input').forEach((input, i) => {
                         input.value = atpRows[i].minggu || '';
                     });
