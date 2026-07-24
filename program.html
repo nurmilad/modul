@@ -17,6 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
+        /* (CSS tidak berubah, sama seperti sebelumnya) */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -262,8 +263,8 @@
 
         // ===== STATE =====
         let moduleId = null;
-        let moduleData = null; // full module document
-        let atpRows = []; // array of row objects
+        let moduleData = null;
+        let atpRows = [];
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -275,12 +276,10 @@
             setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
         }
 
-        // ===== SIDEBAR =====
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
 
-        // ===== LOGOUT =====
         function logout() {
             localStorage.removeItem('nbs_user');
             localStorage.removeItem('nbs_guru');
@@ -317,7 +316,6 @@
             document.getElementById('modulJenjang').textContent = moduleData.jenjang || '-';
             document.getElementById('modulFase').textContent = moduleData.fase || '-';
             document.getElementById('modulTahun').textContent = moduleData.tahunPenyusunan || '-';
-            // Update sidebar user
             const user = localStorage.getItem('nbs_guru') || localStorage.getItem('nbs_user');
             if (user) {
                 try {
@@ -330,10 +328,7 @@
 
         // ===== ATP DATA =====
         function loadATPData() {
-            // Load capaian pembelajaran
             document.getElementById('cpText').value = moduleData.atp || '';
-
-            // Load tabel ATP
             atpRows = moduleData.atpTable || [];
             renderATPTable();
         }
@@ -358,7 +353,6 @@
 
                 // Hitung alokasi JP otomatis berdasarkan TM ke-
                 const jp = calculateJP(row.tm);
-                // Jika row tidak punya alokasiJp atau berbeda, update
                 if (row.alokasiJp !== jp) {
                     row.alokasiJp = jp;
                 }
@@ -380,7 +374,7 @@
             });
             tbody.innerHTML = html;
 
-            // Attach event listeners untuk update otomatis
+            // Event listeners
             document.querySelectorAll('.tm-input').forEach(el => {
                 el.addEventListener('input', function() {
                     const idx = parseInt(this.dataset.index);
@@ -388,7 +382,6 @@
                     atpRows[idx].tm = newTm;
                     const jp = calculateJP(newTm);
                     atpRows[idx].alokasiJp = jp;
-                    // Update field alokasi
                     const row = this.closest('tr');
                     const alokasiInput = row.querySelector('.alokasi-input');
                     if (alokasiInput) alokasiInput.value = jp;
@@ -414,26 +407,33 @@
             });
         }
 
-        // ===== CALCULATE JP =====
+        // ===== PERBAIKAN UTAMA: CALCULATE JP =====
         function calculateJP(tmStr) {
             if (!tmStr) return 0;
             const jpPerMinggu = moduleData.jpPerMinggu || 2; // default 2
+
+            // Hilangkan spasi
+            tmStr = tmStr.trim();
             // Cek apakah rentang (misal "3-4")
-            const parts = tmStr.split('-').map(s => s.trim());
-            if (parts.length === 2) {
-                const start = parseInt(parts[0]);
-                const end = parseInt(parts[1]);
-                if (!isNaN(start) && !isNaN(end) && start <= end) {
-                    const jumlahPertemuan = end - start + 1;
-                    return jumlahPertemuan * jpPerMinggu;
+            if (tmStr.includes('-')) {
+                const parts = tmStr.split('-').map(s => s.trim());
+                if (parts.length === 2) {
+                    const start = parseInt(parts[0]);
+                    const end = parseInt(parts[1]);
+                    if (!isNaN(start) && !isNaN(end) && start <= end) {
+                        const jumlahPertemuan = end - start + 1;
+                        return jumlahPertemuan * jpPerMinggu;
+                    }
                 }
-            } else if (parts.length === 1) {
-                const num = parseInt(parts[0]);
-                if (!isNaN(num)) {
-                    return num * jpPerMinggu;
+                return 0; // format tidak valid
+            } else {
+                // Angka tunggal: hanya 1 pertemuan
+                const num = parseInt(tmStr);
+                if (!isNaN(num) && num > 0) {
+                    return 1 * jpPerMinggu; // selalu 1 pertemuan
                 }
+                return 0;
             }
-            return 0;
         }
 
         // ===== ADD ROW =====
@@ -447,7 +447,6 @@
             };
             atpRows.push(newRow);
             renderATPTable();
-            // Scroll ke bawah
             const table = document.getElementById('atpTable');
             table.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
@@ -461,7 +460,6 @@
 
         // ===== VALIDASI URUTAN TM =====
         function validateTMOrder(rows) {
-            // Ubah setiap tm menjadi angka awal dan akhir
             const parsed = rows.map((row, idx) => {
                 const tm = row.tm ? row.tm.trim() : '';
                 if (!tm) return { valid: false, error: 'TM ke- tidak boleh kosong.', idx };
@@ -485,12 +483,10 @@
                 return { valid: true, start, end, idx };
             });
 
-            // Cek error parsing
             for (let p of parsed) {
                 if (!p.valid) return p.error;
             }
 
-            // Cek urutan
             for (let i = 0; i < parsed.length; i++) {
                 if (i === 0) continue;
                 const prev = parsed[i - 1];
@@ -498,17 +494,14 @@
                 if (curr.start <= prev.end) {
                     return `Urutan TM ke- tidak berurutan. Baris ${i+1} (${rows[i].tm}) harus dimulai dari ${prev.end + 1} atau lebih besar.`;
                 }
-                // Pastikan tidak ada celah? (opsional) kita biarkan saja
             }
-            return null; // valid
+            return null;
         }
 
         // ===== SAVE ATP =====
         async function saveATP() {
-            // Baca capaian
             const cp = document.getElementById('cpText').value.trim();
 
-            // Kumpulkan data dari tabel (sudah tersimpan di atpRows, tapi kita ambil ulang untuk memastikan)
             const inputs = document.querySelectorAll('.tm-input');
             const rows = [];
             inputs.forEach((el, idx) => {
@@ -522,17 +515,14 @@
                 rows.push(row);
             });
 
-            // Update atpRows
             atpRows = rows;
 
-            // Validasi urutan
             const error = validateTMOrder(atpRows);
             if (error) {
                 toast('❌ ' + error, 'error');
                 return;
             }
 
-            // Simpan ke Firestore
             try {
                 await db.collection('modules').doc(moduleId).update({
                     atp: cp,
@@ -540,7 +530,6 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 toast('ATP berhasil disimpan!', 'success');
-                // Update moduleData lokal
                 moduleData.atp = cp;
                 moduleData.atpTable = atpRows;
             } catch (e) {
@@ -559,7 +548,6 @@
         // ===== INIT =====
         document.addEventListener('DOMContentLoaded', function() {
             loadModule();
-            // Sidebar close on outside click (mobile)
             document.addEventListener('click', function(e) {
                 const sidebar = document.getElementById('sidebar');
                 if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
@@ -570,7 +558,6 @@
             });
         });
 
-        // Expose global
         window.toggleSidebar = toggleSidebar;
         window.logout = logout;
         window.switchTab = switchTab;
