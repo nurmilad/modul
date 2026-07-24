@@ -97,6 +97,39 @@
         .empty-state { text-align:center; padding:40px 20px; color:var(--text-light); }
         .empty-state i { font-size:48px; opacity:0.3; margin-bottom:16px; }
 
+        /* Total JP */
+        .total-jp-box {
+            margin-top:16px;
+            padding:12px 20px;
+            background:var(--bg);
+            border-radius:var(--radius-sm);
+            border:1px solid var(--border);
+            display:flex;
+            flex-wrap:wrap;
+            gap:20px 40px;
+            font-size:14px;
+        }
+        .total-jp-box .total-item {
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .total-jp-box .total-item .label {
+            color:var(--text-light);
+        }
+        .total-jp-box .total-item .value {
+            font-weight:700;
+            color:var(--primary);
+            font-size:16px;
+        }
+        .total-jp-box .total-item .value.genap {
+            color:#10b981;
+        }
+        .total-jp-box .total-item .value.total {
+            color:#f59e0b;
+            font-size:18px;
+        }
+
         @media (max-width:768px) {
             .sidebar { transform:translateX(-100%); }
             .sidebar.open { transform:translateX(0); }
@@ -107,6 +140,7 @@
             table.atp-table { font-size:12px; }
             table.atp-table td input,
             table.atp-table td select { font-size:12px; padding:4px; }
+            .total-jp-box { gap:10px; flex-direction:column; }
         }
     </style>
 </head>
@@ -196,7 +230,7 @@
                         <table class="atp-table" id="atpTable">
                             <thead>
                                 <tr>
-                                    <th style="width:120px;">TM ke-</th>
+                                    <th style="width:100px;">Minggu ke-</th>
                                     <th style="width:100px;">Semester</th>
                                     <th>Tujuan Pembelajaran</th>
                                     <th>Materi Pokok</th>
@@ -212,6 +246,22 @@
                     <div id="atpEmpty" class="empty-state">
                         <i class="fas fa-table"></i>
                         <p>Belum ada data ATP. Klik "Tambah Baris" untuk mulai.</p>
+                    </div>
+
+                    <!-- TOTAL JP -->
+                    <div id="totalJpBox" class="total-jp-box" style="display:none;">
+                        <div class="total-item">
+                            <span class="label">Total JP Ganjil :</span>
+                            <span class="value" id="totalGanjil">0</span>
+                        </div>
+                        <div class="total-item">
+                            <span class="label">Total JP Genap :</span>
+                            <span class="value genap" id="totalGenap">0</span>
+                        </div>
+                        <div class="total-item">
+                            <span class="label">Total JP Keseluruhan :</span>
+                            <span class="value total" id="totalKeseluruhan">0</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -324,10 +374,8 @@
             }
         }
 
-        // Pasang event sebelum meninggalkan halaman
         window.addEventListener('beforeunload', confirmLeave);
 
-        // Pasang event untuk navigasi internal (link sidebar dan logout)
         document.addEventListener('DOMContentLoaded', function() {
             const links = document.querySelectorAll('#sidebar a, #logoutBtn');
             links.forEach(link => {
@@ -341,7 +389,6 @@
                 });
             });
 
-            // Juga untuk tab ATP dan tombol lainnya yang bisa navigasi
             const tabButtons = document.querySelectorAll('.program-tabs button');
             tabButtons.forEach(btn => {
                 btn.addEventListener('click', function(e) {
@@ -399,21 +446,38 @@
         function loadATPData() {
             document.getElementById('cpText').value = moduleData.atp || '';
             atpRows = moduleData.atpTable || [];
+            // Pastikan setiap row memiliki properti minggu (untuk kompatibilitas)
+            atpRows = atpRows.map((row, idx) => {
+                return {
+                    minggu: row.minggu || (idx + 1).toString(),
+                    semester: row.semester || 'Ganjil',
+                    tujuan: row.tujuan || '',
+                    materi: row.materi || '',
+                    alokasiJp: row.alokasiJp || ''
+                };
+            });
             renderATPTable();
-            // Simpan initial state setelah render
             saveInitialState();
         }
 
         function renderATPTable() {
             const tbody = document.getElementById('atpTableBody');
             const empty = document.getElementById('atpEmpty');
+            const totalBox = document.getElementById('totalJpBox');
 
             if (atpRows.length === 0) {
                 tbody.innerHTML = '';
                 empty.style.display = 'block';
+                totalBox.style.display = 'none';
                 return;
             }
             empty.style.display = 'none';
+            totalBox.style.display = 'flex';
+
+            // Update minggu otomatis berdasarkan urutan
+            atpRows.forEach((row, idx) => {
+                row.minggu = (idx + 1).toString();
+            });
 
             let html = '';
             atpRows.forEach((row, index) => {
@@ -422,14 +486,9 @@
                     `<option value="${s}" ${row.semester === s ? 'selected' : ''}>${s}</option>`
                 ).join('');
 
-                const jp = calculateJP(row.tm);
-                if (row.alokasiJp !== jp) {
-                    row.alokasiJp = jp;
-                }
-
                 html += `
                     <tr>
-                        <td><input type="text" class="tm-input" data-index="${index}" value="${row.tm || ''}" placeholder="1, 2, 3-4" /></td>
+                        <td><input type="text" class="minggu-input" data-index="${index}" value="${row.minggu}" readonly style="background:#f0f0f0;text-align:center;" /></td>
                         <td>
                             <select class="semester-select" data-index="${index}">
                                 ${semesterSelect}
@@ -437,7 +496,7 @@
                         </td>
                         <td><input type="text" class="tujuan-input" data-index="${index}" value="${row.tujuan || ''}" placeholder="Tujuan pembelajaran" /></td>
                         <td><input type="text" class="materi-input" data-index="${index}" value="${row.materi || ''}" placeholder="Materi pokok" /></td>
-                        <td><input type="text" class="alokasi-input" data-index="${index}" value="${row.alokasiJp || ''}" readonly style="background:#f0f0f0;" /></td>
+                        <td><input type="text" class="alokasi-input" data-index="${index}" value="${row.alokasiJp || ''}" placeholder="Jumlah JP" /></td>
                         <td><button class="btn-delete-row" onclick="deleteRowATP(${index})"><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `;
@@ -445,23 +504,11 @@
             tbody.innerHTML = html;
 
             // Event listeners
-            document.querySelectorAll('.tm-input').forEach(el => {
-                el.addEventListener('input', function() {
-                    const idx = parseInt(this.dataset.index);
-                    const newTm = this.value.trim();
-                    atpRows[idx].tm = newTm;
-                    const jp = calculateJP(newTm);
-                    atpRows[idx].alokasiJp = jp;
-                    const row = this.closest('tr');
-                    const alokasiInput = row.querySelector('.alokasi-input');
-                    if (alokasiInput) alokasiInput.value = jp;
-                    checkChanges();
-                });
-            });
             document.querySelectorAll('.semester-select').forEach(el => {
                 el.addEventListener('change', function() {
                     const idx = parseInt(this.dataset.index);
                     atpRows[idx].semester = this.value;
+                    updateTotals();
                     checkChanges();
                 });
             });
@@ -479,44 +526,43 @@
                     checkChanges();
                 });
             });
+            document.querySelectorAll('.alokasi-input').forEach(el => {
+                el.addEventListener('input', function() {
+                    const idx = parseInt(this.dataset.index);
+                    atpRows[idx].alokasiJp = this.value;
+                    updateTotals();
+                    checkChanges();
+                });
+            });
 
-            // Event untuk textarea cp
             document.getElementById('cpText').addEventListener('input', checkChanges);
+
+            // Hitung total
+            updateTotals();
         }
 
-        // ===== CALCULATE JP =====
-        function calculateJP(tmStr) {
-            if (!tmStr) return 0;
-            const jpPerMinggu = moduleData.jpPerMinggu || 2;
-            tmStr = tmStr.trim();
-            if (tmStr.includes('-')) {
-                const parts = tmStr.split('-').map(s => s.trim());
-                if (parts.length === 2) {
-                    const start = parseInt(parts[0]);
-                    const end = parseInt(parts[1]);
-                    if (!isNaN(start) && !isNaN(end) && start <= end) {
-                        const jumlahPertemuan = end - start + 1;
-                        return jumlahPertemuan * jpPerMinggu;
-                    }
-                }
-                return 0;
-            } else {
-                const num = parseInt(tmStr);
-                if (!isNaN(num) && num > 0) {
-                    return 1 * jpPerMinggu;
-                }
-                return 0;
-            }
+        // ===== UPDATE TOTALS =====
+        function updateTotals() {
+            let totalGanjil = 0;
+            let totalGenap = 0;
+            atpRows.forEach(row => {
+                const jp = parseFloat(row.alokasiJp) || 0;
+                if (row.semester === 'Ganjil') totalGanjil += jp;
+                else if (row.semester === 'Genap') totalGenap += jp;
+            });
+            document.getElementById('totalGanjil').textContent = totalGanjil;
+            document.getElementById('totalGenap').textContent = totalGenap;
+            document.getElementById('totalKeseluruhan').textContent = totalGanjil + totalGenap;
         }
 
         // ===== ADD ROW =====
         function addRowATP() {
             const newRow = {
-                tm: '',
+                minggu: (atpRows.length + 1).toString(),
                 semester: 'Ganjil',
                 tujuan: '',
                 materi: '',
-                alokasiJp: 0
+                alokasiJp: ''
             };
             atpRows.push(newRow);
             renderATPTable();
@@ -533,69 +579,35 @@
             checkChanges();
         }
 
-        // ===== VALIDASI URUTAN TM =====
-        function validateTMOrder(rows) {
-            const parsed = rows.map((row, idx) => {
-                const tm = row.tm ? row.tm.trim() : '';
-                if (!tm) return { valid: false, error: 'TM ke- tidak boleh kosong.', idx };
-                const parts = tm.split('-').map(s => s.trim());
-                let start, end;
-                if (parts.length === 2) {
-                    start = parseInt(parts[0]);
-                    end = parseInt(parts[1]);
-                    if (isNaN(start) || isNaN(end) || start > end) {
-                        return { valid: false, error: `TM "${tm}" tidak valid (awal > akhir).`, idx };
-                    }
-                } else if (parts.length === 1) {
-                    start = parseInt(parts[0]);
-                    end = start;
-                    if (isNaN(start)) {
-                        return { valid: false, error: `TM "${tm}" harus berupa angka atau rentang (contoh: 3-4).`, idx };
-                    }
-                } else {
-                    return { valid: false, error: `TM "${tm}" tidak valid.`, idx };
-                }
-                return { valid: true, start, end, idx };
-            });
-
-            for (let p of parsed) {
-                if (!p.valid) return p.error;
-            }
-
-            for (let i = 0; i < parsed.length; i++) {
-                if (i === 0) continue;
-                const prev = parsed[i - 1];
-                const curr = parsed[i];
-                if (curr.start <= prev.end) {
-                    return `Urutan TM ke- tidak berurutan. Baris ${i+1} (${rows[i].tm}) harus dimulai dari ${prev.end + 1} atau lebih besar.`;
-                }
-            }
-            return null;
-        }
+        // ===== VALIDASI (tidak perlu validasi urutan karena otomatis) =====
+        // Kita tetap simpan fungsi untuk berjaga-jaga, tapi tidak digunakan
 
         // ===== SAVE ATP =====
         async function saveATP() {
             const cp = document.getElementById('cpText').value.trim();
 
-            const inputs = document.querySelectorAll('.tm-input');
+            // Kumpulkan data dari tabel
+            const inputs = document.querySelectorAll('.minggu-input');
             const rows = [];
             inputs.forEach((el, idx) => {
                 const row = {
-                    tm: el.value.trim(),
+                    minggu: el.value.trim(),
                     semester: document.querySelector(`.semester-select[data-index="${idx}"]`)?.value || 'Ganjil',
                     tujuan: document.querySelector(`.tujuan-input[data-index="${idx}"]`)?.value || '',
                     materi: document.querySelector(`.materi-input[data-index="${idx}"]`)?.value || '',
-                    alokasiJp: document.querySelector(`.alokasi-input[data-index="${idx}"]`)?.value || 0
+                    alokasiJp: document.querySelector(`.alokasi-input[data-index="${idx}"]`)?.value || ''
                 };
                 rows.push(row);
             });
 
             atpRows = rows;
 
-            const error = validateTMOrder(atpRows);
-            if (error) {
-                toast('❌ ' + error, 'error');
-                return;
+            // Validasi: pastikan alokasi JP berupa angka (opsional)
+            for (let row of atpRows) {
+                if (row.alokasiJp && isNaN(parseFloat(row.alokasiJp))) {
+                    toast('❌ Alokasi JP harus berupa angka!', 'error');
+                    return;
+                }
             }
 
             try {
@@ -607,7 +619,6 @@
                 toast('ATP berhasil disimpan!', 'success');
                 moduleData.atp = cp;
                 moduleData.atpTable = atpRows;
-                // Reset dirty setelah simpan
                 saveInitialState();
             } catch (e) {
                 toast('Gagal menyimpan ATP: ' + e.message, 'error');
@@ -637,16 +648,13 @@
                 }
             });
 
-            // Handle back/forward navigation
             window.addEventListener('popstate', function(e) {
                 if (isDirty) {
                     if (!confirm('Ada data yang belum disimpan. Yakin ingin meninggalkan halaman?')) {
-                        // Prevent navigation by pushing state again
                         history.pushState(null, '', window.location.href);
                     }
                 }
             });
-            // Push initial state
             history.pushState(null, '', window.location.href);
         });
 
