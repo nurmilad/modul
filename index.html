@@ -19,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
+        /* semua CSS sama seperti sebelumnya (tidak ada perubahan) */
         * {
             margin: 0;
             padding: 0;
@@ -47,7 +48,6 @@
             display: flex;
             min-height: 100vh;
         }
-        /* SIDEBAR */
         .sidebar {
             width: 240px;
             background: var(--primary-dark);
@@ -137,7 +137,6 @@
             font-size: 14px;
         }
 
-        /* MAIN */
         .main {
             margin-left: 240px;
             flex: 1;
@@ -146,7 +145,6 @@
             min-height: 100vh;
         }
 
-        /* TOPBAR */
         .topbar {
             height: var(--header-height);
             background: var(--card-bg);
@@ -213,13 +211,11 @@
             color: #dc2626;
         }
 
-        /* PAGE CONTENT */
         .page-content {
             padding: 28px 32px 40px;
             flex: 1;
         }
 
-        /* DASHBOARD */
         .dash-header {
             display: flex;
             justify-content: space-between;
@@ -302,7 +298,6 @@
             margin-top: 2px;
         }
 
-        /* CARDS GRID */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -434,7 +429,6 @@
             margin-bottom: 6px;
         }
 
-        /* TOAST */
         .toast-container {
             position: fixed;
             bottom: 24px;
@@ -474,7 +468,6 @@
             }
         }
 
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -541,7 +534,7 @@
         </nav>
         <div class="sidebar-footer">
             <i class="fas fa-circle" style="color:#10b981;font-size:10px;"></i>
-            <span id="sidebarUser">Belum login</span>
+            <span id="sidebarUser">Pengunjung</span>
         </div>
     </aside>
 
@@ -556,9 +549,9 @@
             <div class="topbar-right">
                 <div class="user-badge">
                     <i class="fas fa-user-circle"></i>
-                    <span id="topbarUser">Guest</span>
+                    <span id="topbarUser">Pengunjung</span>
                 </div>
-                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+                <!-- Tidak ada tombol logout karena tidak login -->
             </div>
         </header>
 
@@ -600,7 +593,6 @@
 
     <!-- FIREBASE & SCRIPT -->
     <script>
-        // ===== FIREBASE CONFIG =====
         const firebaseConfig = {
             apiKey: "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A",
             authDomain: "modul-fae5a.firebaseapp.com",
@@ -612,121 +604,25 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ===== STATE =====
         let allModules = [];
-        let currentUser = null;
 
-        // ===== AUTH =====
-        function checkAuth() {
-            const saved = localStorage.getItem('nbs_user');
-            if (saved) {
-                try {
-                    currentUser = JSON.parse(saved);
-                    updateUIForUser();
-                    return true;
-                } catch (e) { localStorage.removeItem('nbs_user'); }
-            }
-            // Prompt login sederhana
-            showLoginPrompt();
-            return false;
-        }
-
-        function showLoginPrompt() {
-            const role = prompt('Masuk sebagai:\n1. Admin (admin123)\n2. Guru (masukkan nama)', 'admin');
-            if (role === 'admin') {
-                const pass = prompt('Password Admin:');
-                if (pass === 'admin123') {
-                    currentUser = { username: 'admin', role: 'admin', name: 'Administrator' };
-                    localStorage.setItem('nbs_user', JSON.stringify(currentUser));
-                    updateUIForUser();
-                    toast('Selamat datang, Admin!', 'success');
-                    loadModules();
-                    return;
-                } else {
-                    alert('Password salah!');
-                    location.reload();
-                    return;
-                }
-            } else if (role) {
-                // Cek di Firestore apakah guru dengan nama tersebut ada
-                db.collection('guru').where('name', '==', role).get().then(snap => {
-                    if (!snap.empty) {
-                        const doc = snap.docs[0];
-                        const data = doc.data();
-                        const pass = prompt('Password untuk ' + role + ':');
-                        if (pass === data.password) {
-                            currentUser = { username: data.name, role: 'guru', name: data.name, id: doc.id };
-                            localStorage.setItem('nbs_user', JSON.stringify(currentUser));
-                            updateUIForUser();
-                            toast('Selamat datang, ' + data.name + '!', 'success');
-                            loadModules();
-                            return;
-                        } else {
-                            alert('Password salah!');
-                            location.reload();
-                            return;
-                        }
-                    } else {
-                        alert('Guru "' + role + '" tidak ditemukan. Silakan daftar di Admin.');
-                        location.reload();
-                        return;
-                    }
-                });
-            } else {
-                // Guest
-                currentUser = { username: 'guest', role: 'guest', name: 'Pengunjung' };
-                localStorage.setItem('nbs_user', JSON.stringify(currentUser));
-                updateUIForUser();
-                loadModules();
-            }
-        }
-
-        function updateUIForUser() {
-            const name = currentUser ? currentUser.name : 'Guest';
-            document.getElementById('sidebarUser').textContent = name;
-            document.getElementById('topbarUser').textContent = name;
-            // Sembunyikan menu Admin jika bukan admin
-            const adminLink = document.querySelector('a[href="admin.html"]');
-            if (adminLink) {
-                adminLink.style.display = (currentUser && currentUser.role === 'admin') ? 'flex' : 'none';
-            }
-            // Tampilkan menu Guru jika admin atau guru
-            const guruLink = document.querySelector('a[href="guru.html"]');
-            if (guruLink) {
-                guruLink.style.display = (currentUser && (currentUser.role === 'admin' || currentUser.role === 'guru')) ?
-                    'flex' : 'none';
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('nbs_user');
-            currentUser = null;
-            toast('Telah keluar.', 'info');
-            location.reload();
-        }
-
-        // ===== TOAST =====
         function toast(msg, type = 'info') {
             const container = document.getElementById('toastContainer');
             const el = document.createElement('div');
             el.className = 'toast toast-' + type;
             el.textContent = msg;
             container.appendChild(el);
-            setTimeout(() => { el.style.opacity = '0';
-                setTimeout(() => el.remove(), 400); }, 3000);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
         }
 
-        // ===== SIDEBAR TOGGLE =====
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
 
-        // ===== LOAD MODULES =====
         async function loadModules() {
             try {
                 const snap = await db.collection('modules').orderBy('createdAt', 'desc').get();
                 allModules = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                // Update filter mapel dropdown
                 populateMapelFilter();
                 renderDashboard();
             } catch (e) {
@@ -745,7 +641,6 @@
             sel.value = currentVal;
         }
 
-        // ===== RENDER DASHBOARD =====
         function renderDashboard() {
             const search = document.getElementById('dashSearch').value.toLowerCase();
             const filterJenjang = document.getElementById('dashFilterJenjang').value;
@@ -813,10 +708,9 @@
             toast('Dashboard diperbarui', 'info');
         }
 
-        // ===== INIT =====
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            // Tutup sidebar saat klik di luar (mobile)
+            loadModules();
+            // Sidebar close on outside click mobile
             document.addEventListener('click', function(e) {
                 const sidebar = document.getElementById('sidebar');
                 if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
@@ -827,14 +721,11 @@
             });
         });
 
-        // Expose global functions
         window.toggleSidebar = toggleSidebar;
-        window.logout = logout;
         window.filterModules = filterModules;
         window.refreshModules = refreshModules;
         window.loadModules = loadModules;
         window.toast = toast;
     </script>
-
 </body>
 </html>
