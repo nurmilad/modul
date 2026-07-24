@@ -202,7 +202,7 @@
             <form id="modalForm" onsubmit="submitModule(event)">
                 <!-- Pilih Kelas (sudah mencakup jenjang dan fase) -->
                 <div class="form-group">
-                    <label>Kelas (Jenjang - Fase)</label>
+                    <label>Jenjang - Kelas (Fase)</label>
                     <select id="mKelas" required>
                         <option value="">-- Pilih Kelas --</option>
                     </select>
@@ -384,12 +384,12 @@
 
         // ===== POPULATE DROPDOWNS =====
         function populateDropdowns() {
-            // Populate kelas dropdown dengan format: Nama (Jenjang) - Fase X
+            // Populate kelas dropdown dengan format: Jenjang - Nama (Fase)
             const selKelas = document.getElementById('mKelas');
             selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
             allKelas.forEach(k => {
-                const label = `${k.name} (${k.jenjang})${k.fase ? ' - Fase '+k.fase : ''}`;
-                selKelas.innerHTML += `<option value="${k.id}" data-jenjang="${k.jenjang}" data-fase="${k.fase || ''}">${label}</option>`;
+                const label = `${k.jenjang || '-'} - ${k.name || '-'}${k.fase ? ' (Fase '+k.fase+')' : ''}`;
+                selKelas.innerHTML += `<option value="${k.id}" data-jenjang="${k.jenjang || ''}" data-fase="${k.fase || ''}">${label}</option>`;
             });
 
             // Saat kelas dipilih, isi hidden fields
@@ -464,7 +464,7 @@
                     <select id="guruFilterJenjang" onchange="filterGuru()">
                         <option value="">Semua Jenjang</option>
                         <option value="SMP">SMP</option>
-                        <option value="SMAS">SMAS</option>
+                        <option value="SMA">SMA</option>
                     </select>
                     <select id="guruFilterMapel" onchange="filterGuru()">
                         <option value="">Semua Mapel</option>
@@ -484,11 +484,15 @@
                 `;
             } else {
                 filtered.forEach(m => {
+                    const jenjangLabel = m.jenjang || '-';
+                    const kelasLabel = m.kelas || '-';
+                    const faseLabel = m.fase && m.fase !== '-' ? 'Fase '+m.fase : '';
+                    const subLabel = `${jenjangLabel} • ${kelasLabel}${faseLabel ? ' • '+faseLabel : ''}`;
                     html += `
                         <div class="module-card" data-id="${m.id}">
                             <div class="card-cover">
                                 <div class="card-title">${m.mapel || 'Tanpa Mapel'}</div>
-                                <div class="card-sub">${m.kelas || 'Tanpa Kelas'} • ${m.jenjang || '-'}</div>
+                                <div class="card-sub">${subLabel}</div>
                                 <div class="card-badge">${m.fase || '-'}</div>
                             </div>
                             <div class="card-body">
@@ -552,8 +556,8 @@
             if (!kelasData) { toast('Data kelas tidak valid.', 'error'); return; }
 
             const data = {
-                jenjang: kelasData.jenjang,
-                kelas: kelasData.name,
+                jenjang: kelasData.jenjang || '',
+                kelas: kelasData.name || '',
                 fase: kelasData.fase || '-',
                 mapel: document.getElementById('mMapel').value,
                 tahunPenyusunan: parseInt(document.getElementById('mTahun').value),
