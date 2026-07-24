@@ -215,8 +215,75 @@
             flex: 1;
         }
 
+        /* LOGIN OVERLAY */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-box {
+            background: #fff;
+            padding: 40px 48px;
+            border-radius: var(--radius);
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+        .login-box h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .login-box p {
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+        .login-box select,
+        .login-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            margin-bottom: 12px;
+            outline: none;
+            background: #fff;
+            color: var(--text);
+        }
+        .login-box select:focus,
+        .login-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26,95,122,0.1);
+        }
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .login-box button:hover {
+            background: var(--primary-light);
+        }
+        .login-box .error {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+
         /* DASHBOARD GURU */
-        .dash-header {
+        .guru-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -224,11 +291,11 @@
             gap: 16px;
             margin-bottom: 24px;
         }
-        .dash-header h1 {
+        .guru-header h1 {
             font-size: 26px;
             font-weight: 700;
         }
-        .dash-header h1 small {
+        .guru-header h1 small {
             font-weight: 400;
             font-size: 16px;
             color: var(--text-light);
@@ -236,14 +303,14 @@
             margin-top: 4px;
         }
 
-        .dash-controls {
+        .guru-controls {
             display: flex;
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
         }
-        .dash-controls input,
-        .dash-controls select {
+        .guru-controls input,
+        .guru-controls select {
             padding: 8px 14px;
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
@@ -254,12 +321,13 @@
             transition: var(--transition);
             min-width: 140px;
         }
-        .dash-controls input:focus,
-        .dash-controls select:focus {
+        .guru-controls input:focus,
+        .guru-controls select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.12);
+            box-shadow: 0 0 0 3px rgba(26,95,122,0.12);
         }
-        .dash-controls .btn-primary {
+
+        .btn-primary {
             background: var(--primary);
             color: #fff;
             border: none;
@@ -270,14 +338,15 @@
             cursor: pointer;
             transition: var(--transition);
         }
-        .dash-controls .btn-primary:hover {
+        .btn-primary:hover {
             background: var(--primary-light);
         }
-        .dash-controls .btn-plus {
-            background: var(--secondary);
+
+        .btn-plus {
+            background: var(--primary);
             color: #fff;
             border: none;
-            padding: 8px 18px;
+            padding: 10px 24px;
             border-radius: var(--radius-sm);
             font-weight: 600;
             font-size: 14px;
@@ -285,10 +354,11 @@
             transition: var(--transition);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
-        .dash-controls .btn-plus:hover {
-            background: #e08e0b;
+        .btn-plus:hover {
+            background: var(--primary-light);
+            transform: scale(1.02);
         }
 
         .cards-grid {
@@ -404,6 +474,15 @@
             background: #f59e0b;
             color: #fff;
         }
+        .module-card .card-actions .btn-delete {
+            border-color: #ef4444;
+            color: #ef4444;
+            margin-left: auto;
+        }
+        .module-card .card-actions .btn-delete:hover {
+            background: #ef4444;
+            color: #fff;
+        }
 
         .empty-state {
             text-align: center;
@@ -420,72 +499,6 @@
             font-size: 20px;
             color: var(--text);
             margin-bottom: 6px;
-        }
-
-        /* LOGIN OVERLAY GURU */
-        .login-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(6px);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-box {
-            background: #fff;
-            padding: 40px 48px;
-            border-radius: var(--radius);
-            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-        }
-        .login-box h2 {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-        .login-box p {
-            color: var(--text-light);
-            margin-bottom: 24px;
-        }
-        .login-box select,
-        .login-box input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 16px;
-            margin-bottom: 16px;
-            outline: none;
-            background: #fff;
-        }
-        .login-box select:focus,
-        .login-box input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26,95,122,0.1);
-        }
-        .login-box button {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .login-box button:hover {
-            background: var(--primary-light);
-        }
-        .login-box .error {
-            color: #ef4444;
-            font-size: 14px;
-            margin-top: 8px;
-            display: none;
         }
 
         /* MODAL */
@@ -506,7 +519,7 @@
         .modal-box {
             background: #fff;
             border-radius: var(--radius);
-            max-width: 600px;
+            max-width: 640px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
@@ -553,7 +566,7 @@
         .modal-box .form-group input:focus,
         .modal-box .form-group select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.10);
+            box-shadow: 0 0 0 3px rgba(26,95,122,0.10);
         }
         .modal-box .form-row {
             display: grid;
@@ -627,7 +640,6 @@
             .topbar { padding: 0 16px; }
             .modal-box .form-row { grid-template-columns: 1fr; }
             .login-box { padding: 24px; }
-            .modal-box { padding: 20px; }
         }
     </style>
 </head>
@@ -639,7 +651,7 @@
             <i class="fas fa-book-open"></i>
             <div>
                 Modul NBS
-                <small>Guru Panel</small>
+                <small>Guru</small>
             </div>
         </div>
         <nav class="sidebar-menu">
@@ -650,7 +662,7 @@
         </nav>
         <div class="sidebar-footer">
             <i class="fas fa-circle" style="color:#10b981;font-size:10px;"></i>
-            <span id="sidebarUser">Guru</span>
+            <span id="sidebarUser">Belum login</span>
         </div>
     </aside>
 
@@ -664,8 +676,8 @@
             </div>
             <div class="topbar-right">
                 <div class="user-badge">
-                    <i class="fas fa-user-graduate"></i>
-                    <span id="topbarUser">Belum login</span>
+                    <i class="fas fa-user-circle"></i>
+                    <span id="topbarUser">Guest</span>
                 </div>
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
             </div>
@@ -673,50 +685,30 @@
 
         <!-- PAGE CONTENT -->
         <div class="page-content" id="guruContent">
-            <div class="dash-header">
-                <div>
-                    <h1>Dashboard Guru <small id="guruNameDisplay">Silakan login terlebih dahulu</small></h1>
-                </div>
-                <div class="dash-controls" id="guruControls">
-                    <input type="text" id="guruSearch" placeholder="Cari mapel / kelas..." oninput="filterGuruModules()" />
-                    <select id="guruFilterJenjang" onchange="filterGuruModules()">
-                        <option value="">Semua Jenjang</option>
-                        <option value="SMP">SMP</option>
-                        <option value="SMAS">SMAS</option>
-                    </select>
-                    <select id="guruFilterMapel" onchange="filterGuruModules()">
-                        <option value="">Semua Mapel</option>
-                    </select>
-                    <button class="btn-plus" onclick="openCreateModal()"><i class="fas fa-plus"></i> Buat Modul</button>
-                </div>
-            </div>
-
-            <div class="cards-grid" id="guruCards">
-                <!-- Cards akan di-render oleh JavaScript -->
-            </div>
+            <!-- Akan di-render oleh JS -->
         </div>
     </div>
 
-    <!-- LOGIN OVERLAY GURU -->
+    <!-- LOGIN OVERLAY -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
             <h2>👩‍🏫 Login Guru</h2>
             <p>Pilih nama guru dan masukkan password.</p>
-            <select id="guruLoginSelect">
+            <select id="loginGuruSelect">
                 <option value="">-- Pilih Guru --</option>
             </select>
-            <input type="password" id="guruLoginPassword" placeholder="Password" />
+            <input type="password" id="loginGuruPass" placeholder="Password" />
             <button onclick="verifyGuru()">Masuk</button>
-            <div class="error" id="loginError">Password salah atau guru tidak ditemukan!</div>
+            <div class="error" id="loginError">Password salah atau guru tidak ditemukan.</div>
         </div>
     </div>
 
-    <!-- MODAL CREATE MODUL -->
-    <div class="modal-overlay" id="createModal">
+    <!-- MODAL BUAT MODUL -->
+    <div class="modal-overlay" id="modalOverlay">
         <div class="modal-box">
             <h2>Buat Modul Ajar Baru</h2>
-            <p class="modal-sub">Lengkapi data di bawah ini untuk membuat perangkat ajar.</p>
-            <form id="createForm" onsubmit="submitModule(event)">
+            <p class="modal-sub">Lengkapi data di bawah ini untuk memulai.</p>
+            <form id="modalForm" onsubmit="submitModule(event)">
                 <div class="form-group">
                     <label>Jenjang</label>
                     <select id="mJenjang" required>
@@ -725,16 +717,18 @@
                         <option value="SMAS">SMAS</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Mata Pelajaran</label>
-                    <select id="mMapel" required><option value="">-- Pilih --</option></select>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mata Pelajaran</label>
+                        <select id="mMapel" required><option value="">-- Pilih --</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kelas</label>
+                        <select id="mKelas" required><option value="">-- Pilih --</option></select>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Kelas</label>
-                    <select id="mKelas" required><option value="">-- Pilih --</option></select>
-                </div>
-                <div class="form-group">
-                    <label>Fase (opsional)</label>
+                    <label>Fase</label>
                     <input type="text" id="mFase" placeholder="Contoh: D, E, F" />
                 </div>
                 <div class="form-row">
@@ -751,26 +745,28 @@
                     <label>Alokasi Waktu (menit)</label>
                     <input type="number" id="mAlokasi" value="45" required />
                 </div>
-                <div class="form-group">
-                    <label>Kepala Sekolah</label>
-                    <select id="mKepsek" required onchange="updateNip()">
-                        <option value="">-- Pilih --</option>
-                    </select>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Kepala Sekolah</label>
+                        <select id="mKepsek" required><option value="">-- Pilih --</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>NIP Kepala Sekolah</label>
+                        <input type="text" id="mNip" placeholder="NIP" />
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>NIP Kepala Sekolah</label>
-                    <input type="text" id="mNip" placeholder="NIP" readonly />
-                </div>
-                <div class="form-group">
-                    <label>Tempat Pembuatan</label>
-                    <input type="text" id="mTempat" placeholder="Kota / Kabupaten" required />
-                </div>
-                <div class="form-group">
-                    <label>Tanggal Pembuatan</label>
-                    <input type="date" id="mTanggal" required />
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tempat Pembuatan</label>
+                        <input type="text" id="mTempat" placeholder="Kota / Kabupaten" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Pembuatan</label>
+                        <input type="date" id="mTanggal" required />
+                    </div>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeCreateModal()">Batal</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
                     <button type="submit" class="btn-submit"><i class="fas fa-check"></i> Buat Modul</button>
                 </div>
             </form>
@@ -794,12 +790,12 @@
         const db = firebase.firestore();
 
         // ===== STATE =====
+        let currentGuru = null; // { id, name, password }
+        let allModules = [];
         let allGuru = [];
         let allKelas = [];
         let allMapel = [];
         let allKepsek = [];
-        let allModules = [];
-        let currentGuru = null; // { id, name, password }
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -816,130 +812,140 @@
             document.getElementById('sidebar').classList.toggle('open');
         }
 
-        // ===== LOGOUT =====
-        function logout() {
-            currentGuru = null;
-            localStorage.removeItem('nbs_guru');
-            document.getElementById('loginOverlay').style.display = 'flex';
-            document.getElementById('guruLoginPassword').value = '';
-            document.getElementById('loginError').style.display = 'none';
-            document.getElementById('topbarUser').textContent = 'Belum login';
-            document.getElementById('guruNameDisplay').textContent = 'Silakan login terlebih dahulu';
-            document.getElementById('guruCards').innerHTML = '';
-            toast('Telah keluar.', 'info');
-        }
-
-        // ===== LOGIN GURU =====
-        function loadGuruList() {
-            const sel = document.getElementById('guruLoginSelect');
-            sel.innerHTML = '<option value="">-- Pilih Guru --</option>';
+        // ===== LOGIN =====
+        async function loadGuruList() {
+            const snap = await db.collection('guru').orderBy('name').get();
+            allGuru = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const select = document.getElementById('loginGuruSelect');
+            select.innerHTML = '<option value="">-- Pilih Guru --</option>';
             allGuru.forEach(g => {
-                sel.innerHTML += `<option value="${g.id}" data-password="${g.password || ''}">${g.name}</option>`;
+                select.innerHTML += `<option value="${g.id}">${g.name}</option>`;
             });
         }
 
         function verifyGuru() {
-            const sel = document.getElementById('guruLoginSelect');
-            const id = sel.value;
-            if (!id) { document.getElementById('loginError').textContent = 'Pilih guru terlebih dahulu!'; document.getElementById(
-                    'loginError').style.display = 'block'; return; }
-            const pass = document.getElementById('guruLoginPassword').value;
+            const id = document.getElementById('loginGuruSelect').value;
+            const pass = document.getElementById('loginGuruPass').value;
+            if (!id) { toast('Pilih guru terlebih dahulu.', 'error'); return; }
             const guru = allGuru.find(g => g.id === id);
-            if (guru && guru.password === pass) {
-                currentGuru = guru;
-                localStorage.setItem('nbs_guru', JSON.stringify(currentGuru));
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('topbarUser').textContent = guru.name;
-                document.getElementById('guruNameDisplay').textContent = 'Selamat datang, ' + guru.name + '!';
-                toast('Selamat datang, ' + guru.name + '!', 'success');
-                loadModules();
-            } else {
-                document.getElementById('loginError').textContent = 'Password salah!';
+            if (!guru) { document.getElementById('loginError').style.display = 'block'; return; }
+            if (guru.password !== pass) {
                 document.getElementById('loginError').style.display = 'block';
+                return;
             }
+            document.getElementById('loginError').style.display = 'none';
+            currentGuru = guru;
+            localStorage.setItem('nbs_guru', JSON.stringify(currentGuru));
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('sidebarUser').textContent = guru.name;
+            document.getElementById('topbarUser').textContent = guru.name;
+            toast('Selamat datang, ' + guru.name + '!', 'success');
+            loadAllData();
         }
 
-        document.getElementById('guruLoginPassword').addEventListener('keyup', function(e) {
+        // Enter key on password
+        document.getElementById('loginGuruPass').addEventListener('keyup', function(e) {
             if (e.key === 'Enter') verifyGuru();
         });
 
-        // ===== LOAD DATA MASTER =====
-        async function loadMasterData() {
+        // ===== LOGOUT =====
+        function logout() {
+            localStorage.removeItem('nbs_guru');
+            currentGuru = null;
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('loginGuruPass').value = '';
+            document.getElementById('loginError').style.display = 'none';
+            toast('Telah keluar.', 'info');
+        }
+
+        // ===== LOAD DATA =====
+        async function loadAllData() {
             try {
-                const [guruSnap, kelasSnap, mapelSnap, kepsekSnap] = await Promise.all([
-                    db.collection('guru').orderBy('name').get(),
-                    db.collection('kelas').orderBy('name').get(),
-                    db.collection('mapel').orderBy('name').get(),
-                    db.collection('kepsek').orderBy('name').get()
+                await Promise.all([
+                    loadModules(),
+                    loadKelas(),
+                    loadMapel(),
+                    loadKepsek()
                 ]);
-                allGuru = guruSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-                allKelas = kelasSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-                allMapel = mapelSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-                allKepsek = kepsekSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-                loadGuruList();
+                renderDashboard();
                 populateDropdowns();
             } catch (e) {
-                toast('Gagal memuat data master: ' + e.message, 'error');
+                toast('Gagal memuat data: ' + e.message, 'error');
+                console.error(e);
             }
         }
 
+        async function loadModules() {
+            const snap = await db.collection('modules')
+                .where('guru', '==', currentGuru.name)
+                .orderBy('createdAt', 'desc')
+                .get();
+            allModules = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        async function loadKelas() {
+            const snap = await db.collection('kelas').orderBy('name').get();
+            allKelas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        async function loadMapel() {
+            const snap = await db.collection('mapel').orderBy('name').get();
+            allMapel = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        async function loadKepsek() {
+            const snap = await db.collection('kepsek').orderBy('name').get();
+            allKepsek = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        // ===== POPULATE DROPDOWNS =====
         function populateDropdowns() {
             // Mapel
-            const mapelSel = document.getElementById('mMapel');
-            mapelSel.innerHTML = '<option value="">-- Pilih --</option>';
+            const selMapel = document.getElementById('mMapel');
+            selMapel.innerHTML = '<option value="">-- Pilih --</option>';
             allMapel.forEach(m => {
-                mapelSel.innerHTML += `<option value="${m.name}">${m.name}</option>`;
+                selMapel.innerHTML += `<option value="${m.name}">${m.name}</option>`;
             });
 
             // Kelas
-            const kelasSel = document.getElementById('mKelas');
-            kelasSel.innerHTML = '<option value="">-- Pilih --</option>';
+            const selKelas = document.getElementById('mKelas');
+            selKelas.innerHTML = '<option value="">-- Pilih --</option>';
             allKelas.forEach(k => {
-                kelasSel.innerHTML += `<option value="${k.name}">${k.name} (${k.jenjang})</option>`;
+                selKelas.innerHTML += `<option value="${k.name}">${k.name} (${k.jenjang})</option>`;
             });
 
             // Kepsek
-            const kepsekSel = document.getElementById('mKepsek');
-            kepsekSel.innerHTML = '<option value="">-- Pilih --</option>';
+            const selKepsek = document.getElementById('mKepsek');
+            selKepsek.innerHTML = '<option value="">-- Pilih --</option>';
             allKepsek.forEach(k => {
-                kepsekSel.innerHTML += `<option value="${k.id}" data-nip="${k.nip || ''}">${k.name}</option>`;
+                selKepsek.innerHTML += `<option value="${k.name}" data-nip="${k.nip || ''}">${k.name}</option>`;
             });
 
-            // Filter mapel
+            // Update NIP when kepsek selected
+            document.getElementById('mKepsek').onchange = function() {
+                const opt = this.options[this.selectedIndex];
+                const nip = opt ? opt.dataset.nip || '' : '';
+                document.getElementById('mNip').value = nip;
+            };
+
+            // Filter dropdowns for guru dashboard
             const filterMapel = document.getElementById('guruFilterMapel');
-            filterMapel.innerHTML = '<option value="">Semua Mapel</option>';
-            allMapel.forEach(m => {
-                filterMapel.innerHTML += `<option value="${m.name}">${m.name}</option>`;
-            });
-        }
-
-        function updateNip() {
-            const sel = document.getElementById('mKepsek');
-            const opt = sel.options[sel.selectedIndex];
-            const nip = opt ? opt.dataset.nip || '' : '';
-            document.getElementById('mNip').value = nip;
-        }
-
-        // ===== LOAD MODULES =====
-        async function loadModules() {
-            if (!currentGuru) return;
-            try {
-                const snap = await db.collection('modules')
-                    .where('guru', '==', currentGuru.name)
-                    .orderBy('createdAt', 'desc')
-                    .get();
-                allModules = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderGuruDashboard();
-            } catch (e) {
-                toast('Gagal memuat modul: ' + e.message, 'error');
+            if (filterMapel) {
+                const val = filterMapel.value;
+                filterMapel.innerHTML = '<option value="">Semua Mapel</option>';
+                allMapel.forEach(m => {
+                    filterMapel.innerHTML += `<option value="${m.name}">${m.name}</option>`;
+                });
+                filterMapel.value = val;
             }
         }
 
-        // ===== RENDER GURU DASHBOARD =====
-        function renderGuruDashboard() {
-            const search = document.getElementById('guruSearch').value.toLowerCase();
-            const filterJenjang = document.getElementById('guruFilterJenjang').value;
-            const filterMapel = document.getElementById('guruFilterMapel').value;
+        // ===== RENDER DASHBOARD =====
+        function renderDashboard() {
+            const container = document.getElementById('guruContent');
+            const search = document.getElementById('guruSearch') ? document.getElementById('guruSearch').value.toLowerCase() : '';
+            const filterJenjang = document.getElementById('guruFilterJenjang') ? document.getElementById('guruFilterJenjang').value : '';
+            const filterMapel = document.getElementById('guruFilterMapel') ? document.getElementById('guruFilterMapel').value : '';
 
             let filtered = allModules.filter(m => {
                 const matchSearch = (m.mapel || '').toLowerCase().includes(search) ||
@@ -949,81 +955,124 @@
                 return matchSearch && matchJenjang && matchMapel;
             });
 
-            const container = document.getElementById('guruCards');
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-plus-circle"></i>
-                        <h3>Belum ada modul</h3>
-                        <p>Klik tombol "Buat Modul" untuk membuat perangkat ajar baru.</p>
+            // Build HTML
+            let html = `
+                <div class="guru-header">
+                    <div>
+                        <h1>Dashboard Guru <small>${currentGuru ? currentGuru.name : ''}</small></h1>
                     </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = filtered.map(m => `
-                <div class="module-card" data-id="${m.id}">
-                    <div class="card-cover">
-                        <div class="card-title">${m.mapel || 'Tanpa Mapel'}</div>
-                        <div class="card-sub">${m.kelas || 'Tanpa Kelas'} • ${m.jenjang || '-'}</div>
-                        <div class="card-badge">${m.fase || '-'}</div>
-                    </div>
-                    <div class="card-body">
-                        <div class="card-meta">
-                            <span><i class="fas fa-user"></i> ${m.guru || 'Unknown'}</span>
-                            <span><i class="fas fa-calendar"></i> ${m.tahunPenyusunan || '-'}</span>
-                            <span><i class="fas fa-clock"></i> ${m.jpPerMinggu || '?'} JP/mg</span>
-                        </div>
-                        <div class="card-actions">
-                            <button class="btn-atp" onclick="alert('Buka ATP untuk modul ${m.id}')">ATP</button>
-                            <button class="btn-prota" onclick="alert('Buka Prota untuk modul ${m.id}')">Prota</button>
-                            <button class="btn-prosem" onclick="alert('Buka Prosem untuk modul ${m.id}')">Prosem</button>
-                            <button class="btn-rpm" onclick="alert('Buka RPM untuk modul ${m.id}')">RPM</button>
-                        </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button class="btn-plus" onclick="openModal()"><i class="fas fa-plus-circle"></i> Buat Modul Baru</button>
                     </div>
                 </div>
-            `).join('');
-        }
+                <div class="guru-controls" style="margin-bottom:20px;">
+                    <input type="text" id="guruSearch" placeholder="Cari mapel / kelas..." oninput="filterGuru()" />
+                    <select id="guruFilterJenjang" onchange="filterGuru()">
+                        <option value="">Semua Jenjang</option>
+                        <option value="SMP">SMP</option>
+                        <option value="SMAS">SMAS</option>
+                    </select>
+                    <select id="guruFilterMapel" onchange="filterGuru()">
+                        <option value="">Semua Mapel</option>
+                    </select>
+                    <button class="btn-primary" onclick="refreshGuru()"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="cards-grid" id="guruCards">
+            `;
 
-        function filterGuruModules() {
-            renderGuruDashboard();
-        }
+            if (filtered.length === 0) {
+                html += `
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>Belum ada modul</h3>
+                        <p>Klik tombol "Buat Modul Baru" untuk memulai.</p>
+                    </div>
+                `;
+            } else {
+                filtered.forEach(m => {
+                    html += `
+                        <div class="module-card" data-id="${m.id}">
+                            <div class="card-cover">
+                                <div class="card-title">${m.mapel || 'Tanpa Mapel'}</div>
+                                <div class="card-sub">${m.kelas || 'Tanpa Kelas'} • ${m.jenjang || '-'}</div>
+                                <div class="card-badge">${m.fase || '-'}</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-meta">
+                                    <span><i class="fas fa-user"></i> ${m.guru || 'Unknown'}</span>
+                                    <span><i class="fas fa-calendar"></i> ${m.tahunPenyusunan || '-'}</span>
+                                    <span><i class="fas fa-clock"></i> ${m.jpPerMinggu || '?'} JP/mg</span>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn-atp" onclick="alert('Buka ATP untuk modul ${m.id}')">ATP</button>
+                                    <button class="btn-prota" onclick="alert('Buka Prota untuk modul ${m.id}')">Prota</button>
+                                    <button class="btn-prosem" onclick="alert('Buka Prosem untuk modul ${m.id}')">Prosem</button>
+                                    <button class="btn-rpm" onclick="alert('Buka RPM untuk modul ${m.id}')">RPM</button>
+                                    <button class="btn-delete" onclick="deleteModule('${m.id}')"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
 
-        // ===== CREATE MODUL =====
-        function openCreateModal() {
-            if (!currentGuru) { toast('Silakan login terlebih dahulu.', 'error'); return; }
-            document.getElementById('createModal').classList.add('open');
-            // Set default date
-            document.getElementById('mTanggal').value = new Date().toISOString().split('T')[0];
-            document.getElementById('mTempat').value = '';
+            html += `</div>`;
+            container.innerHTML = html;
+
+            // Re-populate filter dropdowns
             populateDropdowns();
-            // Reset NIP
-            document.getElementById('mNip').value = '';
         }
 
-        function closeCreateModal() {
-            document.getElementById('createModal').classList.remove('open');
+        function filterGuru() {
+            renderDashboard();
         }
 
-        function submitModule(e) {
-            e.preventDefault();
+        function refreshGuru() {
+            loadAllData();
+            toast('Dashboard diperbarui', 'info');
+        }
+
+        // ===== DELETE MODULE =====
+        async function deleteModule(id) {
+            if (!confirm('Hapus modul ini? Semua data akan hilang.')) return;
+            try {
+                await db.collection('modules').doc(id).delete();
+                toast('Modul dihapus.', 'info');
+                await loadModules();
+                renderDashboard();
+            } catch (e) {
+                toast('Gagal hapus: ' + e.message, 'error');
+            }
+        }
+
+        // ===== MODAL =====
+        function openModal() {
             if (!currentGuru) { toast('Silakan login terlebih dahulu.', 'error'); return; }
+            document.getElementById('modalOverlay').classList.add('open');
+            document.getElementById('mTanggal').value = new Date().toISOString().split('T')[0];
+            populateDropdowns();
+        }
 
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('open');
+        }
+
+        async function submitModule(e) {
+            e.preventDefault();
             const data = {
                 jenjang: document.getElementById('mJenjang').value,
                 mapel: document.getElementById('mMapel').value,
                 kelas: document.getElementById('mKelas').value,
-                fase: document.getElementById('mFase').value.trim() || '-',
+                fase: document.getElementById('mFase').value || '-',
                 tahunPenyusunan: parseInt(document.getElementById('mTahun').value),
                 jpPerMinggu: parseInt(document.getElementById('mJp').value),
                 alokasiWaktu: parseInt(document.getElementById('mAlokasi').value),
-                kepalaSekolah: document.getElementById('mKepsek').options[document.getElementById('mKepsek').selectedIndex]
-                    .text,
+                kepalaSekolah: document.getElementById('mKepsek').value,
                 nipKepalaSekolah: document.getElementById('mNip').value,
-                tempatPembuatan: document.getElementById('mTempat').value.trim(),
+                tempatPembuatan: document.getElementById('mTempat').value,
                 tanggalPembuatan: document.getElementById('mTanggal').value,
                 guru: currentGuru.name,
-                data: [], // kosong untuk data pertemuan
+                data: [],
                 atp: '',
                 prota: '',
                 prosem: '',
@@ -1031,78 +1080,63 @@
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
-
-            // Validasi
             if (!data.jenjang || !data.mapel || !data.kelas || !data.kepalaSekolah) {
                 toast('Lengkapi semua field yang wajib!', 'error');
                 return;
             }
-
-            db.collection('modules').add(data)
-                .then(() => {
-                    toast('Modul berhasil dibuat!', 'success');
-                    closeCreateModal();
-                    loadModules();
-                })
-                .catch(err => {
-                    toast('Gagal membuat modul: ' + err.message, 'error');
-                });
+            try {
+                const ref = await db.collection('modules').add(data);
+                toast('Modul berhasil dibuat!', 'success');
+                closeModal();
+                await loadModules();
+                renderDashboard();
+                // Redirect ke data.html nanti
+                // window.location.href = 'data.html?module=' + ref.id;
+            } catch (e) {
+                toast('Gagal membuat modul: ' + e.message, 'error');
+            }
         }
 
         // ===== INIT =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Check local storage for guru session
+            // Cek apakah sudah login dari localStorage
             const saved = localStorage.getItem('nbs_guru');
             if (saved) {
                 try {
                     const guru = JSON.parse(saved);
-                    // Verify guru still exists and password match
-                    db.collection('guru').doc(guru.id).get().then(doc => {
-                        if (doc.exists) {
-                            const data = doc.data();
-                            if (data.password === guru.password) {
-                                currentGuru = { id: guru.id, name: data.name, password: data.password };
-                                document.getElementById('loginOverlay').style.display = 'none';
-                                document.getElementById('topbarUser').textContent = data.name;
-                                document.getElementById('guruNameDisplay').textContent = 'Selamat datang, ' +
-                                    data.name + '!';
-                                loadMasterData().then(() => loadModules());
-                                return;
-                            }
+                    currentGuru = guru;
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    document.getElementById('sidebarUser').textContent = guru.name;
+                    document.getElementById('topbarUser').textContent = guru.name;
+                    loadGuruList().then(() => {
+                        // Set selected in dropdown
+                        const select = document.getElementById('loginGuruSelect');
+                        for (let opt of select.options) {
+                            if (opt.value === guru.id) opt.selected = true;
                         }
-                        // If not valid, show login
-                        document.getElementById('loginOverlay').style.display = 'flex';
-                        loadMasterData();
-                    }).catch(() => {
-                        document.getElementById('loginOverlay').style.display = 'flex';
-                        loadMasterData();
+                        loadAllData();
                     });
-                } catch (e) {
-                    document.getElementById('loginOverlay').style.display = 'flex';
-                    loadMasterData();
-                }
-            } else {
-                document.getElementById('loginOverlay').style.display = 'flex';
-                loadMasterData();
+                    return;
+                } catch (e) {}
             }
-
-            // Close modal on overlay click
-            document.getElementById('createModal').addEventListener('click', function(e) {
-                if (e.target === this) closeCreateModal();
-            });
+            // Tampilkan login
+            document.getElementById('loginOverlay').style.display = 'flex';
+            loadGuruList();
         });
 
-        // Expose global functions
+        // Expose global
         window.toggleSidebar = toggleSidebar;
         window.logout = logout;
-        window.verifyGuru = verifyGuru;
-        window.filterGuruModules = filterGuruModules;
-        window.openCreateModal = openCreateModal;
-        window.closeCreateModal = closeCreateModal;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
         window.submitModule = submitModule;
-        window.updateNip = updateNip;
+        window.filterGuru = filterGuru;
+        window.refreshGuru = refreshGuru;
+        window.deleteModule = deleteModule;
+        window.verifyGuru = verifyGuru;
         window.toast = toast;
-        window.loadModules = loadModules;
+        window.loadAllData = loadAllData;
+        window.renderDashboard = renderDashboard;
     </script>
 
 </body>
