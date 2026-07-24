@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modul NBS - Admin</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js">
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --primary: #1a5f7a;
+            --primary-light: #2a7f9a;
+            --primary-dark: #0d3f5a;
+            --secondary: #f39c12;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.25s ease;
+            --header-height: 64px;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+        /* SIDEBAR */
+        .sidebar {
+            width: 240px;
+            background: var(--primary-dark);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 1000;
+            transition: transform var(--transition);
+            overflow-y: auto;
+        }
+        .sidebar-brand {
+            padding: 20px 24px;
+            font-size: 20px;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-brand i {
+            font-size: 26px;
+            color: var(--secondary);
+        }
+        .sidebar-brand span {
+            color: #fff;
+        }
+        .sidebar-brand small {
+            font-size: 12px;
+            font-weight: 400;
+            opacity: 0.7;
+            display: block;
+            margin-top: 2px;
+        }
+        .sidebar-menu {
+            padding: 16px 12px;
+            flex: 1;
+        }
+        .sidebar-menu .menu-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.5;
+            padding: 8px 12px 4px;
+            font-weight: 600;
+        }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: var(--transition);
+            cursor: pointer;
+            margin-bottom: 2px;
+        }
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+        .sidebar-menu a.active {
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+        }
+        .sidebar-menu a i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+            opacity: 0.6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-footer i {
+            font-size: 14px;
+        }
+
+        /* MAIN */
+        .main {
+            margin-left: 240px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* TOPBAR */
+        .topbar {
+            height: var(--header-height);
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 500;
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.92);
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-left .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .topbar-left h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-right .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg);
+            padding: 6px 14px 6px 10px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .topbar-right .user-badge i {
+            font-size: 18px;
+            color: var(--primary);
+        }
+        .topbar-right .logout-btn {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .topbar-right .logout-btn:hover {
+            background: #fee2e2;
+            border-color: #f87171;
+            color: #dc2626;
+        }
+
+        /* PAGE CONTENT */
+        .page-content {
+            padding: 28px 32px 40px;
+            flex: 1;
+        }
+
+        /* ADMIN SECTIONS */
+        .admin-section {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .admin-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-section h3 i {
+            color: var(--primary);
+        }
+        .admin-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .admin-form label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .admin-form input,
+        .admin-form select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+            transition: var(--transition);
+        }
+        .admin-form input:focus,
+        .admin-form select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.10);
+        }
+        .admin-form .form-actions {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .admin-form .form-actions button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--primary);
+            color: #fff;
+            height: 40px;
+        }
+        .admin-form .form-actions button:hover {
+            background: var(--primary-light);
+        }
+        .admin-form .form-actions .btn-danger {
+            background: #ef4444;
+        }
+        .admin-form .form-actions .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .admin-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .admin-list .tag {
+            background: var(--bg);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+        }
+        .admin-list .tag .remove {
+            cursor: pointer;
+            color: #ef4444;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .admin-list .tag .remove:hover {
+            color: #dc2626;
+        }
+
+        .admin-table-wrap {
+            overflow-x: auto;
+            margin-top: 12px;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .admin-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--bg);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+        .admin-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .admin-table .actions button {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 6px;
+        }
+        .admin-table .actions button:hover {
+            color: #dc2626;
+        }
+
+        /* LOGIN OVERLAY */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-box {
+            background: #fff;
+            padding: 40px 48px;
+            border-radius: var(--radius);
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .login-box h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .login-box p {
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            margin-bottom: 16px;
+            outline: none;
+        }
+        .login-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26,95,122,0.1);
+        }
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .login-box button:hover {
+            background: var(--primary-light);
+        }
+        .login-box .error {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        /* TOAST */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.3s ease;
+            max-width: 360px;
+        }
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-info { background: var(--primary); }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; }
+            .topbar-left .hamburger { display: block; }
+            .page-content { padding: 16px; }
+            .topbar { padding: 0 16px; }
+            .admin-form { grid-template-columns: 1fr; }
+            .login-box { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-book-open"></i>
+            <div>
+                Modul NBS
+                <small>Admin Panel</small>
+            </div>
+        </div>
+        <nav class="sidebar-menu">
+            <div class="menu-label">Navigasi</div>
+            <a href="index.html"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a class="active" href="admin.html"><i class="fas fa-user-shield"></i> Admin</a>
+            <a href="guru.html"><i class="fas fa-chalkboard-teacher"></i> Guru</a>
+        </nav>
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#10b981;font-size:10px;"></i>
+            <span id="sidebarUser">Admin</span>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <h2 id="pageTitle">Admin Panel</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="user-badge">
+                    <i class="fas fa-user-cog"></i>
+                    <span id="topbarUser">Admin</span>
+                </div>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <div class="page-content" id="adminContent">
+            <h1 style="font-size:24px;font-weight:700;margin-bottom:6px;">Panel Admin</h1>
+            <p style="color:var(--text-light);margin-bottom:24px;">Kelola guru, kelas, mata pelajaran, dan kepala sekolah.</p>
+
+            <!-- Guru Management -->
+            <div class="admin-section">
+                <h3><i class="fas fa-users"></i> Kelola Guru</h3>
+                <div class="admin-form">
+                    <div>
+                        <label>Nama Guru</label>
+                        <input type="text" id="adminGuruName" placeholder="Nama lengkap" />
+                    </div>
+                    <div>
+                        <label>Password</label>
+                        <input type="text" id="adminGuruPass" placeholder="Password" value="guru123" />
+                    </div>
+                    <div class="form-actions">
+                        <button onclick="addGuru()"><i class="fas fa-plus"></i> Tambah</button>
+                    </div>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead><tr><th>Nama</th><th>Password</th><th>Aksi</th></tr></thead>
+                        <tbody id="adminGuruTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kelas Management -->
+            <div class="admin-section">
+                <h3><i class="fas fa-school"></i> Kelola Kelas &amp; Fase</h3>
+                <div class="admin-form">
+                    <div>
+                        <label>Nama Kelas (contoh: VII-A, X-1)</label>
+                        <input type="text" id="adminKelasInput" placeholder="VII-A" />
+                    </div>
+                    <div>
+                        <label>Jenjang</label>
+                        <select id="adminKelasJenjang"><option value="SMP">SMP</option><option value="SMAS">SMAS</option></select>
+                    </div>
+                    <div>
+                        <label>Fase (opsional)</label>
+                        <input type="text" id="adminFaseInput" placeholder="D, E, F" />
+                    </div>
+                    <div class="form-actions">
+                        <button onclick="addKelas()"><i class="fas fa-plus"></i> Tambah</button>
+                    </div>
+                </div>
+                <div class="admin-list" id="adminKelasList"></div>
+            </div>
+
+            <!-- Mata Pelajaran -->
+            <div class="admin-section">
+                <h3><i class="fas fa-book"></i> Kelola Mata Pelajaran</h3>
+                <div class="admin-form">
+                    <div>
+                        <label>Nama Mata Pelajaran</label>
+                        <input type="text" id="adminMapelInput" placeholder="Matematika" />
+                    </div>
+                    <div class="form-actions">
+                        <button onclick="addMapel()"><i class="fas fa-plus"></i> Tambah</button>
+                    </div>
+                </div>
+                <div class="admin-list" id="adminMapelList"></div>
+            </div>
+
+            <!-- Kepala Sekolah -->
+            <div class="admin-section">
+                <h3><i class="fas fa-user-tie"></i> Kelola Kepala Sekolah</h3>
+                <div class="admin-form">
+                    <div>
+                        <label>Nama Kepala Sekolah</label>
+                        <input type="text" id="adminKsName" placeholder="Nama" />
+                    </div>
+                    <div>
+                        <label>NIP</label>
+                        <input type="text" id="adminKsNip" placeholder="NIP" />
+                    </div>
+                    <div class="form-actions">
+                        <button onclick="addKepsek()"><i class="fas fa-plus"></i> Tambah</button>
+                    </div>
+                </div>
+                <div class="admin-list" id="adminKsList"></div>
+            </div>
+
+            <!-- Reset Data -->
+            <div class="admin-section" style="border-left:4px solid #ef4444;">
+                <h3 style="color:#ef4444;"><i class="fas fa-trash"></i> Data Berbahaya</h3>
+                <button onclick="resetAllData()" style="background:#ef4444;color:#fff;border:none;padding:10px 24px;border-radius:var(--radius-sm);font-weight:600;cursor:pointer;">Reset Semua Data</button>
+                <span style="margin-left:12px;font-size:13px;color:var(--text-light);">(Hapus semua modul &amp; data admin)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN OVERLAY -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>🔐 Admin Login</h2>
+            <p>Masukkan password admin untuk melanjutkan.</p>
+            <input type="password" id="adminPasswordInput" placeholder="Password" />
+            <button onclick="verifyAdmin()">Masuk</button>
+            <div class="error" id="loginError">Password salah! Silakan coba lagi.</div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- FIREBASE -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A",
+            authDomain: "modul-fae5a.firebaseapp.com",
+            projectId: "modul-fae5a",
+            storageBucket: "modul-fae5a.firebasestorage.app",
+            messagingSenderId: "837647902643",
+            appId: "1:837647902643:web:adfa809d9f8adbeaeacdc6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ===== STATE =====
+        let allGuru = [];
+        let allKelas = [];
+        let allMapel = [];
+        let allKepsek = [];
+        let isAdmin = false;
+
+        // ===== LOGIN =====
+        function verifyAdmin() {
+            const pass = document.getElementById('adminPasswordInput').value;
+            if (pass === 'admin123') {
+                isAdmin = true;
+                document.getElementById('loginOverlay').style.display = 'none';
+                toast('Selamat datang, Admin!', 'success');
+                loadAllData();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        // Enter key on password field
+        document.getElementById('adminPasswordInput').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') verifyAdmin();
+        });
+
+        // ===== TOAST =====
+        function toast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = 'toast toast-' + type;
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
+        }
+
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // ===== LOGOUT =====
+        function logout() {
+            localStorage.removeItem('nbs_user');
+            isAdmin = false;
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('loginError').style.display = 'none';
+            toast('Telah keluar.', 'info');
+        }
+
+        // ===== LOAD DATA =====
+        async function loadAllData() {
+            try {
+                await Promise.all([
+                    loadGuru(),
+                    loadKelas(),
+                    loadMapel(),
+                    loadKepsek()
+                ]);
+                renderAll();
+            } catch (e) {
+                toast('Gagal memuat data: ' + e.message, 'error');
+            }
+        }
+
+        async function loadGuru() {
+            const snap = await db.collection('guru').orderBy('name').get();
+            allGuru = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        async function loadKelas() {
+            const snap = await db.collection('kelas').orderBy('name').get();
+            allKelas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        async function loadMapel() {
+            const snap = await db.collection('mapel').orderBy('name').get();
+            allMapel = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        async function loadKepsek() {
+            const snap = await db.collection('kepsek').orderBy('name').get();
+            allKepsek = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        // ===== RENDER =====
+        function renderAll() {
+            renderGuru();
+            renderKelas();
+            renderMapel();
+            renderKepsek();
+        }
+
+        function renderGuru() {
+            const tbody = document.getElementById('adminGuruTable');
+            tbody.innerHTML = allGuru.map(g => `
+                <tr>
+                    <td>${g.name}</td>
+                    <td>${g.password || '****'}</td>
+                    <td class="actions">
+                        <button onclick="deleteGuru('${g.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderKelas() {
+            const container = document.getElementById('adminKelasList');
+            container.innerHTML = allKelas.map(k =>
+                `<span class="tag">${k.name} (${k.jenjang}) ${k.fase ? '• Fase '+k.fase : ''} <span class="remove" onclick="deleteKelas('${k.id}')">×</span></span>`
+            ).join('');
+        }
+
+        function renderMapel() {
+            const container = document.getElementById('adminMapelList');
+            container.innerHTML = allMapel.map(m =>
+                `<span class="tag">${m.name} <span class="remove" onclick="deleteMapel('${m.id}')">×</span></span>`
+            ).join('');
+        }
+
+        function renderKepsek() {
+            const container = document.getElementById('adminKsList');
+            container.innerHTML = allKepsek.map(k =>
+                `<span class="tag">${k.name} (NIP: ${k.nip || '-'}) <span class="remove" onclick="deleteKepsek('${k.id}')">×</span></span>`
+            ).join('');
+        }
+
+        // ===== CRUD OPERATIONS =====
+        async function addGuru() {
+            const name = document.getElementById('adminGuruName').value.trim();
+            const pass = document.getElementById('adminGuruPass').value.trim() || 'guru123';
+            if (!name) { toast('Masukkan nama guru.', 'error'); return; }
+            if (allGuru.some(g => g.name === name)) { toast('Guru sudah ada.', 'error'); return; }
+            try {
+                await db.collection('guru').add({ name, password: pass });
+                toast('Guru ditambahkan!', 'success');
+                document.getElementById('adminGuruName').value = '';
+                await loadGuru();
+                renderGuru();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function deleteGuru(id) {
+            if (!confirm('Hapus guru ini?')) return;
+            try {
+                await db.collection('guru').doc(id).delete();
+                toast('Guru dihapus.', 'info');
+                await loadGuru();
+                renderGuru();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function addKelas() {
+            const name = document.getElementById('adminKelasInput').value.trim();
+            const jenjang = document.getElementById('adminKelasJenjang').value;
+            const fase = document.getElementById('adminFaseInput').value.trim();
+            if (!name) { toast('Masukkan nama kelas.', 'error'); return; }
+            try {
+                await db.collection('kelas').add({ name, jenjang, fase });
+                toast('Kelas ditambahkan!', 'success');
+                document.getElementById('adminKelasInput').value = '';
+                document.getElementById('adminFaseInput').value = '';
+                await loadKelas();
+                renderKelas();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function deleteKelas(id) {
+            if (!confirm('Hapus kelas ini?')) return;
+            try {
+                await db.collection('kelas').doc(id).delete();
+                toast('Kelas dihapus.', 'info');
+                await loadKelas();
+                renderKelas();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function addMapel() {
+            const name = document.getElementById('adminMapelInput').value.trim();
+            if (!name) { toast('Masukkan nama mapel.', 'error'); return; }
+            if (allMapel.some(m => m.name === name)) { toast('Mapel sudah ada.', 'error'); return; }
+            try {
+                await db.collection('mapel').add({ name });
+                toast('Mapel ditambahkan!', 'success');
+                document.getElementById('adminMapelInput').value = '';
+                await loadMapel();
+                renderMapel();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function deleteMapel(id) {
+            if (!confirm('Hapus mapel ini?')) return;
+            try {
+                await db.collection('mapel').doc(id).delete();
+                toast('Mapel dihapus.', 'info');
+                await loadMapel();
+                renderMapel();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function addKepsek() {
+            const name = document.getElementById('adminKsName').value.trim();
+            const nip = document.getElementById('adminKsNip').value.trim();
+            if (!name) { toast('Masukkan nama kepala sekolah.', 'error'); return; }
+            try {
+                await db.collection('kepsek').add({ name, nip });
+                toast('Kepala sekolah ditambahkan!', 'success');
+                document.getElementById('adminKsName').value = '';
+                document.getElementById('adminKsNip').value = '';
+                await loadKepsek();
+                renderKepsek();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function deleteKepsek(id) {
+            if (!confirm('Hapus kepala sekolah ini?')) return;
+            try {
+                await db.collection('kepsek').doc(id).delete();
+                toast('Kepala sekolah dihapus.', 'info');
+                await loadKepsek();
+                renderKepsek();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function resetAllData() {
+            if (!confirm('RESET SEMUA DATA? Semua modul, guru, kelas, mapel, dan kepsek akan hilang. Yakin?')) return;
+            if (!confirm('Ketik "YA" untuk konfirmasi.')) return;
+            try {
+                const collections = ['modules', 'guru', 'kelas', 'mapel', 'kepsek'];
+                for (const col of collections) {
+                    const snap = await db.collection(col).get();
+                    for (const doc of snap.docs) await db.collection(col).doc(doc.id).delete();
+                }
+                toast('Semua data telah direset.', 'info');
+                await loadAllData();
+                renderAll();
+            } catch (e) { toast('Gagal reset: ' + e.message, 'error'); }
+        }
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cek apakah sudah login dari localStorage (misal dari index.html)
+            const saved = localStorage.getItem('nbs_user');
+            if (saved) {
+                try {
+                    const user = JSON.parse(saved);
+                    if (user.role === 'admin') {
+                        isAdmin = true;
+                        document.getElementById('loginOverlay').style.display = 'none';
+                        loadAllData();
+                        return;
+                    }
+                } catch (e) {}
+            }
+            // Tampilkan login
+            document.getElementById('loginOverlay').style.display = 'flex';
+        });
+
+        // Expose global
+        window.toggleSidebar = toggleSidebar;
+        window.logout = logout;
+        window.addGuru = addGuru;
+        window.deleteGuru = deleteGuru;
+        window.addKelas = addKelas;
+        window.deleteKelas = deleteKelas;
+        window.addMapel = addMapel;
+        window.deleteMapel = deleteMapel;
+        window.addKepsek = addKepsek;
+        window.deleteKepsek = deleteKepsek;
+        window.resetAllData = resetAllData;
+        window.verifyAdmin = verifyAdmin;
+        window.toast = toast;
+    </script>
+
+</body>
+</html>
