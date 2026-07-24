@@ -94,6 +94,8 @@
         .module-card .card-actions .btn-prosem:hover { background:#10b981; color:#fff; }
         .module-card .card-actions .btn-rpm { border-color:#f59e0b; color:#f59e0b; }
         .module-card .card-actions .btn-rpm:hover { background:#f59e0b; color:#fff; }
+        .module-card .card-actions .btn-edit { border-color:#3b82f6; color:#3b82f6; }
+        .module-card .card-actions .btn-edit:hover { background:#3b82f6; color:#fff; }
         .module-card .card-actions .btn-delete { border-color:#ef4444; color:#ef4444; margin-left:auto; }
         .module-card .card-actions .btn-delete:hover { background:#ef4444; color:#fff; }
 
@@ -194,12 +196,13 @@
         </div>
     </div>
 
-    <!-- MODAL BUAT MODUL -->
+    <!-- MODAL BUAT/EDIT MODUL -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-box">
-            <h2>Buat Modul Ajar Baru</h2>
-            <p class="modal-sub">Lengkapi data di bawah ini untuk memulai.</p>
+            <h2 id="modalTitle">Buat Modul Ajar Baru</h2>
+            <p class="modal-sub" id="modalSub">Lengkapi data di bawah ini untuk memulai.</p>
             <form id="modalForm" onsubmit="submitModule(event)">
+                <input type="hidden" id="editModuleId" value="" />
                 <!-- Pilih Kelas (sudah mencakup jenjang dan fase) -->
                 <div class="form-group">
                     <label>Jenjang - Kelas (Fase)</label>
@@ -251,7 +254,7 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
-                    <button type="submit" class="btn-submit"><i class="fas fa-check"></i> Buat Modul</button>
+                    <button type="submit" class="btn-submit"><i class="fas fa-check"></i> <span id="btnSubmitText">Buat Modul</span></button>
                 </div>
             </form>
         </div>
@@ -506,6 +509,7 @@
                                     <button class="btn-prota" onclick="window.location.href='program.html?module=${m.id}&tab=prota'">Prota</button>
                                     <button class="btn-prosem" onclick="window.location.href='program.html?module=${m.id}&tab=prosem'">Prosem</button>
                                     <button class="btn-rpm" onclick="window.location.href='program.html?module=${m.id}&tab=rpm'">RPM</button>
+                                    <button class="btn-edit" onclick="editModule('${m.id}')"><i class="fas fa-pen"></i></button>
                                     <button class="btn-delete" onclick="deleteModule('${m.id}')"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
@@ -536,11 +540,69 @@
             }
         }
 
+        // ===== EDIT MODULE =====
+        function editModule(id) {
+            const mod = allModules.find(m => m.id === id);
+            if (!mod) { toast('Modul tidak ditemukan.', 'error'); return; }
+            
+            // Set judul dan tombol untuk mode edit
+            document.getElementById('modalTitle').textContent = 'Edit Modul Ajar';
+            document.getElementById('modalSub').textContent = 'Ubah data modul sesuai kebutuhan.';
+            document.getElementById('btnSubmitText').textContent = 'Update Modul';
+            document.getElementById('editModuleId').value = id;
+            
+            // Isi form dengan data modul
+            // Cari kelas yang sesuai
+            const kelasOption = document.querySelector(`#mKelas option[data-jenjang="${mod.jenjang}"][data-fase="${mod.fase}"]`);
+            if (kelasOption) {
+                document.getElementById('mKelas').value = kelasOption.value;
+                document.getElementById('mJenjang').value = mod.jenjang || '';
+                document.getElementById('mFase').value = mod.fase || '';
+            } else {
+                // Jika tidak ditemukan, coba cari berdasarkan nama kelas
+                const opt = Array.from(document.querySelectorAll('#mKelas option')).find(o => o.textContent.includes(mod.kelas));
+                if (opt) {
+                    document.getElementById('mKelas').value = opt.value;
+                    document.getElementById('mJenjang').value = opt.dataset.jenjang || '';
+                    document.getElementById('mFase').value = opt.dataset.fase || '';
+                }
+            }
+            
+            document.getElementById('mMapel').value = mod.mapel || '';
+            document.getElementById('mTahun').value = mod.tahunPenyusunan || 2026;
+            document.getElementById('mJp').value = mod.jpPerMinggu || 4;
+            document.getElementById('mAlokasi').value = mod.alokasiWaktu || 45;
+            document.getElementById('mKepsek').value = mod.kepalaSekolah || '';
+            document.getElementById('mNip').value = mod.nipKepalaSekolah || '';
+            document.getElementById('mTempat').value = mod.tempatPembuatan || '';
+            document.getElementById('mTanggal').value = mod.tanggalPembuatan || new Date().toISOString().split('T')[0];
+            
+            // Buka modal
+            document.getElementById('modalOverlay').classList.add('open');
+        }
+
         // ===== MODAL =====
         function openModal() {
             if (!currentGuru) { toast('Silakan login terlebih dahulu.', 'error'); return; }
-            document.getElementById('modalOverlay').classList.add('open');
+            // Reset untuk mode buat baru
+            document.getElementById('modalTitle').textContent = 'Buat Modul Ajar Baru';
+            document.getElementById('modalSub').textContent = 'Lengkapi data di bawah ini untuk memulai.';
+            document.getElementById('btnSubmitText').textContent = 'Buat Modul';
+            document.getElementById('editModuleId').value = '';
+            // Reset form
+            document.getElementById('mKelas').value = '';
+            document.getElementById('mJenjang').value = '';
+            document.getElementById('mFase').value = '';
+            document.getElementById('mMapel').value = '';
+            document.getElementById('mTahun').value = 2026;
+            document.getElementById('mJp').value = 4;
+            document.getElementById('mAlokasi').value = 45;
+            document.getElementById('mKepsek').value = '';
+            document.getElementById('mNip').value = '';
+            document.getElementById('mTempat').value = '';
             document.getElementById('mTanggal').value = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('modalOverlay').classList.add('open');
             populateDropdowns();
         }
 
@@ -550,6 +612,9 @@
 
         async function submitModule(e) {
             e.preventDefault();
+            const editId = document.getElementById('editModuleId').value;
+            const isEdit = editId !== '';
+            
             const kelasId = document.getElementById('mKelas').value;
             if (!kelasId) { toast('Pilih kelas terlebih dahulu.', 'error'); return; }
             const kelasData = allKelas.find(k => k.id === kelasId);
@@ -568,12 +633,6 @@
                 tempatPembuatan: document.getElementById('mTempat').value,
                 tanggalPembuatan: document.getElementById('mTanggal').value,
                 guru: currentGuru.name,
-                data: [],
-                atp: '',
-                prota: '',
-                prosem: '',
-                rpm: '',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             if (!data.mapel || !data.kepalaSekolah || !data.tempatPembuatan) {
@@ -581,13 +640,26 @@
                 return;
             }
             try {
-                await db.collection('modules').add(data);
-                toast('Modul berhasil dibuat!', 'success');
+                if (isEdit) {
+                    // Update existing module
+                    await db.collection('modules').doc(editId).update(data);
+                    toast('Modul berhasil diperbarui!', 'success');
+                } else {
+                    // Create new module
+                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    data.data = [];
+                    data.atp = '';
+                    data.prota = '';
+                    data.prosem = '';
+                    data.rpm = '';
+                    await db.collection('modules').add(data);
+                    toast('Modul berhasil dibuat!', 'success');
+                }
                 closeModal();
                 await loadModules();
                 renderDashboard();
             } catch (e) {
-                toast('Gagal membuat modul: ' + e.message, 'error');
+                toast('Gagal: ' + e.message, 'error');
             }
         }
 
@@ -621,6 +693,7 @@
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.submitModule = submitModule;
+        window.editModule = editModule;
         window.filterGuru = filterGuru;
         window.refreshGuru = refreshGuru;
         window.deleteModule = deleteModule;
@@ -629,5 +702,6 @@
         window.loadAllData = loadAllData;
         window.renderDashboard = renderDashboard;
     </script>
+
 </body>
 </html>
