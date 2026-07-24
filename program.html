@@ -17,7 +17,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* (CSS tidak berubah, sama seperti sebelumnya) */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -52,7 +51,6 @@
 
         .page-content { padding:28px 32px 40px; flex:1; }
 
-        /* TABS */
         .program-tabs { display:flex; gap:4px; border-bottom:2px solid var(--border); margin-bottom:24px; flex-wrap:wrap; }
         .program-tabs button { padding:10px 22px; background:none; border:none; font-size:14px; font-weight:500; color:var(--text-light); cursor:pointer; border-bottom:3px solid transparent; transition:var(--transition); margin-bottom:-2px; }
         .program-tabs button:hover { color:var(--text); }
@@ -62,7 +60,6 @@
         .tab-content.active { display:block; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
-        /* FORM ELEMENTS */
         .form-group { margin-bottom:16px; }
         .form-group label { font-size:13px; font-weight:500; color:var(--text-light); display:block; margin-bottom:4px; }
         .form-group textarea,
@@ -85,6 +82,8 @@
 
         .btn-primary { background:var(--primary); color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
         .btn-primary:hover { background:var(--primary-light); }
+        .btn-danger { background:#ef4444; color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
+        .btn-danger:hover { background:#dc2626; }
         .btn-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
         .btn-secondary:hover { background:var(--border); }
 
@@ -124,9 +123,9 @@
         </div>
         <nav class="sidebar-menu">
             <div class="menu-label">Navigasi</div>
-            <a href="index.html"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="admin.html"><i class="fas fa-user-shield"></i> Admin</a>
-            <a href="guru.html"><i class="fas fa-chalkboard-teacher"></i> Guru</a>
+            <a href="index.html" id="navIndex"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="admin.html" id="navAdmin"><i class="fas fa-user-shield"></i> Admin</a>
+            <a href="guru.html" id="navGuru"><i class="fas fa-chalkboard-teacher"></i> Guru</a>
         </nav>
         <div class="sidebar-footer">
             <i class="fas fa-circle" style="color:#10b981;font-size:10px;"></i>
@@ -146,7 +145,7 @@
                     <i class="fas fa-user-circle"></i>
                     <span id="topbarUser">Guest</span>
                 </div>
-                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Keluar</button>
             </div>
         </header>
 
@@ -177,7 +176,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
                     <h3 style="font-size:18px;font-weight:600;">Alur Tujuan Pembelajaran (ATP)</h3>
                     <div>
-                        <button class="btn-primary" onclick="saveATP()"><i class="fas fa-save"></i> Simpan ATP</button>
+                        <button id="btnSaveATP" class="btn-primary" onclick="saveATP()"><i class="fas fa-save"></i> Simpan ATP</button>
                     </div>
                 </div>
 
@@ -265,6 +264,8 @@
         let moduleId = null;
         let moduleData = null;
         let atpRows = [];
+        let isDirty = false;
+        let initialData = { cp: '', atpRows: [] };
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -281,10 +282,78 @@
         }
 
         function logout() {
+            if (isDirty && !confirm('Ada data yang belum disimpan. Yakin ingin keluar?')) return;
             localStorage.removeItem('nbs_user');
             localStorage.removeItem('nbs_guru');
             window.location.href = 'index.html';
         }
+
+        // ===== DIRTY CHECK =====
+        function saveInitialState() {
+            initialData.cp = document.getElementById('cpText').value;
+            initialData.atpRows = JSON.parse(JSON.stringify(atpRows));
+            isDirty = false;
+            updateSaveButton();
+        }
+
+        function checkChanges() {
+            const currentCp = document.getElementById('cpText').value;
+            const currentRows = JSON.parse(JSON.stringify(atpRows));
+            const cpChanged = currentCp !== initialData.cp;
+            const rowsChanged = JSON.stringify(currentRows) !== JSON.stringify(initialData.atpRows);
+            isDirty = cpChanged || rowsChanged;
+            updateSaveButton();
+        }
+
+        function updateSaveButton() {
+            const btn = document.getElementById('btnSaveATP');
+            if (isDirty) {
+                btn.className = 'btn-danger';
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Simpan ATP (Belum Tersimpan)';
+            } else {
+                btn.className = 'btn-primary';
+                btn.innerHTML = '<i class="fas fa-save"></i> Simpan ATP';
+            }
+        }
+
+        function confirmLeave(e) {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = 'Ada data yang belum disimpan. Yakin ingin meninggalkan halaman?';
+                return e.returnValue;
+            }
+        }
+
+        // Pasang event sebelum meninggalkan halaman
+        window.addEventListener('beforeunload', confirmLeave);
+
+        // Pasang event untuk navigasi internal (link sidebar dan logout)
+        document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('#sidebar a, #logoutBtn');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (isDirty) {
+                        if (!confirm('Ada data yang belum disimpan. Yakin ingin melanjutkan?')) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
+                });
+            });
+
+            // Juga untuk tab ATP dan tombol lainnya yang bisa navigasi
+            const tabButtons = document.querySelectorAll('.program-tabs button');
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (isDirty) {
+                        if (!confirm('Ada data yang belum disimpan. Yakin ingin pindah tab?')) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
+                });
+            });
+        });
 
         // ===== LOAD MODULE =====
         async function loadModule() {
@@ -331,6 +400,8 @@
             document.getElementById('cpText').value = moduleData.atp || '';
             atpRows = moduleData.atpTable || [];
             renderATPTable();
+            // Simpan initial state setelah render
+            saveInitialState();
         }
 
         function renderATPTable() {
@@ -351,7 +422,6 @@
                     `<option value="${s}" ${row.semester === s ? 'selected' : ''}>${s}</option>`
                 ).join('');
 
-                // Hitung alokasi JP otomatis berdasarkan TM ke-
                 const jp = calculateJP(row.tm);
                 if (row.alokasiJp !== jp) {
                     row.alokasiJp = jp;
@@ -385,36 +455,40 @@
                     const row = this.closest('tr');
                     const alokasiInput = row.querySelector('.alokasi-input');
                     if (alokasiInput) alokasiInput.value = jp;
+                    checkChanges();
                 });
             });
             document.querySelectorAll('.semester-select').forEach(el => {
                 el.addEventListener('change', function() {
                     const idx = parseInt(this.dataset.index);
                     atpRows[idx].semester = this.value;
+                    checkChanges();
                 });
             });
             document.querySelectorAll('.tujuan-input').forEach(el => {
                 el.addEventListener('input', function() {
                     const idx = parseInt(this.dataset.index);
                     atpRows[idx].tujuan = this.value;
+                    checkChanges();
                 });
             });
             document.querySelectorAll('.materi-input').forEach(el => {
                 el.addEventListener('input', function() {
                     const idx = parseInt(this.dataset.index);
                     atpRows[idx].materi = this.value;
+                    checkChanges();
                 });
             });
+
+            // Event untuk textarea cp
+            document.getElementById('cpText').addEventListener('input', checkChanges);
         }
 
-        // ===== PERBAIKAN UTAMA: CALCULATE JP =====
+        // ===== CALCULATE JP =====
         function calculateJP(tmStr) {
             if (!tmStr) return 0;
-            const jpPerMinggu = moduleData.jpPerMinggu || 2; // default 2
-
-            // Hilangkan spasi
+            const jpPerMinggu = moduleData.jpPerMinggu || 2;
             tmStr = tmStr.trim();
-            // Cek apakah rentang (misal "3-4")
             if (tmStr.includes('-')) {
                 const parts = tmStr.split('-').map(s => s.trim());
                 if (parts.length === 2) {
@@ -425,12 +499,11 @@
                         return jumlahPertemuan * jpPerMinggu;
                     }
                 }
-                return 0; // format tidak valid
+                return 0;
             } else {
-                // Angka tunggal: hanya 1 pertemuan
                 const num = parseInt(tmStr);
                 if (!isNaN(num) && num > 0) {
-                    return 1 * jpPerMinggu; // selalu 1 pertemuan
+                    return 1 * jpPerMinggu;
                 }
                 return 0;
             }
@@ -449,6 +522,7 @@
             renderATPTable();
             const table = document.getElementById('atpTable');
             table.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            checkChanges();
         }
 
         // ===== DELETE ROW =====
@@ -456,6 +530,7 @@
             if (!confirm('Hapus baris ini?')) return;
             atpRows.splice(index, 1);
             renderATPTable();
+            checkChanges();
         }
 
         // ===== VALIDASI URUTAN TM =====
@@ -532,6 +607,8 @@
                 toast('ATP berhasil disimpan!', 'success');
                 moduleData.atp = cp;
                 moduleData.atpTable = atpRows;
+                // Reset dirty setelah simpan
+                saveInitialState();
             } catch (e) {
                 toast('Gagal menyimpan ATP: ' + e.message, 'error');
             }
@@ -539,6 +616,9 @@
 
         // ===== SWITCH TAB =====
         function switchTab(tabId) {
+            if (isDirty) {
+                if (!confirm('Ada data yang belum disimpan. Yakin ingin pindah tab?')) return;
+            }
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.program-tabs button').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
@@ -556,6 +636,18 @@
                     }
                 }
             });
+
+            // Handle back/forward navigation
+            window.addEventListener('popstate', function(e) {
+                if (isDirty) {
+                    if (!confirm('Ada data yang belum disimpan. Yakin ingin meninggalkan halaman?')) {
+                        // Prevent navigation by pushing state again
+                        history.pushState(null, '', window.location.href);
+                    }
+                }
+            });
+            // Push initial state
+            history.pushState(null, '', window.location.href);
         });
 
         window.toggleSidebar = toggleSidebar;
@@ -566,6 +658,5 @@
         window.saveATP = saveATP;
         window.toast = toast;
     </script>
-
 </body>
 </html>
