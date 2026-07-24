@@ -17,6 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
+        /* ===== GAYA UTAMA (tidak berubah) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -138,38 +139,51 @@
             .total-jp-box { gap:10px; flex-direction:column; }
         }
 
-        /* ===== PRINT STYLES ===== */
+        /* ===== GAYA CETAK (DIPERBAIKI) ===== */
         @media print {
-            body * { visibility:hidden; }
-            #printContainer, #printContainer * { visibility:visible; }
-            #printContainer { position:absolute; left:0; top:0; width:100%; padding:20px 30px; background:#fff; }
-            .no-print { display:none !important; }
-            .sidebar, .topbar, .program-tabs, .btn-primary, .btn-danger, .btn-success, .btn-secondary,
-            .form-group, .drag-handle, .btn-delete-row, .toast-container,
-            #btnSaveATP, .btn-plus, .btn-primary, #atpEmpty, .hamburger, #logoutBtn { display:none !important; }
-            table.atp-table td input, table.atp-table td textarea, table.atp-table td select {
-                border:none !important;
-                background:transparent !important;
-                padding:2px 4px !important;
-                font-size:10pt !important;
-                resize:none !important;
-                box-shadow:none !important;
+            /* Sembunyikan semua elemen di body kecuali printContainer */
+            body > * { display:none !important; }
+            body, html { background:#fff; margin:0; padding:0; }
+
+            #printContainer, #printContainer * {
+                display:block !important;
+                visibility:visible !important;
+                opacity:1 !important;
+                overflow:visible !important;
             }
-            table.atp-table td textarea { overflow:hidden !important; min-height:auto !important; }
-            table.atp-table td input { text-align:center !important; }
-            table.atp-table th, table.atp-table td { border:1px solid #333 !important; padding:4px 6px !important; font-size:10pt !important; }
-            table.atp-table { border-collapse:collapse; width:100%; font-size:10pt; }
-            table.atp-table th { background:#f0f0f0 !important; }
-            .print-title { font-size:18pt; font-weight:700; text-align:center; margin-bottom:4px; letter-spacing:2px; }
+            #printContainer {
+                position:relative !important;
+                left:0 !important;
+                top:0 !important;
+                width:100% !important;
+                padding:20px 30px !important;
+                background:#fff !important;
+                z-index:9999 !important;
+            }
+
+            /* Gaya untuk konten cetak */
+            .print-title { font-size:20pt; font-weight:700; text-align:center; margin-bottom:4px; letter-spacing:2px; }
             .print-subtitle { text-align:center; font-size:11pt; margin-bottom:16px; border-bottom:2px solid #333; padding-bottom:12px; }
             .print-info { font-size:10pt; margin-bottom:10px; line-height:1.6; }
             .print-info table { border:none; width:100%; }
             .print-info td { border:none !important; padding:2px 4px !important; font-size:10pt; }
-            .print-section-title { font-weight:700; font-size:11pt; margin:12px 0 6px; border-bottom:1px solid #999; padding-bottom:3px; }
+            .print-section-title { font-weight:700; font-size:12pt; margin:12px 0 6px; border-bottom:1px solid #999; padding-bottom:3px; }
             .print-cp { font-size:10pt; padding:6px 0; line-height:1.5; white-space:pre-wrap; }
             .print-footer { margin-top:20px; font-size:10pt; text-align:right; padding-top:16px; border-top:1px solid #999; }
             .print-footer .signature { margin-top:20px; }
             .print-footer .signature-name { margin-top:28px; font-weight:600; }
+
+            /* Tabel cetak */
+            table.print-table { width:100%; border-collapse:collapse; font-size:10pt; }
+            table.print-table th, table.print-table td {
+                border:1px solid #333 !important;
+                padding:4px 6px !important;
+                font-size:10pt !important;
+                text-align:left;
+            }
+            table.print-table th { background:#f0f0f0 !important; font-weight:600; }
+            table.print-table td { vertical-align:top; }
+            table.print-table td.center { text-align:center; }
         }
     </style>
 </head>
@@ -328,9 +342,7 @@
     </div>
 
     <!-- ===== PRINT CONTAINER ===== -->
-    <div id="printContainer" style="display:none;">
-        <!-- Will be populated by JavaScript -->
-    </div>
+    <div id="printContainer" style="display:none;"></div>
 
     <div class="toast-container" id="toastContainer"></div>
 
@@ -352,7 +364,6 @@
         let atpRows = [];
         let isDirty = false;
         let initialData = { cp: '', atpRows: [] };
-
         let dragSourceIndex = null;
 
         // ===== TOAST =====
@@ -484,15 +495,13 @@
         function loadATPData() {
             document.getElementById('cpText').value = moduleData.atp || '';
             atpRows = moduleData.atpTable || [];
-            atpRows = atpRows.map((row) => {
-                return {
-                    minggu: row.minggu || '',
-                    semester: row.semester || 'Ganjil',
-                    tujuan: row.tujuan || '',
-                    materi: row.materi || '',
-                    alokasiJp: row.alokasiJp || ''
-                };
-            });
+            atpRows = atpRows.map((row) => ({
+                minggu: row.minggu || '',
+                semester: row.semester || 'Ganjil',
+                tujuan: row.tujuan || '',
+                materi: row.materi || '',
+                alokasiJp: row.alokasiJp || ''
+            }));
             updateMinggu();
             renderATPTable();
             saveInitialState();
@@ -538,8 +547,7 @@
             const allItems = [...ganjil, ...genap];
             allItems.sort((a, b) => a._idx - b._idx);
             allItems.forEach(item => {
-                const rowIndex = item._idx;
-                atpRows[rowIndex].minggu = item.minggu;
+                atpRows[item._idx].minggu = item.minggu;
             });
         }
 
@@ -680,14 +688,12 @@
             });
 
             document.getElementById('cpText').addEventListener('input', checkChanges);
-
             updateTotals();
         }
 
         // ===== UPDATE TOTALS =====
         function updateTotals() {
-            let totalGanjil = 0;
-            let totalGenap = 0;
+            let totalGanjil = 0, totalGenap = 0;
             atpRows.forEach(row => {
                 const jp = parseFloat(row.alokasiJp) || 0;
                 if (row.semester === 'Ganjil') totalGanjil += jp;
@@ -698,24 +704,16 @@
             document.getElementById('totalKeseluruhan').textContent = totalGanjil + totalGenap;
         }
 
-        // ===== ADD ROW =====
+        // ===== ADD/DELETE ROW =====
         function addRowATP() {
-            const newRow = {
-                minggu: '',
-                semester: 'Ganjil',
-                tujuan: '',
-                materi: '',
-                alokasiJp: ''
-            };
+            const newRow = { minggu: '', semester: 'Ganjil', tujuan: '', materi: '', alokasiJp: '' };
             atpRows.push(newRow);
             updateMinggu();
             renderATPTable();
-            const table = document.getElementById('atpTable');
-            table.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            document.getElementById('atpTable').scrollIntoView({ behavior: 'smooth', block: 'end' });
             checkChanges();
         }
 
-        // ===== DELETE ROW =====
         function deleteRowATP(index) {
             if (!confirm('Hapus baris ini?')) return;
             atpRows.splice(index, 1);
@@ -727,7 +725,6 @@
         // ===== SAVE ATP =====
         async function saveATP() {
             const cp = document.getElementById('cpText').value.trim();
-
             updateMinggu();
             const rows = atpRows.map(row => ({
                 minggu: row.minggu || '',
@@ -762,45 +759,39 @@
 
         // ===== SWITCH TAB =====
         function switchTab(tabId) {
-            if (isDirty) {
-                if (!confirm('Ada data yang belum disimpan. Yakin ingin pindah tab?')) return;
-            }
+            if (isDirty && !confirm('Ada data yang belum disimpan. Yakin ingin pindah tab?')) return;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.program-tabs button').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             document.querySelector(`.program-tabs button[data-tab="${tabId}"]`).classList.add('active');
         }
 
-        // ===== PRINT ATP =====
+        // ===== CETAK PDF (DIPERBAIKI) =====
         function printATP() {
             // Ambil data terkini
             const cp = document.getElementById('cpText').value.trim();
             const rows = atpRows.map(row => ({ ...row }));
 
-            // Tentukan nama sekolah berdasarkan jenjang
+            // Tentukan nama sekolah
             const jenjang = moduleData.jenjang || 'SMA';
             const schoolName = jenjang === 'SMA' ? 'SMA Nurmilad Boarding School' : 'SMP Nurmilad Boarding School';
 
-            // Build HTML print
+            // Siapkan data tabel
             let tableRows = '';
             if (rows.length > 0) {
                 rows.forEach(row => {
                     tableRows += `
                         <tr>
-                            <td style="text-align:center;">${row.minggu || '-'}</td>
-                            <td style="text-align:center;">${row.semester || '-'}</td>
+                            <td class="center">${row.minggu || '-'}</td>
+                            <td class="center">${row.semester || '-'}</td>
                             <td>${row.tujuan || '-'}</td>
                             <td>${row.materi || '-'}</td>
-                            <td style="text-align:center;">${row.alokasiJp || '-'}</td>
+                            <td class="center">${row.alokasiJp || '-'}</td>
                         </tr>
                     `;
                 });
             } else {
-                tableRows = `
-                    <tr>
-                        <td colspan="5" style="text-align:center;font-style:italic;">Belum ada data ATP</td>
-                    </tr>
-                `;
+                tableRows = `<tr><td colspan="5" style="text-align:center;font-style:italic;">Belum ada data ATP</td></tr>`;
             }
 
             // Hitung total JP
@@ -814,9 +805,7 @@
 
             const html = `
                 <div style="font-family:'Times New Roman',serif;max-width:1000px;margin:0 auto;padding:20px 30px;background:#fff;">
-                    <div style="text-align:center;border-bottom:3px double #333;padding-bottom:12px;margin-bottom:16px;">
-                        <div style="font-size:20pt;font-weight:700;letter-spacing:3px;">ALUR TUJUAN PEMBELAJARAN (ATP)</div>
-                    </div>
+                    <div class="print-title">ALUR TUJUAN PEMBELAJARAN (ATP)</div>
 
                     <table style="width:100%;border:none;font-size:11pt;margin-bottom:12px;line-height:1.6;">
                         <tr><td style="width:180px;border:none;padding:2px 4px;font-weight:600;">Nama Sekolah</td>
@@ -832,25 +821,23 @@
                     </table>
 
                     <div style="margin-top:14px;">
-                        <div style="font-weight:700;font-size:12pt;border-bottom:1px solid #999;padding-bottom:3px;margin-bottom:6px;">CAPAIAN PEMBELAJARAN</div>
+                        <div class="print-section-title">CAPAIAN PEMBELAJARAN</div>
                         <div style="font-size:11pt;padding:4px 0;line-height:1.6;white-space:pre-wrap;">${cp || '(Belum diisi)'}</div>
                     </div>
 
                     <div style="margin-top:18px;">
-                        <div style="font-weight:700;font-size:12pt;border-bottom:1px solid #999;padding-bottom:3px;margin-bottom:8px;">TABEL ATP</div>
-                        <table style="width:100%;border-collapse:collapse;font-size:10pt;">
+                        <div class="print-section-title">TABEL ATP</div>
+                        <table class="print-table">
                             <thead>
-                                <tr style="background:#f0f0f0;">
-                                    <th style="border:1px solid #333;padding:4px 6px;text-align:center;width:12%;">Minggu ke-</th>
-                                    <th style="border:1px solid #333;padding:4px 6px;text-align:center;width:12%;">Semester</th>
-                                    <th style="border:1px solid #333;padding:4px 6px;text-align:left;width:30%;">Tujuan Pembelajaran</th>
-                                    <th style="border:1px solid #333;padding:4px 6px;text-align:left;width:30%;">Materi Pokok</th>
-                                    <th style="border:1px solid #333;padding:4px 6px;text-align:center;width:16%;">Alokasi Waktu (JP)</th>
+                                <tr>
+                                    <th style="width:12%;text-align:center;">Minggu ke-</th>
+                                    <th style="width:12%;text-align:center;">Semester</th>
+                                    <th style="width:30%;">Tujuan Pembelajaran</th>
+                                    <th style="width:30%;">Materi Pokok</th>
+                                    <th style="width:16%;text-align:center;">Alokasi Waktu (JP)</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                ${tableRows}
-                            </tbody>
+                            <tbody>${tableRows}</tbody>
                         </table>
                     </div>
 
@@ -868,18 +855,19 @@
                 </div>
             `;
 
+            // Masukkan ke container print
             const container = document.getElementById('printContainer');
             container.innerHTML = html;
             container.style.display = 'block';
 
-            // Gunakan requestAnimationFrame agar render selesai
+            // Tunggu render lalu print
             requestAnimationFrame(() => {
                 setTimeout(() => {
                     window.print();
-                }, 150);
+                }, 300);
             });
 
-            // Sembunyikan container setelah print selesai
+            // Sembunyikan setelah print selesai
             window.addEventListener('afterprint', function onAfterPrint() {
                 container.style.display = 'none';
                 window.removeEventListener('afterprint', onAfterPrint);
