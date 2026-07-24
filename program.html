@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modul NBS - Program</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
+            --secondary: #f39c12; --bg: #f0f4f8; --card-bg: #ffffff;
+            --text: #1e293b; --text-light: #64748b; --border: #e2e8f0;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06); --radius: 16px; --radius-sm: 10px;
+            --transition: 0.25s ease; --header-height: 64px;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+        .sidebar { width:240px; background:var(--primary-dark); color:#fff; display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:1000; transition:transform var(--transition); overflow-y:auto; }
+        .sidebar-brand { padding:20px 24px; font-size:20px; font-weight:700; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:10px; }
+        .sidebar-brand i { font-size:26px; color:var(--secondary); }
+        .sidebar-brand small { font-size:12px; font-weight:400; opacity:0.7; display:block; margin-top:2px; }
+        .sidebar-menu { padding:16px 12px; flex:1; }
+        .sidebar-menu .menu-label { font-size:11px; text-transform:uppercase; letter-spacing:0.5px; opacity:0.5; padding:8px 12px 4px; font-weight:600; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:var(--radius-sm); color:rgba(255,255,255,0.7); text-decoration:none; font-weight:500; font-size:14px; transition:var(--transition); cursor:pointer; margin-bottom:2px; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.08); color:#fff; }
+        .sidebar-menu a.active { background:rgba(255,255,255,0.14); color:#fff; }
+        .sidebar-menu a i { width:20px; text-align:center; font-size:16px; }
+        .sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,0.08); font-size:13px; opacity:0.6; display:flex; align-items:center; gap:8px; }
+
+        .main { margin-left:240px; flex:1; display:flex; flex-direction:column; min-height:100vh; }
+        .topbar { height:var(--header-height); background:var(--card-bg); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 32px; position:sticky; top:0; z-index:500; backdrop-filter:blur(8px); background:rgba(255,255,255,0.92); }
+        .topbar-left { display:flex; align-items:center; gap:16px; }
+        .topbar-left .hamburger { display:none; background:none; border:none; font-size:20px; color:var(--text); cursor:pointer; }
+        .topbar-left h2 { font-size:18px; font-weight:600; }
+        .topbar-right { display:flex; align-items:center; gap:16px; }
+        .topbar-right .user-badge { display:flex; align-items:center; gap:8px; background:var(--bg); padding:6px 14px 6px 10px; border-radius:40px; font-size:13px; font-weight:500; }
+        .topbar-right .user-badge i { font-size:18px; color:var(--primary); }
+        .topbar-right .logout-btn { background:none; border:1px solid var(--border); padding:6px 14px; border-radius:40px; font-size:13px; color:var(--text-light); cursor:pointer; transition:var(--transition); }
+        .topbar-right .logout-btn:hover { background:#fee2e2; border-color:#f87171; color:#dc2626; }
+
+        .page-content { padding:28px 32px 40px; flex:1; }
+
+        /* TABS */
+        .program-tabs { display:flex; gap:4px; border-bottom:2px solid var(--border); margin-bottom:24px; flex-wrap:wrap; }
+        .program-tabs button { padding:10px 22px; background:none; border:none; font-size:14px; font-weight:500; color:var(--text-light); cursor:pointer; border-bottom:3px solid transparent; transition:var(--transition); margin-bottom:-2px; }
+        .program-tabs button:hover { color:var(--text); }
+        .program-tabs button.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+        .tab-content { display:none; animation:fadeUp 0.25s ease; }
+        .tab-content.active { display:block; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+        /* FORM ELEMENTS */
+        .form-group { margin-bottom:16px; }
+        .form-group label { font-size:13px; font-weight:500; color:var(--text-light); display:block; margin-bottom:4px; }
+        .form-group textarea,
+        .form-group input,
+        .form-group select { width:100%; padding:9px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:14px; background:#fff; color:var(--text); outline:none; transition:var(--transition); font-family:inherit; }
+        .form-group textarea:focus,
+        .form-group input:focus,
+        .form-group select:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,95,122,0.10); }
+
+        .table-wrap { overflow-x:auto; margin-top:12px; }
+        table.atp-table { width:100%; border-collapse:collapse; font-size:14px; }
+        table.atp-table th { text-align:left; padding:10px 12px; background:var(--bg); font-weight:600; border-bottom:2px solid var(--border); }
+        table.atp-table td { padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+        table.atp-table td input,
+        table.atp-table td select { width:100%; padding:6px 8px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; background:#fff; color:var(--text); outline:none; }
+        table.atp-table td input:focus,
+        table.atp-table td select:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,95,122,0.10); }
+        table.atp-table td .btn-delete-row { background:none; border:none; color:#ef4444; cursor:pointer; font-size:16px; padding:4px; }
+        table.atp-table td .btn-delete-row:hover { color:#dc2626; }
+
+        .btn-primary { background:var(--primary); color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
+        .btn-primary:hover { background:var(--primary-light); }
+        .btn-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
+        .btn-secondary:hover { background:var(--border); }
+
+        .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
+        .toast { padding:12px 24px; border-radius:var(--radius-sm); color:#fff; font-weight:500; font-size:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; max-width:360px; }
+        .toast-success { background:#10b981; }
+        .toast-error { background:#ef4444; }
+        .toast-info { background:var(--primary); }
+        @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+        .empty-state { text-align:center; padding:40px 20px; color:var(--text-light); }
+        .empty-state i { font-size:48px; opacity:0.3; margin-bottom:16px; }
+
+        @media (max-width:768px) {
+            .sidebar { transform:translateX(-100%); }
+            .sidebar.open { transform:translateX(0); }
+            .main { margin-left:0; }
+            .topbar-left .hamburger { display:block; }
+            .page-content { padding:16px; }
+            .topbar { padding:0 16px; }
+            table.atp-table { font-size:12px; }
+            table.atp-table td input,
+            table.atp-table td select { font-size:12px; padding:4px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-book-open"></i>
+            <div>
+                Modul NBS
+                <small>Program</small>
+            </div>
+        </div>
+        <nav class="sidebar-menu">
+            <div class="menu-label">Navigasi</div>
+            <a href="index.html"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="admin.html"><i class="fas fa-user-shield"></i> Admin</a>
+            <a href="guru.html"><i class="fas fa-chalkboard-teacher"></i> Guru</a>
+        </nav>
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#10b981;font-size:10px;"></i>
+            <span id="sidebarUser">Pengunjung</span>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <h2 id="pageTitle">Program Pembelajaran</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="user-badge">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="topbarUser">Guest</span>
+                </div>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+            </div>
+        </header>
+
+        <div class="page-content">
+            <!-- Informasi Modul -->
+            <div id="moduleInfo" style="margin-bottom:20px;background:var(--card-bg);padding:16px 20px;border-radius:var(--radius);border:1px solid var(--border);">
+                <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <strong id="modulMapel">-</strong> <span id="modulKelas">-</span>
+                        <span style="color:var(--text-light);font-size:14px;margin-left:8px;" id="modulGuru">-</span>
+                    </div>
+                    <div style="font-size:14px;color:var(--text-light);">
+                        <span id="modulJenjang">-</span> • <span id="modulFase">-</span> • <span id="modulTahun">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="program-tabs">
+                <button class="active" data-tab="tab-atp" onclick="switchTab('tab-atp')">📋 ATP</button>
+                <button data-tab="tab-prota" onclick="switchTab('tab-prota')">📅 Prota</button>
+                <button data-tab="tab-prosem" onclick="switchTab('tab-prosem')">📆 Prosem</button>
+                <button data-tab="tab-rpm" onclick="switchTab('tab-rpm')">🤖 RPM</button>
+            </div>
+
+            <!-- TAB ATP -->
+            <div class="tab-content active" id="tab-atp">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                    <h3 style="font-size:18px;font-weight:600;">Alur Tujuan Pembelajaran (ATP)</h3>
+                    <div>
+                        <button class="btn-primary" onclick="saveATP()"><i class="fas fa-save"></i> Simpan ATP</button>
+                    </div>
+                </div>
+
+                <!-- Capaian Pembelajaran -->
+                <div class="form-group">
+                    <label>Capaian Pembelajaran (CP)</label>
+                    <textarea id="cpText" rows="4" placeholder="Tulis capaian pembelajaran di sini..." style="width:100%;padding:9px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;"></textarea>
+                </div>
+
+                <!-- Tabel ATP -->
+                <div style="margin-top:24px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+                        <h4 style="font-size:16px;font-weight:600;">Tabel ATP</h4>
+                        <button class="btn-primary" onclick="addRowATP()"><i class="fas fa-plus"></i> Tambah Baris</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="atp-table" id="atpTable">
+                            <thead>
+                                <tr>
+                                    <th style="width:120px;">TM ke-</th>
+                                    <th style="width:100px;">Semester</th>
+                                    <th>Tujuan Pembelajaran</th>
+                                    <th>Materi Pokok</th>
+                                    <th style="width:120px;">Alokasi Waktu (JP)</th>
+                                    <th style="width:50px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="atpTableBody">
+                                <!-- rows will be inserted by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="atpEmpty" class="empty-state">
+                        <i class="fas fa-table"></i>
+                        <p>Belum ada data ATP. Klik "Tambah Baris" untuk mulai.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB PROTA (placeholder) -->
+            <div class="tab-content" id="tab-prota">
+                <div style="padding:40px 20px;text-align:center;color:var(--text-light);">
+                    <i class="fas fa-calendar-alt" style="font-size:48px;opacity:0.3;margin-bottom:16px;"></i>
+                    <h3>Program Tahunan (Prota)</h3>
+                    <p>Akan dikembangkan pada tahap berikutnya.</p>
+                </div>
+            </div>
+
+            <!-- TAB PROSEM (placeholder) -->
+            <div class="tab-content" id="tab-prosem">
+                <div style="padding:40px 20px;text-align:center;color:var(--text-light);">
+                    <i class="fas fa-calendar-week" style="font-size:48px;opacity:0.3;margin-bottom:16px;"></i>
+                    <h3>Program Semester (Prosem)</h3>
+                    <p>Akan dikembangkan pada tahap berikutnya.</p>
+                </div>
+            </div>
+
+            <!-- TAB RPM (placeholder) -->
+            <div class="tab-content" id="tab-rpm">
+                <div style="padding:40px 20px;text-align:center;color:var(--text-light);">
+                    <i class="fas fa-robot" style="font-size:48px;opacity:0.3;margin-bottom:16px;"></i>
+                    <h3>Rencana Pembelajaran Mendalam (RPM)</h3>
+                    <p>Akan dikembangkan pada tahap berikutnya dengan integrasi AI.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A",
+            authDomain: "modul-fae5a.firebaseapp.com",
+            projectId: "modul-fae5a",
+            storageBucket: "modul-fae5a.firebasestorage.app",
+            messagingSenderId: "837647902643",
+            appId: "1:837647902643:web:adfa809d9f8adbeaeacdc6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ===== STATE =====
+        let moduleId = null;
+        let moduleData = null; // full module document
+        let atpRows = []; // array of row objects
+
+        // ===== TOAST =====
+        function toast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = 'toast toast-' + type;
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
+        }
+
+        // ===== SIDEBAR =====
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // ===== LOGOUT =====
+        function logout() {
+            localStorage.removeItem('nbs_user');
+            localStorage.removeItem('nbs_guru');
+            window.location.href = 'index.html';
+        }
+
+        // ===== LOAD MODULE =====
+        async function loadModule() {
+            const params = new URLSearchParams(window.location.search);
+            moduleId = params.get('module');
+            if (!moduleId) {
+                document.getElementById('moduleInfo').innerHTML = '<div style="color:var(--text-light);">Modul tidak ditemukan. Silakan pilih modul dari dashboard guru.</div>';
+                return;
+            }
+            try {
+                const doc = await db.collection('modules').doc(moduleId).get();
+                if (!doc.exists) {
+                    toast('Modul tidak ditemukan.', 'error');
+                    return;
+                }
+                moduleData = { id: doc.id, ...doc.data() };
+                displayModuleInfo();
+                loadATPData();
+            } catch (e) {
+                toast('Gagal memuat modul: ' + e.message, 'error');
+            }
+        }
+
+        function displayModuleInfo() {
+            if (!moduleData) return;
+            document.getElementById('modulMapel').textContent = moduleData.mapel || '-';
+            document.getElementById('modulKelas').textContent = moduleData.kelas || '-';
+            document.getElementById('modulGuru').textContent = moduleData.guru || '-';
+            document.getElementById('modulJenjang').textContent = moduleData.jenjang || '-';
+            document.getElementById('modulFase').textContent = moduleData.fase || '-';
+            document.getElementById('modulTahun').textContent = moduleData.tahunPenyusunan || '-';
+            // Update sidebar user
+            const user = localStorage.getItem('nbs_guru') || localStorage.getItem('nbs_user');
+            if (user) {
+                try {
+                    const u = JSON.parse(user);
+                    document.getElementById('sidebarUser').textContent = u.name || 'Pengunjung';
+                    document.getElementById('topbarUser').textContent = u.name || 'Pengunjung';
+                } catch (e) {}
+            }
+        }
+
+        // ===== ATP DATA =====
+        function loadATPData() {
+            // Load capaian pembelajaran
+            document.getElementById('cpText').value = moduleData.atp || '';
+
+            // Load tabel ATP
+            atpRows = moduleData.atpTable || [];
+            renderATPTable();
+        }
+
+        function renderATPTable() {
+            const tbody = document.getElementById('atpTableBody');
+            const empty = document.getElementById('atpEmpty');
+
+            if (atpRows.length === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+
+            let html = '';
+            atpRows.forEach((row, index) => {
+                const semesterOptions = ['Ganjil', 'Genap'];
+                const semesterSelect = semesterOptions.map(s =>
+                    `<option value="${s}" ${row.semester === s ? 'selected' : ''}>${s}</option>`
+                ).join('');
+
+                // Hitung alokasi JP otomatis berdasarkan TM ke-
+                const jp = calculateJP(row.tm);
+                // Jika row tidak punya alokasiJp atau berbeda, update
+                if (row.alokasiJp !== jp) {
+                    row.alokasiJp = jp;
+                }
+
+                html += `
+                    <tr>
+                        <td><input type="text" class="tm-input" data-index="${index}" value="${row.tm || ''}" placeholder="1, 2, 3-4" /></td>
+                        <td>
+                            <select class="semester-select" data-index="${index}">
+                                ${semesterSelect}
+                            </select>
+                        </td>
+                        <td><input type="text" class="tujuan-input" data-index="${index}" value="${row.tujuan || ''}" placeholder="Tujuan pembelajaran" /></td>
+                        <td><input type="text" class="materi-input" data-index="${index}" value="${row.materi || ''}" placeholder="Materi pokok" /></td>
+                        <td><input type="text" class="alokasi-input" data-index="${index}" value="${row.alokasiJp || ''}" readonly style="background:#f0f0f0;" /></td>
+                        <td><button class="btn-delete-row" onclick="deleteRowATP(${index})"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+
+            // Attach event listeners untuk update otomatis
+            document.querySelectorAll('.tm-input').forEach(el => {
+                el.addEventListener('input', function() {
+                    const idx = parseInt(this.dataset.index);
+                    const newTm = this.value.trim();
+                    atpRows[idx].tm = newTm;
+                    const jp = calculateJP(newTm);
+                    atpRows[idx].alokasiJp = jp;
+                    // Update field alokasi
+                    const row = this.closest('tr');
+                    const alokasiInput = row.querySelector('.alokasi-input');
+                    if (alokasiInput) alokasiInput.value = jp;
+                });
+            });
+            document.querySelectorAll('.semester-select').forEach(el => {
+                el.addEventListener('change', function() {
+                    const idx = parseInt(this.dataset.index);
+                    atpRows[idx].semester = this.value;
+                });
+            });
+            document.querySelectorAll('.tujuan-input').forEach(el => {
+                el.addEventListener('input', function() {
+                    const idx = parseInt(this.dataset.index);
+                    atpRows[idx].tujuan = this.value;
+                });
+            });
+            document.querySelectorAll('.materi-input').forEach(el => {
+                el.addEventListener('input', function() {
+                    const idx = parseInt(this.dataset.index);
+                    atpRows[idx].materi = this.value;
+                });
+            });
+        }
+
+        // ===== CALCULATE JP =====
+        function calculateJP(tmStr) {
+            if (!tmStr) return 0;
+            const jpPerMinggu = moduleData.jpPerMinggu || 2; // default 2
+            // Cek apakah rentang (misal "3-4")
+            const parts = tmStr.split('-').map(s => s.trim());
+            if (parts.length === 2) {
+                const start = parseInt(parts[0]);
+                const end = parseInt(parts[1]);
+                if (!isNaN(start) && !isNaN(end) && start <= end) {
+                    const jumlahPertemuan = end - start + 1;
+                    return jumlahPertemuan * jpPerMinggu;
+                }
+            } else if (parts.length === 1) {
+                const num = parseInt(parts[0]);
+                if (!isNaN(num)) {
+                    return num * jpPerMinggu;
+                }
+            }
+            return 0;
+        }
+
+        // ===== ADD ROW =====
+        function addRowATP() {
+            const newRow = {
+                tm: '',
+                semester: 'Ganjil',
+                tujuan: '',
+                materi: '',
+                alokasiJp: 0
+            };
+            atpRows.push(newRow);
+            renderATPTable();
+            // Scroll ke bawah
+            const table = document.getElementById('atpTable');
+            table.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        // ===== DELETE ROW =====
+        function deleteRowATP(index) {
+            if (!confirm('Hapus baris ini?')) return;
+            atpRows.splice(index, 1);
+            renderATPTable();
+        }
+
+        // ===== VALIDASI URUTAN TM =====
+        function validateTMOrder(rows) {
+            // Ubah setiap tm menjadi angka awal dan akhir
+            const parsed = rows.map((row, idx) => {
+                const tm = row.tm ? row.tm.trim() : '';
+                if (!tm) return { valid: false, error: 'TM ke- tidak boleh kosong.', idx };
+                const parts = tm.split('-').map(s => s.trim());
+                let start, end;
+                if (parts.length === 2) {
+                    start = parseInt(parts[0]);
+                    end = parseInt(parts[1]);
+                    if (isNaN(start) || isNaN(end) || start > end) {
+                        return { valid: false, error: `TM "${tm}" tidak valid (awal > akhir).`, idx };
+                    }
+                } else if (parts.length === 1) {
+                    start = parseInt(parts[0]);
+                    end = start;
+                    if (isNaN(start)) {
+                        return { valid: false, error: `TM "${tm}" harus berupa angka atau rentang (contoh: 3-4).`, idx };
+                    }
+                } else {
+                    return { valid: false, error: `TM "${tm}" tidak valid.`, idx };
+                }
+                return { valid: true, start, end, idx };
+            });
+
+            // Cek error parsing
+            for (let p of parsed) {
+                if (!p.valid) return p.error;
+            }
+
+            // Cek urutan
+            for (let i = 0; i < parsed.length; i++) {
+                if (i === 0) continue;
+                const prev = parsed[i - 1];
+                const curr = parsed[i];
+                if (curr.start <= prev.end) {
+                    return `Urutan TM ke- tidak berurutan. Baris ${i+1} (${rows[i].tm}) harus dimulai dari ${prev.end + 1} atau lebih besar.`;
+                }
+                // Pastikan tidak ada celah? (opsional) kita biarkan saja
+            }
+            return null; // valid
+        }
+
+        // ===== SAVE ATP =====
+        async function saveATP() {
+            // Baca capaian
+            const cp = document.getElementById('cpText').value.trim();
+
+            // Kumpulkan data dari tabel (sudah tersimpan di atpRows, tapi kita ambil ulang untuk memastikan)
+            const inputs = document.querySelectorAll('.tm-input');
+            const rows = [];
+            inputs.forEach((el, idx) => {
+                const row = {
+                    tm: el.value.trim(),
+                    semester: document.querySelector(`.semester-select[data-index="${idx}"]`)?.value || 'Ganjil',
+                    tujuan: document.querySelector(`.tujuan-input[data-index="${idx}"]`)?.value || '',
+                    materi: document.querySelector(`.materi-input[data-index="${idx}"]`)?.value || '',
+                    alokasiJp: document.querySelector(`.alokasi-input[data-index="${idx}"]`)?.value || 0
+                };
+                rows.push(row);
+            });
+
+            // Update atpRows
+            atpRows = rows;
+
+            // Validasi urutan
+            const error = validateTMOrder(atpRows);
+            if (error) {
+                toast('❌ ' + error, 'error');
+                return;
+            }
+
+            // Simpan ke Firestore
+            try {
+                await db.collection('modules').doc(moduleId).update({
+                    atp: cp,
+                    atpTable: atpRows,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                toast('ATP berhasil disimpan!', 'success');
+                // Update moduleData lokal
+                moduleData.atp = cp;
+                moduleData.atpTable = atpRows;
+            } catch (e) {
+                toast('Gagal menyimpan ATP: ' + e.message, 'error');
+            }
+        }
+
+        // ===== SWITCH TAB =====
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.program-tabs button').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.program-tabs button[data-tab="${tabId}"]`).classList.add('active');
+        }
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', function() {
+            loadModule();
+            // Sidebar close on outside click (mobile)
+            document.addEventListener('click', function(e) {
+                const sidebar = document.getElementById('sidebar');
+                if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                    if (!sidebar.contains(e.target) && !e.target.closest('.hamburger')) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+        });
+
+        // Expose global
+        window.toggleSidebar = toggleSidebar;
+        window.logout = logout;
+        window.switchTab = switchTab;
+        window.addRowATP = addRowATP;
+        window.deleteRowATP = deleteRowATP;
+        window.saveATP = saveATP;
+        window.toast = toast;
+    </script>
+
+</body>
+</html>
