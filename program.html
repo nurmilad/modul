@@ -17,6 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
+        /* (CSS sama seperti sebelumnya) */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -97,7 +98,6 @@
         .empty-state { text-align:center; padding:40px 20px; color:var(--text-light); }
         .empty-state i { font-size:48px; opacity:0.3; margin-bottom:16px; }
 
-        /* Total JP */
         .total-jp-box {
             margin-top:16px;
             padding:12px 20px;
@@ -446,20 +446,47 @@
         function loadATPData() {
             document.getElementById('cpText').value = moduleData.atp || '';
             atpRows = moduleData.atpTable || [];
-            // Pastikan setiap row memiliki properti minggu (untuk kompatibilitas)
-            atpRows = atpRows.map((row, idx) => {
+            // Pastikan setiap row memiliki properti
+            atpRows = atpRows.map((row) => {
                 return {
-                    minggu: row.minggu || (idx + 1).toString(),
+                    minggu: row.minggu || '',
                     semester: row.semester || 'Ganjil',
                     tujuan: row.tujuan || '',
                     materi: row.materi || '',
                     alokasiJp: row.alokasiJp || ''
                 };
             });
+            // Update minggu berdasarkan alokasi JP
+            updateMinggu();
             renderATPTable();
             saveInitialState();
         }
 
+        // ===== UPDATE MINGGU OTOMATIS =====
+        function updateMinggu() {
+            const jpPerMinggu = moduleData.jpPerMinggu || 1;
+            let mingguMulai = 1;
+            atpRows.forEach(row => {
+                const jp = parseFloat(row.alokasiJp);
+                if (!isNaN(jp) && jp > 0 && jpPerMinggu > 0) {
+                    // Hitung jumlah minggu (pembulatan ke bawah jika tidak bulat)
+                    let jumlahMinggu = Math.round(jp / jpPerMinggu);
+                    if (jumlahMinggu < 1) jumlahMinggu = 1;
+                    const mingguAkhir = mingguMulai + jumlahMinggu - 1;
+                    if (jumlahMinggu === 1) {
+                        row.minggu = mingguMulai.toString();
+                    } else {
+                        row.minggu = mingguMulai + '-' + mingguAkhir;
+                    }
+                    mingguMulai = mingguAkhir + 1;
+                } else {
+                    // Jika alokasi kosong atau tidak valid, kosongkan minggu
+                    row.minggu = '';
+                }
+            });
+        }
+
+        // ===== RENDER TABLE =====
         function renderATPTable() {
             const tbody = document.getElementById('atpTableBody');
             const empty = document.getElementById('atpEmpty');
@@ -474,11 +501,6 @@
             empty.style.display = 'none';
             totalBox.style.display = 'flex';
 
-            // Update minggu otomatis berdasarkan urutan
-            atpRows.forEach((row, idx) => {
-                row.minggu = (idx + 1).toString();
-            });
-
             let html = '';
             atpRows.forEach((row, index) => {
                 const semesterOptions = ['Ganjil', 'Genap'];
@@ -488,7 +510,7 @@
 
                 html += `
                     <tr>
-                        <td><input type="text" class="minggu-input" data-index="${index}" value="${row.minggu}" readonly style="background:#f0f0f0;text-align:center;" /></td>
+                        <td><input type="text" class="minggu-input" data-index="${index}" value="${row.minggu || ''}" readonly style="background:#f0f0f0;text-align:center;" /></td>
                         <td>
                             <select class="semester-select" data-index="${index}">
                                 ${semesterSelect}
@@ -530,6 +552,12 @@
                 el.addEventListener('input', function() {
                     const idx = parseInt(this.dataset.index);
                     atpRows[idx].alokasiJp = this.value;
+                    // Update minggu otomatis untuk semua baris
+                    updateMinggu();
+                    // Perbarui tampilan kolom minggu
+                    document.querySelectorAll('.minggu-input').forEach((input, i) => {
+                        input.value = atpRows[i].minggu || '';
+                    });
                     updateTotals();
                     checkChanges();
                 });
@@ -558,13 +586,15 @@
         // ===== ADD ROW =====
         function addRowATP() {
             const newRow = {
-                minggu: (atpRows.length + 1).toString(),
+                minggu: '',
                 semester: 'Ganjil',
                 tujuan: '',
                 materi: '',
                 alokasiJp: ''
             };
             atpRows.push(newRow);
+            // Update minggu untuk semua baris
+            updateMinggu();
             renderATPTable();
             const table = document.getElementById('atpTable');
             table.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -575,35 +605,29 @@
         function deleteRowATP(index) {
             if (!confirm('Hapus baris ini?')) return;
             atpRows.splice(index, 1);
+            updateMinggu();
             renderATPTable();
             checkChanges();
         }
-
-        // ===== VALIDASI (tidak perlu validasi urutan karena otomatis) =====
-        // Kita tetap simpan fungsi untuk berjaga-jaga, tapi tidak digunakan
 
         // ===== SAVE ATP =====
         async function saveATP() {
             const cp = document.getElementById('cpText').value.trim();
 
-            // Kumpulkan data dari tabel
-            const inputs = document.querySelectorAll('.minggu-input');
-            const rows = [];
-            inputs.forEach((el, idx) => {
-                const row = {
-                    minggu: el.value.trim(),
-                    semester: document.querySelector(`.semester-select[data-index="${idx}"]`)?.value || 'Ganjil',
-                    tujuan: document.querySelector(`.tujuan-input[data-index="${idx}"]`)?.value || '',
-                    materi: document.querySelector(`.materi-input[data-index="${idx}"]`)?.value || '',
-                    alokasiJp: document.querySelector(`.alokasi-input[data-index="${idx}"]`)?.value || ''
-                };
-                rows.push(row);
-            });
+            // Kumpulkan data dari tabel (sudah tersimpan di atpRows)
+            // Pastikan minggu sudah terupdate
+            updateMinggu();
+            // Ambil data terbaru dari atpRows (sudah termasuk minggu)
+            const rows = atpRows.map(row => ({
+                minggu: row.minggu || '',
+                semester: row.semester,
+                tujuan: row.tujuan,
+                materi: row.materi,
+                alokasiJp: row.alokasiJp
+            }));
 
-            atpRows = rows;
-
-            // Validasi: pastikan alokasi JP berupa angka (opsional)
-            for (let row of atpRows) {
+            // Validasi: pastikan alokasi JP berupa angka (jika diisi)
+            for (let row of rows) {
                 if (row.alokasiJp && isNaN(parseFloat(row.alokasiJp))) {
                     toast('❌ Alokasi JP harus berupa angka!', 'error');
                     return;
@@ -613,12 +637,14 @@
             try {
                 await db.collection('modules').doc(moduleId).update({
                     atp: cp,
-                    atpTable: atpRows,
+                    atpTable: rows,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 toast('ATP berhasil disimpan!', 'success');
                 moduleData.atp = cp;
-                moduleData.atpTable = atpRows;
+                moduleData.atpTable = rows;
+                // Update atpRows dengan data terbaru
+                atpRows = rows;
                 saveInitialState();
             } catch (e) {
                 toast('Gagal menyimpan ATP: ' + e.message, 'error');
