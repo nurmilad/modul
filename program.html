@@ -883,7 +883,7 @@
             const rows = atpRows.map(row => ({ ...row }));
             const jenjang = moduleData.jenjang || 'SMA';
             const schoolName = jenjang === 'SMA' ? 'SMA Nurmilad Boarding School' : 'SMP Nurmilad Boarding School';
-            const kepalaSekolah = moduleData.kepalaSekolah || '____________________';
+            const kepalaSekolah = moduleData.kepalaSekolah || '';
 
             // Bangun baris tabel
             let tableRows = '';
