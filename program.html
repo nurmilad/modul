@@ -868,19 +868,22 @@
                 </div>
             `;
 
-            // Tampilkan di print container
             const container = document.getElementById('printContainer');
-            container.style.display = 'block';
             container.innerHTML = html;
+            container.style.display = 'block';
 
-            // Trigger print
-            setTimeout(() => {
-                window.print();
-                // Sembunyikan kembali setelah print
+            // Gunakan requestAnimationFrame agar render selesai
+            requestAnimationFrame(() => {
                 setTimeout(() => {
-                    container.style.display = 'none';
-                }, 500);
-            }, 200);
+                    window.print();
+                }, 150);
+            });
+
+            // Sembunyikan container setelah print selesai
+            window.addEventListener('afterprint', function onAfterPrint() {
+                container.style.display = 'none';
+                window.removeEventListener('afterprint', onAfterPrint);
+            });
         }
 
         // ===== INIT =====
