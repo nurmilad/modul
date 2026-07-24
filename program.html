@@ -875,7 +875,7 @@
         }
 
         // ================================================================
-        // ===== CETAK PDF (DIPERBAIKI: RATA TENGAH KOLOM, KEPSEK OTOMATIS) =====
+        // ===== CETAK PDF (GARIS BAWAH KEPALA SEKOLAH DIHILANGKAN) =====
         // ================================================================
         function printATP() {
             // Ambil data terkini
@@ -883,7 +883,7 @@
             const rows = atpRows.map(row => ({ ...row }));
             const jenjang = moduleData.jenjang || 'SMA';
             const schoolName = jenjang === 'SMA' ? 'SMA Nurmilad Boarding School' : 'SMP Nurmilad Boarding School';
-            const kepalaSekolah = moduleData.kepalaSekolah || '';
+            const kepalaSekolah = moduleData.kepalaSekolah || '____________________';
 
             // Bangun baris tabel
             let tableRows = '';
@@ -969,14 +969,13 @@
                         <span>Total JP Keseluruhan: <strong>${totalAll}</strong></span>
                     </div>
 
-                    <!-- FOOTER: 2 KOLOM -->
+                    <!-- FOOTER: 2 KOLOM (GARIS BAWAH KEPSEK DIHILANGKAN) -->
                     <div style="margin-top:20px; padding-top:12px; border-top:1px solid #999; display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px; font-size:10pt; line-height:1.6; text-align:left;">
-                        <!-- Kiri: Mengetahui -->
+                        <!-- Kiri: Mengetahui (tanpa garis bawah) -->
                         <div style="flex:1; min-width:200px;">
                             <div>Mengetahui,</div>
                             <div style="margin-top:4px;">Kepala Sekolah</div>
-                            <div style="margin-top:16px; display:inline-block; min-width:140px; border-bottom:1px solid #000; padding-bottom:2px;"></div>
-                            <div style="margin-top:2px; font-weight:600;">( ${kepalaSekolah} )</div>
+                            <div style="margin-top:12px; font-weight:600;">( ${kepalaSekolah} )</div>
                         </div>
                         <!-- Kanan: Penyusun + Tempat/Tanggal -->
                         <div style="flex:1; min-width:200px; text-align:right;">
