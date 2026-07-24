@@ -139,7 +139,7 @@
             .total-jp-box { gap:10px; flex-direction:column; }
         }
 
-        /* ===== GAYA CETAK (FONT KECIL, SPACING 1.0, MARGIN 0) ===== */
+        /* ===== GAYA CETAK (DIPERBAIKI DENGAN JARAK DAN FOOTER 2 KOLOM) ===== */
         @media print {
             body > * { display:none !important; }
             body, html { background:#fff; margin:0; padding:0; }
@@ -151,38 +151,30 @@
                 left:0 !important;
                 top:0 !important;
                 width:100% !important;
-                padding:20px 25px !important;
+                padding:30px 35px !important;
                 background:#fff !important;
                 font-family:'Times New Roman', Times, serif !important;
                 color:#000 !important;
-                line-height:1.0 !important;
+                line-height:1.2 !important;
                 margin:0 !important;
             }
 
+            /* Judul */
             .print-title {
-                font-size:18pt !important;
+                font-size:20pt !important;
                 font-weight:700 !important;
                 text-align:center !important;
-                letter-spacing:1px !important;
-                margin-bottom:6px !important;
+                letter-spacing:2px !important;
+                margin-bottom:12px !important;
                 text-transform:uppercase !important;
-                line-height:1.0 !important;
-                margin:0 0 4px 0 !important;
+                line-height:1.2 !important;
             }
 
-            .print-subtitle {
-                text-align:center !important;
-                font-size:10pt !important;
-                border-bottom:1px solid #000 !important;
-                padding-bottom:4px !important;
-                margin-bottom:8px !important;
-                line-height:1.0 !important;
-            }
-
+            /* Info sekolah */
             .print-info {
-                font-size:9pt !important;
-                margin-bottom:6px !important;
-                line-height:1.0 !important;
+                font-size:10pt !important;
+                margin-bottom:12px !important;
+                line-height:1.4 !important;
             }
             .print-info table {
                 width:100% !important;
@@ -192,47 +184,49 @@
             }
             .print-info td {
                 border:none !important;
-                padding:1px 4px !important;
-                font-size:9pt !important;
+                padding:2px 4px !important;
+                font-size:10pt !important;
                 vertical-align:top !important;
-                line-height:1.0 !important;
+                line-height:1.4 !important;
             }
             .print-info .label {
                 font-weight:600 !important;
-                width:130px !important;
+                width:140px !important;
             }
 
+            /* Capaian Pembelajaran */
             .print-section-title {
                 font-weight:700 !important;
-                font-size:10pt !important;
+                font-size:12pt !important;
                 border-bottom:1px solid #999 !important;
                 padding-bottom:2px !important;
-                margin:6px 0 4px 0 !important;
-                line-height:1.0 !important;
+                margin:12px 0 6px 0 !important;
+                line-height:1.2 !important;
             }
             .print-cp {
-                font-size:9pt !important;
-                padding:2px 0 !important;
-                line-height:1.0 !important;
+                font-size:10pt !important;
+                padding:4px 0 !important;
+                line-height:1.4 !important;
                 white-space:pre-wrap !important;
-                margin-bottom:4px !important;
+                margin-bottom:8px !important;
             }
 
+            /* Tabel ATP */
             table.print-table {
                 width:100% !important;
                 border-collapse:collapse !important;
-                font-size:8pt !important; /* turun 2pt dari 10pt */
-                margin-top:2px !important;
-                line-height:1.0 !important;
+                font-size:9pt !important;
+                margin-top:4px !important;
+                line-height:1.2 !important;
             }
             table.print-table th,
             table.print-table td {
                 border:1px solid #000 !important;
-                padding:2px 4px !important;
-                font-size:8pt !important;
+                padding:3px 5px !important;
+                font-size:9pt !important;
                 vertical-align:top !important;
                 text-align:left !important;
-                line-height:1.0 !important;
+                line-height:1.2 !important;
             }
             table.print-table th {
                 background:#f0f0f0 !important;
@@ -243,47 +237,58 @@
                 text-align:center !important;
             }
 
+            /* Total JP */
             .print-total {
-                margin-top:4px !important;
-                font-size:8pt !important;
+                margin-top:8px !important;
+                font-size:9pt !important;
                 display:flex !important;
                 flex-wrap:wrap !important;
-                gap:4px 12px !important;
-                line-height:1.0 !important;
+                gap:4px 16px !important;
+                line-height:1.2 !important;
+                margin-bottom:16px !important;
             }
             .print-total span {
                 display:inline-block !important;
             }
 
+            /* FOOTER: 2 KOLOM (Mengetahui kiri, Penyusun kanan) */
             .print-footer {
-                margin-top:12px !important;
-                padding-top:6px !important;
+                margin-top:20px !important;
+                padding-top:12px !important;
                 border-top:1px solid #999 !important;
-                font-size:9pt !important;
-                line-height:1.0 !important;
+                display:flex !important;
+                justify-content:space-between !important;
+                flex-wrap:wrap !important;
+                gap:20px !important;
+                font-size:10pt !important;
+                line-height:1.6 !important;
                 text-align:left !important;
             }
+            .print-footer .left {
+                flex:1 !important;
+                min-width:200px !important;
+            }
+            .print-footer .right {
+                flex:1 !important;
+                min-width:200px !important;
+                text-align:right !important;
+            }
+            .print-footer .right .tempat-tanggal {
+                text-align:right !important;
+                margin-bottom:4px !important;
+            }
             .print-footer .signature-name {
-                margin-top:12px !important;
                 font-weight:600 !important;
-                font-size:10pt !important;
+                font-size:11pt !important;
+                margin-top:8px !important;
             }
-            /* Pastikan semua elemen dalam print container memiliki line-height 1.0 dan margin 0 */
-            #printContainer * {
-                line-height:1.0 !important;
-                margin:0 !important;
-                padding:0 !important;
+            .print-footer .underline {
+                display:inline-block !important;
+                min-width:120px !important;
+                border-bottom:1px solid #000 !important;
+                margin-top:4px !important;
+                padding-bottom:2px !important;
             }
-            /* Kecuali padding yang sudah diatur khusus untuk td/th dan container */
-            #printContainer td, #printContainer th {
-                padding:2px 4px !important;
-            }
-            #printContainer .print-title { margin-bottom:4px !important; }
-            #printContainer .print-subtitle { margin-bottom:6px !important; }
-            #printContainer .print-section-title { margin:6px 0 2px 0 !important; }
-            #printContainer .print-cp { margin-bottom:2px !important; }
-            #printContainer .print-footer { margin-top:10px !important; padding-top:4px !important; }
-            #printContainer .print-footer .signature-name { margin-top:10px !important; }
         }
     </style>
 </head>
@@ -867,7 +872,7 @@
         }
 
         // ================================================================
-        // ===== CETAK PDF (FONT KECIL, SPACING 1.0, MARGIN 0) =====
+        // ===== CETAK PDF (DIPERBAIKI: JARAK, JUDUL ATP, FOOTER 2 KOLOM) =====
         // ================================================================
         function printATP() {
             // Ambil data terkini
@@ -876,19 +881,19 @@
             const jenjang = moduleData.jenjang || 'SMA';
             const schoolName = jenjang === 'SMA' ? 'SMA Nurmilad Boarding School' : 'SMP Nurmilad Boarding School';
 
-            // Bangun baris tabel (font size sudah diatur 8pt via CSS print, inline style tetap disertakan untuk safety)
+            // Bangun baris tabel
             let tableRows = '';
             if (rows.length === 0) {
-                tableRows = `<tr><td colspan="5" style="text-align:center;font-style:italic;border:1px solid #000;padding:2px 4px;font-size:8pt;">Belum ada data ATP</td></tr>`;
+                tableRows = `<tr><td colspan="5" style="text-align:center;font-style:italic;border:1px solid #000;padding:3px 5px;font-size:9pt;">Belum ada data ATP</td></tr>`;
             } else {
                 rows.forEach(row => {
                     tableRows += `
                         <tr>
-                            <td class="center" style="border:1px solid #000;padding:2px 4px;font-size:8pt;">${row.minggu || '-'}</td>
-                            <td class="center" style="border:1px solid #000;padding:2px 4px;font-size:8pt;">${row.semester || '-'}</td>
-                            <td style="border:1px solid #000;padding:2px 4px;font-size:8pt;">${row.tujuan || '-'}</td>
-                            <td style="border:1px solid #000;padding:2px 4px;font-size:8pt;">${row.materi || '-'}</td>
-                            <td class="center" style="border:1px solid #000;padding:2px 4px;font-size:8pt;">${row.alokasiJp || '-'}</td>
+                            <td class="center" style="border:1px solid #000;padding:3px 5px;font-size:9pt;">${row.minggu || '-'}</td>
+                            <td class="center" style="border:1px solid #000;padding:3px 5px;font-size:9pt;">${row.semester || '-'}</td>
+                            <td style="border:1px solid #000;padding:3px 5px;font-size:9pt;">${row.tujuan || '-'}</td>
+                            <td style="border:1px solid #000;padding:3px 5px;font-size:9pt;">${row.materi || '-'}</td>
+                            <td class="center" style="border:1px solid #000;padding:3px 5px;font-size:9pt;">${row.alokasiJp || '-'}</td>
                         </tr>
                     `;
                 });
@@ -903,46 +908,48 @@
             });
             const totalAll = totalGanjil + totalGenap;
 
-            // Bangun HTML cetak (semua style diatur via CSS print, tidak ada margin/padding ekstra)
+            // Bangun HTML cetak (dengan jarak antar bagian)
             const html = `
-                <div style="font-family:'Times New Roman', Times, serif; max-width:1000px; margin:0 auto; padding:15px 20px; background:#fff; color:#000; line-height:1.0;">
+                <div style="font-family:'Times New Roman', Times, serif; max-width:1000px; margin:0 auto; padding:20px 30px; background:#fff; color:#000; line-height:1.2;">
 
                     <!-- JUDUL -->
-                    <div class="print-title" style="font-size:18pt; font-weight:700; text-align:center; letter-spacing:1px; margin:0 0 4px 0; text-transform:uppercase; line-height:1.0;">ALUR TUJUAN PEMBELAJARAN (ATP)</div>
+                    <div style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:16px;">
+                        <div style="font-size:20pt; font-weight:700; letter-spacing:2px; text-transform:uppercase; line-height:1.2;">ALUR TUJUAN PEMBELAJARAN (ATP)</div>
+                    </div>
 
-                    <!-- INFO SEKOLAH -->
-                    <div class="print-info" style="font-size:9pt; margin-bottom:6px; line-height:1.0;">
+                    <!-- INFO SEKOLAH (dengan jarak) -->
+                    <div style="margin-bottom:14px; line-height:1.4; font-size:10pt;">
                         <table style="width:100%; border:none; margin:0;">
-                            <tr><td style="width:130px; border:none; padding:1px 4px; font-weight:600; font-size:9pt;">Nama Sekolah</td>
-                                <td style="border:none; padding:1px 4px; font-size:9pt;">: ${schoolName}</td></tr>
-                            <tr><td style="border:none; padding:1px 4px; font-weight:600; font-size:9pt;">Mata Pelajaran</td>
-                                <td style="border:none; padding:1px 4px; font-size:9pt;">: ${moduleData.mapel || '-'}</td></tr>
-                            <tr><td style="border:none; padding:1px 4px; font-weight:600; font-size:9pt;">Fase / Kelas</td>
-                                <td style="border:none; padding:1px 4px; font-size:9pt;">: ${moduleData.fase || '-'} / ${moduleData.kelas || '-'}</td></tr>
-                            <tr><td style="border:none; padding:1px 4px; font-weight:600; font-size:9pt;">Tahun Penyusunan</td>
-                                <td style="border:none; padding:1px 4px; font-size:9pt;">: ${moduleData.tahunPenyusunan || '-'}</td></tr>
-                            <tr><td style="border:none; padding:1px 4px; font-weight:600; font-size:9pt;">Penyusun</td>
-                                <td style="border:none; padding:1px 4px; font-size:9pt;">: ${moduleData.guru || '-'}</td></tr>
+                            <tr><td style="width:140px; border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Nama Sekolah</td>
+                                <td style="border:none; padding:2px 4px; font-size:10pt;">: ${schoolName}</td></tr>
+                            <tr><td style="border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Mata Pelajaran</td>
+                                <td style="border:none; padding:2px 4px; font-size:10pt;">: ${moduleData.mapel || '-'}</td></tr>
+                            <tr><td style="border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Fase / Kelas</td>
+                                <td style="border:none; padding:2px 4px; font-size:10pt;">: ${moduleData.fase || '-'} / ${moduleData.kelas || '-'}</td></tr>
+                            <tr><td style="border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Tahun Penyusunan</td>
+                                <td style="border:none; padding:2px 4px; font-size:10pt;">: ${moduleData.tahunPenyusunan || '-'}</td></tr>
+                            <tr><td style="border:none; padding:2px 4px; font-weight:600; font-size:10pt;">Penyusun</td>
+                                <td style="border:none; padding:2px 4px; font-size:10pt;">: ${moduleData.guru || '-'}</td></tr>
                         </table>
                     </div>
 
                     <!-- CAPAIAN PEMBELAJARAN -->
-                    <div style="margin:6px 0 4px 0;">
-                        <div class="print-section-title" style="font-weight:700; font-size:10pt; border-bottom:1px solid #999; padding-bottom:2px; margin:0 0 2px 0; line-height:1.0;">CAPAIAN PEMBELAJARAN</div>
-                        <div class="print-cp" style="font-size:9pt; padding:2px 0; line-height:1.0; white-space:pre-wrap;">${cp}</div>
+                    <div style="margin:12px 0 8px 0;">
+                        <div style="font-weight:700; font-size:12pt; border-bottom:1px solid #999; padding-bottom:2px; margin-bottom:4px; line-height:1.2;">CAPAIAN PEMBELAJARAN</div>
+                        <div style="font-size:10pt; padding:4px 0; line-height:1.4; white-space:pre-wrap;">${cp}</div>
                     </div>
 
-                    <!-- TABEL ATP -->
-                    <div style="margin:6px 0 4px 0;">
-                        <div class="print-section-title" style="font-weight:700; font-size:10pt; border-bottom:1px solid #999; padding-bottom:2px; margin:0 0 2px 0; line-height:1.0;">TABEL ATP</div>
-                        <table class="print-table" style="width:100%; border-collapse:collapse; font-size:8pt; margin:2px 0 0 0; line-height:1.0;">
+                    <!-- TABEL ATP (judul diubah menjadi "ATP") -->
+                    <div style="margin:12px 0 8px 0;">
+                        <div style="font-weight:700; font-size:12pt; border-bottom:1px solid #999; padding-bottom:2px; margin-bottom:4px; line-height:1.2;">ATP</div>
+                        <table style="width:100%; border-collapse:collapse; font-size:9pt; margin-top:4px; line-height:1.2;">
                             <thead>
                                 <tr>
-                                    <th style="border:1px solid #000; padding:2px 4px; text-align:center; width:12%; font-size:8pt;">Minggu ke-</th>
-                                    <th style="border:1px solid #000; padding:2px 4px; text-align:center; width:12%; font-size:8pt;">Semester</th>
-                                    <th style="border:1px solid #000; padding:2px 4px; text-align:left; width:30%; font-size:8pt;">Tujuan Pembelajaran</th>
-                                    <th style="border:1px solid #000; padding:2px 4px; text-align:left; width:30%; font-size:8pt;">Materi Pokok</th>
-                                    <th style="border:1px solid #000; padding:2px 4px; text-align:center; width:16%; font-size:8pt;">Alokasi Waktu (JP)</th>
+                                    <th style="border:1px solid #000; padding:3px 5px; text-align:center; width:12%; font-size:9pt;">Minggu ke-</th>
+                                    <th style="border:1px solid #000; padding:3px 5px; text-align:center; width:12%; font-size:9pt;">Semester</th>
+                                    <th style="border:1px solid #000; padding:3px 5px; text-align:left; width:30%; font-size:9pt;">Tujuan Pembelajaran</th>
+                                    <th style="border:1px solid #000; padding:3px 5px; text-align:left; width:30%; font-size:9pt;">Materi Pokok</th>
+                                    <th style="border:1px solid #000; padding:3px 5px; text-align:center; width:16%; font-size:9pt;">Alokasi Waktu (JP)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -952,17 +959,27 @@
                     </div>
 
                     <!-- TOTAL JP -->
-                    <div class="print-total" style="margin-top:4px; font-size:8pt; display:flex; flex-wrap:wrap; gap:4px 12px; line-height:1.0;">
+                    <div style="margin:8px 0 16px 0; font-size:9pt; display:flex; flex-wrap:wrap; gap:4px 16px; line-height:1.2;">
                         <span>Total JP Ganjil: <strong>${totalGanjil}</strong></span>
                         <span>Total JP Genap: <strong>${totalGenap}</strong></span>
                         <span>Total JP Keseluruhan: <strong>${totalAll}</strong></span>
                     </div>
 
-                    <!-- FOOTER: Tempat, Tanggal, Penyusun (RATA KIRI) -->
-                    <div class="print-footer" style="margin-top:10px; padding-top:4px; border-top:1px solid #999; font-size:9pt; line-height:1.0; text-align:left;">
-                        <div>${moduleData.tempatPembuatan || '-'}, ${moduleData.tanggalPembuatan || '-'}</div>
-                        <div style="margin-top:2px;">Penyusun,</div>
-                        <div class="signature-name" style="margin-top:8px; font-weight:600; font-size:10pt;">${moduleData.guru || '-'}</div>
+                    <!-- FOOTER: 2 KOLOM (Mengetahui kiri, Penyusun kanan) -->
+                    <div style="margin-top:20px; padding-top:12px; border-top:1px solid #999; display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px; font-size:10pt; line-height:1.6; text-align:left;">
+                        <!-- Kolom Kiri: Mengetahui -->
+                        <div style="flex:1; min-width:200px;">
+                            <div>Mengetahui,</div>
+                            <div style="margin-top:4px;">Kepala Sekolah</div>
+                            <div style="margin-top:20px; display:inline-block; min-width:140px; border-bottom:1px solid #000; padding-bottom:2px;"></div>
+                            <div style="margin-top:2px; font-weight:600;">( ____________________ )</div>
+                        </div>
+                        <!-- Kolom Kanan: Penyusun + Tempat/Tanggal -->
+                        <div style="flex:1; min-width:200px; text-align:right;">
+                            <div style="text-align:right; margin-bottom:4px;">${moduleData.tempatPembuatan || '-'}, ${moduleData.tanggalPembuatan || '-'}</div>
+                            <div style="text-align:right;">Penyusun,</div>
+                            <div style="margin-top:16px; font-weight:600; font-size:11pt;">${moduleData.guru || '-'}</div>
+                        </div>
                     </div>
 
                 </div>
