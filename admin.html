@@ -623,7 +623,7 @@
         <!-- PAGE CONTENT -->
         <div class="page-content" id="adminContent">
             <h1 style="font-size:24px;font-weight:700;margin-bottom:6px;">Panel Admin</h1>
-            <p style="color:var(--text-light);margin-bottom:24px;">Kelola guru, kelas, mata pelajaran, dan kepala sekolah.</p>
+            <p style="color:var(--text-light);margin-bottom:24px;">Kelola guru, jenjang-kelas-fase, mata pelajaran, dan kepala sekolah.</p>
 
             <!-- Guru Management -->
             <div class="admin-section">
@@ -649,21 +649,24 @@
                 </div>
             </div>
 
-            <!-- Kelas Management -->
+            <!-- Kelas Management - DIUBAH: Jenjang, Kelas, Fase -->
             <div class="admin-section">
-                <h3><i class="fas fa-school"></i> Kelola Kelas &amp; Fase</h3>
+                <h3><i class="fas fa-school"></i> Kelola Jenjang, Kelas dan Fase</h3>
                 <div class="admin-form">
                     <div>
-                        <label>Nama Kelas (contoh: VII-A, X-1)</label>
-                        <input type="text" id="adminKelasInput" placeholder="VII-A" />
+                        <label>Jenjang</label>
+                        <select id="adminKelasJenjang">
+                            <option value="SMP">SMP</option>
+                            <option value="SMA">SMA</option>
+                        </select>
                     </div>
                     <div>
-                        <label>Jenjang</label>
-                        <select id="adminKelasJenjang"><option value="SMP">SMP</option><option value="SMAS">SMAS</option></select>
+                        <label>Nama Kelas</label>
+                        <input type="text" id="adminKelasInput" placeholder="Contoh: VII-A, X-1" />
                     </div>
                     <div>
                         <label>Fase (opsional)</label>
-                        <input type="text" id="adminFaseInput" placeholder="D, E, F" />
+                        <input type="text" id="adminFaseInput" placeholder="Contoh: D, E, F" />
                     </div>
                     <div class="form-actions">
                         <button onclick="addKelas()"><i class="fas fa-plus"></i> Tambah</button>
@@ -870,7 +873,7 @@
             const container = document.getElementById('adminKelasList');
             container.innerHTML = allKelas.map(k => `
                 <span class="tag">
-                    ${k.name} (${k.jenjang}) ${k.fase ? '• Fase '+k.fase : ''}
+                    ${k.jenjang || '-'} • ${k.name || '-'} ${k.fase ? '• Fase '+k.fase : ''}
                     <span class="actions">
                         <button class="btn-edit" onclick="openEditModal('kelas', '${k.id}')"><i class="fas fa-edit"></i></button>
                         <button class="btn-delete" onclick="deleteKelas('${k.id}')"><i class="fas fa-times"></i></button>
@@ -933,15 +936,15 @@
             } else if (collection === 'kelas') {
                 fields = `
                     <div class="form-group">
-                        <label>Nama Kelas</label>
-                        <input type="text" id="editKelasName" value="${item.name || ''}" required />
-                    </div>
-                    <div class="form-group">
                         <label>Jenjang</label>
                         <select id="editKelasJenjang">
                             <option value="SMP" ${item.jenjang === 'SMP' ? 'selected' : ''}>SMP</option>
-                            <option value="SMAS" ${item.jenjang === 'SMAS' ? 'selected' : ''}>SMAS</option>
+                            <option value="SMA" ${item.jenjang === 'SMA' ? 'selected' : ''}>SMA</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Kelas</label>
+                        <input type="text" id="editKelasName" value="${item.name || ''}" required />
                     </div>
                     <div class="form-group">
                         <label>Fase (opsional)</label>
@@ -988,11 +991,11 @@
                 if (!name) { toast('Nama guru wajib diisi.', 'error'); return; }
                 updateData = { name, password: pass || 'guru123' };
             } else if (collection === 'kelas') {
-                const name = document.getElementById('editKelasName').value.trim();
                 const jenjang = document.getElementById('editKelasJenjang').value;
+                const name = document.getElementById('editKelasName').value.trim();
                 const fase = document.getElementById('editKelasFase').value.trim();
                 if (!name) { toast('Nama kelas wajib diisi.', 'error'); return; }
-                updateData = { name, jenjang, fase };
+                updateData = { jenjang, name, fase };
             } else if (collection === 'mapel') {
                 const name = document.getElementById('editMapelName').value.trim();
                 if (!name) { toast('Nama mapel wajib diisi.', 'error'); return; }
@@ -1042,12 +1045,12 @@
         }
 
         async function addKelas() {
-            const name = document.getElementById('adminKelasInput').value.trim();
             const jenjang = document.getElementById('adminKelasJenjang').value;
+            const name = document.getElementById('adminKelasInput').value.trim();
             const fase = document.getElementById('adminFaseInput').value.trim();
             if (!name) { toast('Masukkan nama kelas.', 'error'); return; }
             try {
-                await db.collection('kelas').add({ name, jenjang, fase });
+                await db.collection('kelas').add({ jenjang, name, fase });
                 toast('Kelas ditambahkan!', 'success');
                 document.getElementById('adminKelasInput').value = '';
                 document.getElementById('adminFaseInput').value = '';
