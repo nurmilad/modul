@@ -116,11 +116,9 @@
         .toast-info { background:var(--primary); }
         @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
-        /* Loading spinner */
         .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
-        /* Detail modal */
         #detailContent { font-size:14px; line-height:1.7; max-height:70vh; overflow-y:auto; padding-right:8px; white-space:pre-wrap; }
 
         @media (max-width:768px) {
@@ -264,16 +262,16 @@
         const db = firebase.firestore();
 
         // ===== GEMINI API =====
-        const GEMINI_API_KEY = "AQ.Ab8RN6Kc7VmuBwJFoOHwigP0XqqQ6jQXPjGODcMSI5OgutHpjg";
-        const GEMINI_MODEL = "gemini-1.5-pro"; // Model stabil
-        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+        // API Key baru dengan format Auth Key (AQ.)
+        const GEMINI_API_KEY = "AQ.AQ.Ab8RN6Kc7VmuBwJFoOHwigP0XqqQ6jQXPjGODcMSI5OgutHpjg";
+        const GEMINI_MODEL = "gemini-1.5-pro";
+        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
         // ===== STATE =====
         let moduleId = null;
         let moduleData = null;
         let atpRows = [];
         let rpmList = [];
-        let currentUser = null;
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -315,14 +313,12 @@
                 displayModuleInfo();
                 renderRPMCards();
                 populateTujuanSelect();
-                // Update user info
                 const user = localStorage.getItem('nbs_guru') || localStorage.getItem('nbs_user');
                 if (user) {
                     try {
                         const u = JSON.parse(user);
                         document.getElementById('sidebarUser').textContent = u.name || 'Pengunjung';
                         document.getElementById('topbarUser').textContent = u.name || 'Pengunjung';
-                        currentUser = u;
                     } catch (e) {}
                 }
             } catch (e) {
@@ -340,7 +336,6 @@
             document.getElementById('modulTahun').textContent = moduleData.tahunPenyusunan || '-';
         }
 
-        // ===== POPULATE TP SELECT =====
         function populateTujuanSelect() {
             const select = document.getElementById('rpmTujuanSelect');
             select.innerHTML = '<option value="">-- Pilih Tujuan Pembelajaran --</option>';
@@ -355,7 +350,6 @@
             });
         }
 
-        // ===== RENDER RPM CARDS =====
         function renderRPMCards() {
             const container = document.getElementById('rpmCards');
             if (!rpmList || rpmList.length === 0) {
@@ -395,7 +389,6 @@
             container.innerHTML = html;
         }
 
-        // ===== VIEW RPM =====
         function viewRPM(index) {
             const rpm = rpmList[index];
             if (!rpm) { toast('RPM tidak ditemukan.', 'error'); return; }
@@ -430,7 +423,6 @@
             win.document.close();
         }
 
-        // ===== DELETE RPM =====
         async function deleteRPM(index) {
             if (!confirm('Hapus RPM ini?')) return;
             rpmList.splice(index, 1);
@@ -446,7 +438,6 @@
             }
         }
 
-        // ===== MODAL =====
         function openModal() {
             if (!moduleData) { toast('Modul belum dimuat.', 'error'); return; }
             const hasTP = atpRows.some(r => r.tujuan && r.tujuan.trim() !== '');
@@ -483,14 +474,12 @@
             const tp = atpRows[parseInt(tpIndex)];
             if (!tp) { toast('TP tidak ditemukan.', 'error'); return; }
 
-            // Tampilkan loading
             document.getElementById('rpmLoading').style.display = 'block';
             document.getElementById('btnGenerate').disabled = true;
             document.getElementById('btnGenerate').innerHTML = '<span class="spinner"></span> Memproses...';
 
             try {
                 const rpmContent = await callGemini(tp, deskripsi);
-                // Simpan ke array rpmList
                 const newRPM = {
                     judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
                     tujuanLabel: tp.tujuan.substring(0, 80) + (tp.tujuan.length > 80 ? '...' : ''),
@@ -515,11 +504,13 @@
                 console.error(err);
                 let errorMsg = err.message;
                 if (err.message.includes('403') || err.message.includes('permission') || err.message.includes('API key not valid')) {
-                    errorMsg = 'API Key tidak valid atau tidak memiliki akses. Pastikan API Key Gemini benar dan sudah diaktifkan.';
+                    errorMsg = 'API Key tidak valid atau tidak memiliki akses. Pastikan API Key Gemini benar dan Generative Language API sudah diaktifkan di Google Cloud Console.';
                 } else if (err.message.includes('429')) {
                     errorMsg = 'Terlalu banyak permintaan. Tunggu beberapa saat dan coba lagi.';
                 } else if (err.message.includes('404') || err.message.includes('not found')) {
                     errorMsg = 'Model tidak ditemukan. Coba gunakan model gemini-1.5-pro atau periksa API Key.';
+                } else if (err.message.includes('401') || err.message.includes('authentication')) {
+                    errorMsg = 'Otentikasi gagal. Pastikan API Key yang Anda gunakan aktif dan memiliki izin. Kunjungi https://aistudio.google.com/apikey untuk membuat API Key baru.';
                 }
                 toast('Gagal generate RPM: ' + errorMsg, 'error');
             } finally {
@@ -627,11 +618,12 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
 5. Jangan gunakan markdown atau format khusus, cukup teks biasa dengan pemisah baris.
 `;
 
-            // Panggil Gemini API
+            // Panggil Gemini API dengan header x-goog-api-key
             const response = await fetch(GEMINI_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-goog-api-key': GEMINI_API_KEY
                 },
                 body: JSON.stringify({
                     contents: [
@@ -672,16 +664,12 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
         // ===== INIT =====
         document.addEventListener('DOMContentLoaded', function() {
             loadModule();
-
-            // Tutup modal saat klik di luar
             document.getElementById('modalOverlay').addEventListener('click', function(e) {
                 if (e.target === this) closeModal();
             });
             document.getElementById('detailModal').addEventListener('click', function(e) {
                 if (e.target === this) closeDetailModal();
             });
-
-            // Sidebar close on mobile
             document.addEventListener('click', function(e) {
                 const sidebar = document.getElementById('sidebar');
                 if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
@@ -692,7 +680,6 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
             });
         });
 
-        // Expose global
         window.toggleSidebar = toggleSidebar;
         window.logout = logout;
         window.openModal = openModal;
