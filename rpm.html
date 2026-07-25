@@ -17,6 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
+        /* ===== GAYA UTAMA (SAMA SEPERTI SEBELUMNYA) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -85,7 +86,7 @@
         .modal-box .modal-actions .btn-submit { background:var(--primary); color:#fff; }
         .modal-box .modal-actions .btn-submit:hover { background:var(--primary-light); }
 
-        /* Detail Modal - RAPI DENGAN TABEL */
+        /* Detail Modal */
         .detail-modal-box { max-width:1000px !important; }
         .detail-content { font-size:14px; line-height:1.8; max-height:70vh; overflow-y:auto; padding-right:8px; }
         .detail-content .section-title { font-weight:700; font-size:18px; color:var(--primary); margin:20px 0 10px; border-bottom:2px solid var(--border); padding-bottom:6px; }
@@ -93,6 +94,7 @@
         .detail-content .sub-title { font-weight:600; font-size:15px; margin:14px 0 6px; color:var(--text); }
         .detail-content .pertemuan-title { font-weight:700; font-size:16px; margin:16px 0 8px; color:var(--primary-dark); background:var(--bg); padding:6px 12px; border-radius:var(--radius-sm); border-left:4px solid var(--primary); }
         .detail-content .praktek-item { font-weight:600; margin:6px 0 2px; }
+        .detail-content .kegiatan-label { font-weight:600; margin:6px 0 2px; color:var(--primary-dark); }
         .detail-content table { width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:13px; }
         .detail-content table th { background:var(--bg); font-weight:600; text-align:left; padding:8px 10px; border:1px solid var(--border); }
         .detail-content table td { padding:8px 10px; border:1px solid var(--border); vertical-align:top; }
@@ -101,6 +103,7 @@
         .detail-content .text-block { background:var(--bg); padding:12px 16px; border-radius:var(--radius-sm); border-left:4px solid var(--primary); margin:6px 0 12px; }
         .detail-content .cp-content { background:#f0f7ff; padding:12px 16px; border-radius:var(--radius-sm); border-left:4px solid #3b82f6; margin:6px 0 12px; white-space:pre-wrap; }
         .detail-content .soal-item { background:#f9f9f9; padding:8px 12px; border-radius:var(--radius-sm); margin:4px 0; border-left:3px solid var(--secondary); }
+        .detail-content .activity-detail { padding:4px 8px 4px 16px; border-left:2px solid var(--border); margin:2px 0; }
 
         .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
         .toast { padding:12px 24px; border-radius:var(--radius-sm); color:#fff; font-weight:500; font-size:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; max-width:360px; }
@@ -112,7 +115,6 @@
         .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
-        /* Print Styles */
         @media print {
             .no-print { display:none !important; }
             .modal-overlay { position:relative !important; background:none !important; backdrop-filter:none !important; display:block !important; }
@@ -376,7 +378,6 @@
                     const sectionLetter = sectionMatch[1];
                     const sectionTitle = sectionMatch[2].trim();
 
-                    // Reset flags
                     inSectionC = false;
                     inPraktekPedagogis = false;
                     inPertemuan = false;
@@ -394,21 +395,17 @@
 
                     if (sectionLetter === 'D' && sectionTitle.toUpperCase().includes('DESAIN PEMBELAJARAN')) {
                         html += `<div class="section-title">D. DESAIN PEMBELAJARAN</div>`;
-                        // Tambahkan Tujuan Pembelajaran dari Firebase
                         const tp = getSelectedTP();
                         if (tp) {
                             html += `<div class="sub-title">1. Tujuan Pembelajaran</div>`;
                             html += `<div class="text-block">${tp}</div>`;
                         }
-                        // Flag untuk praktek pedagogis
                         inPraktekPedagogis = true;
                         html += `<div class="sub-title">2. Praktik Pedagogis</div>`;
                         continue;
                     }
 
-                    // Praktek Pedagogis items (8 poin) - kita tangani saat muncul
                     if (inPraktekPedagogis && trimmed.includes('(') && trimmed.includes(')')) {
-                        // Ini adalah poin praktek pedagogis
                         html += `<div class="praktek-item">${trimmed}</div>`;
                         continue;
                     }
@@ -438,7 +435,6 @@
                     continue;
                 }
 
-                // Jika sedang di section C, skip baris (sudah pakai CP dari Firebase)
                 if (inSectionC) {
                     if (trimmed.match(/^D\.\s*/)) {
                         inSectionC = false;
@@ -457,7 +453,7 @@
                     continue;
                 }
 
-                // Deteksi PERTEMUAN PERTAMA, KEDUA, dst
+                // Deteksi PERTEMUAN
                 const pertemuanMatch = trimmed.match(/^PERTEMUAN\s+(KE-?\s*)?([A-Za-z]+)/i);
                 if (pertemuanMatch || trimmed.toUpperCase().includes('PERTEMUAN PERTAMA') ||
                     trimmed.toUpperCase().includes('PERTEMUAN KEDUA') ||
@@ -471,7 +467,7 @@
 
                 // Deteksi Kegiatan Awal, Inti, Penutup
                 if (inPertemuan && trimmed.match(/^Kegiatan\s+(Awal|Inti|Penutup)/i)) {
-                    html += `<div class="sub-title" style="margin-top:8px;">${trimmed}</div>`;
+                    html += `<div class="kegiatan-label">${trimmed}</div>`;
                     continue;
                 }
 
@@ -490,7 +486,6 @@
                     const cells = trimmed.split('|').map(c => c.trim()).filter(c => c !== '');
                     if (cells.length >= 2) {
                         const safeCells = cells.map(c => String(c).trim());
-                        // Deteksi header untuk tabel Profil & Deskripsi Integrasi
                         const isProfilTable = safeCells.some(c => c.toUpperCase().includes('PROFIL')) ||
                                               safeCells.some(c => c.toUpperCase().includes('DESKRIPSI'));
                         let processedCells = safeCells;
@@ -543,9 +538,12 @@
                         if (parts.length >= 2) {
                             const label = parts[0].trim();
                             const value = parts.slice(1).join(':').trim();
-                            // Cek apakah ini soal + kunci jawaban
                             if (label.match(/^Soal\s+\d+/) || trimmed.includes('Kunci Jawaban')) {
                                 html += `<div class="soal-item">${trimmed}</div>`;
+                            } else if (trimmed.includes('Salam') || trimmed.includes('absensi') || 
+                                       trimmed.includes('apersepsi') || trimmed.includes('pemantik')) {
+                                // Ini adalah detail kegiatan yang lebih panjang, bisa dibiarkan sebagai paragraf
+                                html += `<div class="activity-detail">${trimmed}</div>`;
                             } else {
                                 html += `<p><strong>${label}</strong>: ${value}</p>`;
                             }
@@ -624,11 +622,13 @@
                     .print-content .section-title { font-weight:700; font-size:16pt; margin:16px 0 8px; border-bottom:2px solid #000; padding-bottom:4px; }
                     .print-content .pertemuan-title { font-weight:700; font-size:13pt; margin:12px 0 6px; background:#f0f0f0; padding:4px 10px; border-left:4px solid #000; }
                     .print-content .sub-title { font-weight:600; font-size:12pt; margin:10px 0 4px; }
+                    .print-content .kegiatan-label { font-weight:600; font-size:11pt; margin:6px 0 2px; }
                     .print-content .praktek-item { font-weight:600; margin:4px 0; }
                     .print-content p { margin:4px 0; }
                     .print-content .cp-content { background:#f9f9f9; padding:10px; border-left:4px solid #333; margin:6px 0; white-space:pre-wrap; }
                     .print-content .text-block { background:#f9f9f9; padding:8px 12px; border-left:4px solid #333; margin:6px 0; }
                     .print-content .soal-item { background:#f9f9f9; padding:4px 10px; margin:3px 0; border-left:3px solid #999; }
+                    .print-content .activity-detail { padding:2px 8px 2px 16px; border-left:2px solid #ccc; margin:2px 0; }
                 </style>
                 </head><body>
                 <div class="print-title">${title}</div>
@@ -756,6 +756,7 @@
             const jpPerMinggu = moduleData.jpPerMinggu || 2;
             const alokasiJP = parseInt(tp.alokasiJp) || 4;
             const jumlahPertemuan = Math.ceil(alokasiJP / jpPerMinggu);
+            const waktuInti = jpPerMinggu * 45 - 30;
 
             // Daftar pertemuan
             const angka = ['PERTAMA', 'KEDUA', 'KETIGA', 'KEEMPAT', 'KELIMA', 'KEENAM', 'KETUJUH', 'KEDELAPAN'];
@@ -765,9 +766,8 @@
                 pertemuanList.push(`PERTEMUAN ${label}`);
             }
             const pertemuanStr = pertemuanList.map(p => `  ${p}\n`).join('');
-            const waktuInti = jpPerMinggu * 45 - 30;
 
-            const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan siap pakai. Berikan jawaban dalam bahasa Indonesia yang baik dan benar.
+            const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail, aplikatif, dan berbasis deep learning. Berikan jawaban dalam bahasa Indonesia yang baik dan benar.
 
 FORMAT OUTPUT YANG DIWAJIBKAN:
 1. Setiap bagian (A, B, C, dst) diawali dengan huruf kapital dan titik (contoh: "A. IDENTITAS")
@@ -776,28 +776,48 @@ FORMAT OUTPUT YANG DIWAJIBKAN:
 4. Gunakan format yang rapi dan profesional.
 
 Untuk DESAIN PEMBELAJARAN - Praktik Pedagogis, gunakan format poin dengan 8 item:
-Berkesadaran (Mindful) : [deskripsi]
-Bermakna (Meaningful) : [deskripsi]
-Menggembirakan (Joyful) : [deskripsi]
-Kemitraan Pembelajaran : [deskripsi]
-Lintas Mata Pelajaran : [deskripsi]
-Lingkungan Belajar : [deskripsi]
-Dimensi Keterampilan : [deskripsi]
-Pemanfaatan Digital : [deskripsi]
+Berkesadaran (Mindful) : [deskripsi detail]
+Bermakna (Meaningful) : [deskripsi detail]
+Menggembirakan (Joyful) : [deskripsi detail]
+Kemitraan Pembelajaran : [deskripsi detail]
+Lintas Mata Pelajaran : [deskripsi detail]
+Lingkungan Belajar : [deskripsi detail]
+Dimensi Keterampilan : [deskripsi detail]
+Pemanfaatan Digital : [deskripsi detail]
 
-Untuk PENGALAMAN BELAJAR, gunakan format:
+Untuk PENGALAMAN BELAJAR, BUAT SANGAT DETAIL dengan format:
 PERTEMUAN PERTAMA
-Kegiatan Awal (15 menit): [deskripsi]
-Kegiatan Inti (${waktuInti} menit):
-A. Memahami: [deskripsi]
-B. Mengaplikasikan: [deskripsi]
-C. Merefleksi: [deskripsi]
-Kegiatan Penutup (15 menit): [deskripsi]
+Kegiatan Awal (15 menit):
+- Salam dan doa
+- Absensi
+- Apersepsi / pertanyaan pemantik (minimal 2 pertanyaan)
+- Asesmen diagnostik (jika ada)
+- Penjelasan tujuan pembelajaran
 
-Untuk ASESMEN, gunakan format tabel atau poin:
-Asesmen Awal/Diagnostik: [deskripsi]
-Asesmen Proses/Formatif: [deskripsi]
-Asesmen Sumatif: [deskripsi]
+Kegiatan Inti (${waktuInti} menit):
+A. Memahami:
+  - [deskripsi detail aktivitas, metode, dan media]
+  - [aktivitas individu atau kelompok]
+B. Mengaplikasikan:
+  - [deskripsi detail aktivitas praktik]
+  - [aktivitas kelompok atau individu]
+C. Merefleksi:
+  - [deskripsi detail aktivitas refleksi]
+  - [presentasi atau diskusi]
+
+Kegiatan Penutup (15 menit):
+- Refleksi bersama
+- Tanya jawab
+- Penguatan konsep
+- Pemberian tugas (pengayaan/remedial)
+- Doa dan salam
+
+(ulangi format ini untuk setiap pertemuan)
+
+Untuk ASESMEN, gunakan format:
+Asesmen Awal/Diagnostik: [deskripsi detail]
+Asesmen Proses/Formatif: [deskripsi detail]
+Asesmen Sumatif: [deskripsi detail]
 Soal 1: ...
 Soal 2: ...
 Kunci Jawaban: ...`;
@@ -823,7 +843,7 @@ D. DESAIN PEMBELAJARAN
 Tujuan Pembelajaran: ${tp.tujuan || '-'}
 
 Praktik Pedagogis:
-Berkesadaran (Mindful) : [jelaskan dengan contoh konkret]
+Berkesadaran (Mindful) : [jelaskan dengan contoh konkret dari pembelajaran]
 Bermakna (Meaningful) : [jelaskan dengan contoh konkret]
 Menggembirakan (Joyful) : [jelaskan dengan contoh konkret]
 Kemitraan Pembelajaran : [jelaskan dengan contoh konkret]
@@ -833,33 +853,34 @@ Dimensi Keterampilan : [jelaskan dengan contoh konkret]
 Pemanfaatan Digital : [jelaskan dengan contoh konkret]
 
 E. PENGALAMAN BELAJAR
-Buat rincian kegiatan untuk ${jumlahPertemuan} pertemuan:
+Buat rincian kegiatan yang SANGAT DETAIL untuk ${jumlahPertemuan} pertemuan:
 ${pertemuanStr}
-Setiap pertemuan:
-Kegiatan Awal (15 menit): [deskripsi]
+Setiap pertemuan wajib memiliki:
+Kegiatan Awal (15 menit): salam, doa, absensi, apersepsi (2-3 pertanyaan pemantik), asesmen diagnostik (jika ada), penjelasan tujuan pembelajaran
 Kegiatan Inti (${waktuInti} menit):
-A. Memahami: [deskripsi]
-B. Mengaplikasikan: [deskripsi]
-C. Merefleksi: [deskripsi]
-Kegiatan Penutup (15 menit): [deskripsi]
+A. Memahami: [aktivitas individu/kelompok, media, metode]
+B. Mengaplikasikan: [aktivitas praktik, eksperimen, diskusi kelompok]
+C. Merefleksi: [presentasi, refleksi kritis, diskusi kelas]
+Kegiatan Penutup (15 menit): refleksi bersama, tanya jawab, penguatan konsep, pemberian tugas (pengayaan/remedial), doa dan salam
 
 F. ASESMEN
-Asesmen Awal/Diagnostik: [deskripsi]
-Asesmen Proses/Formatif: [deskripsi]
-Asesmen Sumatif: [deskripsi]
-Soal 1: [soal pilihan ganda]
+Asesmen Awal/Diagnostik: [deskripsi detail]
+Asesmen Proses/Formatif: [deskripsi detail dengan 3-5 indikator]
+Asesmen Sumatif: [deskripsi detail]
+Soal 1: [soal pilihan ganda dengan a-e]
 Soal 2: [soal pilihan ganda]
 Soal 3: [soal pilihan ganda]
 Soal 4: [soal pilihan ganda]
 Soal 5: [soal pilihan ganda]
-Kunci Jawaban: [kunci]
+Kunci Jawaban: [kunci jawaban a-e]
 
 G. BAHAN BACAAN & DAFTAR PUSTAKA
-Minimal 3 referensi.
+Minimal 3 referensi buku/jurnal/sumber belajar.
 
 ${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
 
-Gunakan bahasa Indonesia formal. JANGAN gunakan simbol **, __, atau garis "=================".`;
+Gunakan bahasa Indonesia formal. JANGAN gunakan simbol **, __, atau garis "=================".
+BUAT PENGALAMAN BELAJAR SANGAT DETAIL dengan langkah-langkah yang jelas dan aplikatif.`;
 
             const response = await fetch(GROQ_URL, {
                 method: 'POST',
