@@ -123,6 +123,19 @@
         .total-jp-box .total-item .value.genap { color:#10b981; }
         .total-jp-box .total-item .value.total { color:#f59e0b; font-size:18px; }
 
+        .readonly-msg {
+            background:#fef9e7;
+            border:1px solid #f9e79f;
+            padding:8px 16px;
+            border-radius:var(--radius-sm);
+            margin-bottom:12px;
+            color:#7d6608;
+            font-weight:500;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+
         @media (max-width:768px) {
             .sidebar { transform:translateX(-100%); }
             .sidebar.open { transform:translateX(0); }
@@ -385,6 +398,11 @@
                     </div>
                 </div>
 
+                <!-- Pesan readonly -->
+                <div id="readonlyMsg" style="display:none;" class="readonly-msg">
+                    <i class="fas fa-lock"></i> Mode tampilan - Anda tidak dapat mengedit modul ini.
+                </div>
+
                 <!-- Capaian Pembelajaran -->
                 <div class="form-group">
                     <label>Capaian Pembelajaran (CP)</label>
@@ -395,7 +413,7 @@
                 <div style="margin-top:24px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
                         <h4 style="font-size:16px;font-weight:600;">Tabel ATP</h4>
-                        <button class="btn-primary" onclick="addRowATP()"><i class="fas fa-plus"></i> Tambah Baris</button>
+                        <button id="btnAddRowATP" class="btn-primary" onclick="addRowATP()"><i class="fas fa-plus"></i> Tambah Baris</button>
                     </div>
                     <div class="table-wrap">
                         <table class="atp-table" id="atpTable">
@@ -500,6 +518,11 @@
         let initialData = { cp: '', atpRows: [] };
         let dragSourceIndex = null;
 
+        // ===== AKSES =====
+        let currentUser = null;      // objek user { name, role?, id? }
+        let currentRole = 'guest';   // 'guest', 'guru', 'admin'
+        let canEdit = false;
+
         // ===== TOAST =====
         function toast(msg, type = 'info') {
             const container = document.getElementById('toastContainer');
@@ -540,6 +563,11 @@
 
         function updateSaveButton() {
             const btn = document.getElementById('btnSaveATP');
+            if (!canEdit) {
+                btn.style.display = 'none';
+                return;
+            }
+            btn.style.display = '';
             if (isDirty) {
                 btn.className = 'btn-danger';
                 btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Simpan ATP (Belum Tersimpan)';
@@ -550,7 +578,7 @@
         }
 
         function confirmLeave(e) {
-            if (isDirty) {
+            if (isDirty && canEdit) {
                 e.preventDefault();
                 e.returnValue = 'Ada data yang belum disimpan. Yakin ingin meninggalkan halaman?';
                 return e.returnValue;
@@ -563,7 +591,7 @@
             const links = document.querySelectorAll('#sidebar a, #logoutBtn');
             links.forEach(link => {
                 link.addEventListener('click', function(e) {
-                    if (isDirty) {
+                    if (isDirty && canEdit) {
                         if (!confirm('Ada data yang belum disimpan. Yakin ingin melanjutkan?')) {
                             e.preventDefault();
                             return false;
@@ -575,7 +603,7 @@
             const tabButtons = document.querySelectorAll('.program-tabs button');
             tabButtons.forEach(btn => {
                 btn.addEventListener('click', function(e) {
-                    if (isDirty) {
+                    if (isDirty && canEdit) {
                         if (!confirm('Ada data yang belum disimpan. Yakin ingin pindah tab?')) {
                             e.preventDefault();
                             return false;
@@ -584,6 +612,65 @@
                 });
             });
         });
+
+        // ===== CEK AKSES =====
+        function checkAccess() {
+            const guruStr = localStorage.getItem('nbs_guru');
+            const userStr = localStorage.getItem('nbs_user');
+            let role = 'guest';
+            let user = null;
+
+            if (guruStr) {
+                try {
+                    const g = JSON.parse(guruStr);
+                    user = g;
+                    role = 'guru';
+                } catch(e) {}
+            } else if (userStr) {
+                try {
+                    const u = JSON.parse(userStr);
+                    user = u;
+                    role = u.role || 'admin';
+                } catch(e) {}
+            }
+
+            currentUser = user;
+            currentRole = role;
+
+            // Tentukan hak edit
+            if (role === 'admin') {
+                canEdit = true;
+            } else if (role === 'guru' && moduleData && moduleData.guru === user.name) {
+                canEdit = true;
+            } else {
+                canEdit = false;
+            }
+
+            applyAccessUI();
+        }
+
+        function applyAccessUI() {
+            const btnSave = document.getElementById('btnSaveATP');
+            const btnAddRow = document.getElementById('btnAddRowATP');
+            const readonlyMsg = document.getElementById('readonlyMsg');
+
+            if (!canEdit) {
+                btnSave.style.display = 'none';
+                btnAddRow.style.display = 'none';
+                readonlyMsg.style.display = 'flex';
+                // Nonaktifkan input CP
+                document.getElementById('cpText').readOnly = true;
+                document.getElementById('cpText').style.background = '#f9f9f9';
+            } else {
+                btnSave.style.display = '';
+                btnAddRow.style.display = '';
+                readonlyMsg.style.display = 'none';
+                document.getElementById('cpText').readOnly = false;
+                document.getElementById('cpText').style.background = '#fff';
+            }
+            // Perbarui tampilan tombol simpan
+            updateSaveButton();
+        }
 
         // ===== LOAD MODULE =====
         async function loadModule() {
@@ -601,6 +688,8 @@
                 }
                 moduleData = { id: doc.id, ...doc.data() };
                 displayModuleInfo();
+                // Cek akses setelah moduleData tersedia
+                checkAccess();
                 loadATPData();
                 // Jika tab RPM diminta, buka otomatis
                 const tabParam = params.get('tab');
@@ -690,8 +779,9 @@
             });
         }
 
-        // ===== DRAG AND DROP =====
+        // ===== DRAG AND DROP (hanya jika canEdit) =====
         function handleDragStart(e) {
+            if (!canEdit) return;
             const row = e.target.closest('tr');
             if (!row) return;
             const index = parseInt(row.dataset.index);
@@ -710,6 +800,7 @@
         }
 
         function handleDragOver(e) {
+            if (!canEdit) return;
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
             const row = e.target.closest('tr');
@@ -725,6 +816,7 @@
         }
 
         function handleDrop(e) {
+            if (!canEdit) return;
             e.preventDefault();
             document.querySelectorAll('.atp-table tr').forEach(r => r.classList.remove('dragover'));
             const targetRow = e.target.closest('tr');
@@ -764,69 +856,81 @@
                     `<option value="${s}" ${row.semester === s ? 'selected' : ''}>${s}</option>`
                 ).join('');
 
+                // Tentukan atribut readonly/disabled
+                const readonlyAttr = canEdit ? '' : 'readonly';
+                const disabledAttr = canEdit ? '' : 'disabled';
+                const bgColor = canEdit ? '#fff' : '#f9f9f9';
+                const showDelete = canEdit ? '' : 'style="display:none;"';
+                const showDrag = canEdit ? '' : 'style="display:none;"';
+
                 html += `
-                    <tr data-index="${index}" draggable="true" 
+                    <tr data-index="${index}" draggable="${canEdit ? 'true' : 'false'}" 
                         ondragstart="handleDragStart(event)" 
                         ondragend="handleDragEnd(event)" 
                         ondragover="handleDragOver(event)" 
                         ondragleave="handleDragLeave(event)" 
                         ondrop="handleDrop(event)">
-                        <td><span class="drag-handle" title="Seret untuk mengubah urutan">⠿</span></td>
+                        <td><span class="drag-handle" title="Seret untuk mengubah urutan" ${showDrag}>⠿</span></td>
                         <td><input type="text" class="minggu-input" data-index="${index}" value="${row.minggu || ''}" readonly style="background:#f0f0f0;text-align:center;font-size:11px;" /></td>
                         <td>
-                            <select class="semester-select" data-index="${index}" style="font-size:11px;">
+                            <select class="semester-select" data-index="${index}" style="font-size:11px;" ${disabledAttr}>
                                 ${semesterSelect}
                             </select>
                         </td>
-                        <td><textarea class="tujuan-input" data-index="${index}" rows="2" style="font-size:11px;resize:vertical;width:100%;">${row.tujuan || ''}</textarea></td>
-                        <td><textarea class="materi-input" data-index="${index}" rows="2" style="font-size:11px;resize:vertical;width:100%;">${row.materi || ''}</textarea></td>
-                        <td><input type="text" class="alokasi-input" data-index="${index}" value="${row.alokasiJp || ''}" placeholder="Jumlah JP" style="font-size:11px;text-align:center;" /></td>
-                        <td><button class="btn-delete-row" onclick="deleteRowATP(${index})"><i class="fas fa-trash"></i></button></td>
+                        <td><textarea class="tujuan-input" data-index="${index}" rows="2" style="font-size:11px;resize:vertical;width:100%;background:${bgColor};" ${readonlyAttr}>${row.tujuan || ''}</textarea></td>
+                        <td><textarea class="materi-input" data-index="${index}" rows="2" style="font-size:11px;resize:vertical;width:100%;background:${bgColor};" ${readonlyAttr}>${row.materi || ''}</textarea></td>
+                        <td><input type="text" class="alokasi-input" data-index="${index}" value="${row.alokasiJp || ''}" placeholder="Jumlah JP" style="font-size:11px;text-align:center;background:${bgColor};" ${readonlyAttr} /></td>
+                        <td><button class="btn-delete-row" onclick="deleteRowATP(${index})" ${showDelete}><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `;
             });
             tbody.innerHTML = html;
 
-            document.querySelectorAll('.semester-select').forEach(el => {
-                el.addEventListener('change', function() {
-                    const idx = parseInt(this.dataset.index);
-                    atpRows[idx].semester = this.value;
-                    updateMinggu();
-                    document.querySelectorAll('.minggu-input').forEach((input, i) => {
-                        input.value = atpRows[i].minggu || '';
+            // Event listener hanya jika canEdit
+            if (canEdit) {
+                document.querySelectorAll('.semester-select').forEach(el => {
+                    el.addEventListener('change', function() {
+                        const idx = parseInt(this.dataset.index);
+                        atpRows[idx].semester = this.value;
+                        updateMinggu();
+                        document.querySelectorAll('.minggu-input').forEach((input, i) => {
+                            input.value = atpRows[i].minggu || '';
+                        });
+                        updateTotals();
+                        checkChanges();
                     });
-                    updateTotals();
-                    checkChanges();
                 });
-            });
-            document.querySelectorAll('.tujuan-input').forEach(el => {
-                el.addEventListener('input', function() {
-                    const idx = parseInt(this.dataset.index);
-                    atpRows[idx].tujuan = this.value;
-                    checkChanges();
-                });
-            });
-            document.querySelectorAll('.materi-input').forEach(el => {
-                el.addEventListener('input', function() {
-                    const idx = parseInt(this.dataset.index);
-                    atpRows[idx].materi = this.value;
-                    checkChanges();
-                });
-            });
-            document.querySelectorAll('.alokasi-input').forEach(el => {
-                el.addEventListener('input', function() {
-                    const idx = parseInt(this.dataset.index);
-                    atpRows[idx].alokasiJp = this.value;
-                    updateMinggu();
-                    document.querySelectorAll('.minggu-input').forEach((input, i) => {
-                        input.value = atpRows[i].minggu || '';
+                document.querySelectorAll('.tujuan-input').forEach(el => {
+                    el.addEventListener('input', function() {
+                        const idx = parseInt(this.dataset.index);
+                        atpRows[idx].tujuan = this.value;
+                        checkChanges();
                     });
-                    updateTotals();
-                    checkChanges();
                 });
-            });
-
-            document.getElementById('cpText').addEventListener('input', checkChanges);
+                document.querySelectorAll('.materi-input').forEach(el => {
+                    el.addEventListener('input', function() {
+                        const idx = parseInt(this.dataset.index);
+                        atpRows[idx].materi = this.value;
+                        checkChanges();
+                    });
+                });
+                document.querySelectorAll('.alokasi-input').forEach(el => {
+                    el.addEventListener('input', function() {
+                        const idx = parseInt(this.dataset.index);
+                        atpRows[idx].alokasiJp = this.value;
+                        updateMinggu();
+                        document.querySelectorAll('.minggu-input').forEach((input, i) => {
+                            input.value = atpRows[i].minggu || '';
+                        });
+                        updateTotals();
+                        checkChanges();
+                    });
+                });
+                document.getElementById('cpText').addEventListener('input', checkChanges);
+            } else {
+                // Nonaktifkan event listener jika tidak bisa edit (sudah readonly)
+                // Tidak perlu tambahan
+            }
             updateTotals();
         }
 
@@ -845,6 +949,10 @@
 
         // ===== ADD/DELETE ROW (ATP) =====
         function addRowATP() {
+            if (!canEdit) {
+                toast('Anda tidak memiliki izin untuk menambah baris.', 'error');
+                return;
+            }
             const newRow = { minggu: '', semester: 'Ganjil', tujuan: '', materi: '', alokasiJp: '' };
             atpRows.push(newRow);
             updateMinggu();
@@ -854,6 +962,10 @@
         }
 
         function deleteRowATP(index) {
+            if (!canEdit) {
+                toast('Anda tidak memiliki izin untuk menghapus baris.', 'error');
+                return;
+            }
             if (!confirm('Hapus baris ini?')) return;
             atpRows.splice(index, 1);
             updateMinggu();
@@ -863,6 +975,10 @@
 
         // ===== SAVE ATP =====
         async function saveATP() {
+            if (!canEdit) {
+                toast('Anda tidak memiliki izin untuk menyimpan.', 'error');
+                return;
+            }
             const cp = document.getElementById('cpText').value.trim();
             updateMinggu();
             const rows = atpRows.map(row => ({
@@ -1081,8 +1197,7 @@
                         firstRow = false;
                         mingguSaatIni = mingguAkhir + 1;
                         if (mingguSaatIni > totalMinggu) {
-                            // break out of loop? forEach tidak bisa di-break, tapi kita bisa skip
-                            // tidak perlu karena kita sudah atasi dengan maxMinggu
+                            // tidak perlu break, loop akan berhenti alami
                         }
                     });
                 }
@@ -1498,7 +1613,7 @@
                 return;
             }
 
-            if (isDirty && !confirm('Ada data yang belum disimpan. Yakin ingin pindah tab?')) return;
+            if (isDirty && canEdit && !confirm('Ada data yang belum disimpan. Yakin ingin pindah tab?')) return;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.program-tabs button').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
@@ -1524,7 +1639,7 @@
             });
 
             window.addEventListener('popstate', function(e) {
-                if (isDirty) {
+                if (isDirty && canEdit) {
                     if (!confirm('Ada data yang belum disimpan. Yakin ingin meninggalkan halaman?')) {
                         history.pushState(null, '', window.location.href);
                     }
