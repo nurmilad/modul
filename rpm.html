@@ -92,6 +92,7 @@
         .detail-content .section-title:first-of-type { margin-top:0; }
         .detail-content .sub-title { font-weight:600; font-size:15px; margin:14px 0 6px; color:var(--text); }
         .detail-content .pertemuan-title { font-weight:700; font-size:16px; margin:16px 0 8px; color:var(--primary-dark); background:var(--bg); padding:6px 12px; border-radius:var(--radius-sm); border-left:4px solid var(--primary); }
+        .detail-content .praktek-item { font-weight:600; margin:6px 0 2px; }
         .detail-content table { width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:13px; }
         .detail-content table th { background:var(--bg); font-weight:600; text-align:left; padding:8px 10px; border:1px solid var(--border); }
         .detail-content table td { padding:8px 10px; border:1px solid var(--border); vertical-align:top; }
@@ -99,6 +100,7 @@
         .detail-content p { margin:6px 0; }
         .detail-content .text-block { background:var(--bg); padding:12px 16px; border-radius:var(--radius-sm); border-left:4px solid var(--primary); margin:6px 0 12px; }
         .detail-content .cp-content { background:#f0f7ff; padding:12px 16px; border-radius:var(--radius-sm); border-left:4px solid #3b82f6; margin:6px 0 12px; white-space:pre-wrap; }
+        .detail-content .soal-item { background:#f9f9f9; padding:8px 12px; border-radius:var(--radius-sm); margin:4px 0; border-left:3px solid var(--secondary); }
 
         .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
         .toast { padding:12px 24px; border-radius:var(--radius-sm); color:#fff; font-weight:500; font-size:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; max-width:360px; }
@@ -330,46 +332,38 @@
         }
 
         // ================================================================
-        // ===== CLEAN TEXT (hilangkan simbol-simbol) =====
+        // ===== CLEAN TEXT =====
         // ================================================================
         function cleanText(text) {
             if (!text) return '';
-            // Hilangkan baris yang berisi "==="
             text = text.replace(/^[=\-]{5,}\s*$/gm, '');
-            // Hilangkan "**" (format bold)
             text = text.replace(/\*\*/g, '');
-            // Hilangkan "__" (format underline)
             text = text.replace(/__/g, '');
-            // Hilangkan "_" di awal/akhir kata
             text = text.replace(/_(?! )/g, '');
-            // Hilangkan multiple newlines
             text = text.replace(/\n{3,}/g, '\n\n');
             return text.trim();
         }
 
         // ================================================================
-        // ===== FORMAT KONTEN RPM MENJADI HTML RAPI =====
+        // ===== FORMAT KONTEN RPM =====
         // ================================================================
         function formatRPMContent(text, cpFromFirebase) {
             if (!text) return '<p>Konten kosong.</p>';
 
-            // Bersihkan teks dari simbol-simbol
             let cleaned = cleanText(text);
-
-            // Pisahkan baris
             const lines = cleaned.split('\n');
             let html = '';
             let inTable = false;
             let tableRows = [];
-
-            // Flag untuk melacak apakah kita sedang di section C (CAPAIAN PEMBELAJARAN)
             let inSectionC = false;
+            let inPraktekPedagogis = false;
+            let inPertemuan = false;
 
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
                 const trimmed = line.trim();
 
-                // Deteksi judul utama
+                // Judul utama
                 if (trimmed.toUpperCase().includes('RENCANA PEMBELAJARAN MENDALAM') ||
                     trimmed.toUpperCase().includes('RENCANA PEMBELAJARAN MENDALAM (RPM)')) {
                     html += `<div class="section-title" style="text-align:center;font-size:20px;border-bottom:3px double var(--primary);">RENCANA PEMBELAJARAN MENDALAM (RPM)</div>`;
@@ -382,24 +376,57 @@
                     const sectionLetter = sectionMatch[1];
                     const sectionTitle = sectionMatch[2].trim();
 
-                    // Jika section C (CAPAIAN PEMBELAJARAN), tandai
+                    // Reset flags
+                    inSectionC = false;
+                    inPraktekPedagogis = false;
+                    inPertemuan = false;
+
                     if (sectionLetter === 'C' && sectionTitle.toUpperCase().includes('CAPAIAN PEMBELAJARAN')) {
                         inSectionC = true;
                         html += `<div class="section-title">C. CAPAIAN PEMBELAJARAN</div>`;
-                        // Gunakan CP dari Firebase, bukan dari AI
                         if (cpFromFirebase) {
                             html += `<div class="cp-content">${cpFromFirebase}</div>`;
                         } else {
                             html += `<div class="cp-content">(Belum ada Capaian Pembelajaran yang diisi)</div>`;
                         }
-                        // Lewati sisa baris yang berisi konten CP dari AI
-                        // Kita akan terus membaca sampai ketemu section D
                         continue;
                     }
 
-                    // Jika section D (DESAIN PEMBELAJARAN) atau section lain, matikan flag C
-                    if (sectionLetter === 'D' || sectionLetter === 'E' || sectionLetter === 'F' || sectionLetter === 'G') {
-                        inSectionC = false;
+                    if (sectionLetter === 'D' && sectionTitle.toUpperCase().includes('DESAIN PEMBELAJARAN')) {
+                        html += `<div class="section-title">D. DESAIN PEMBELAJARAN</div>`;
+                        // Tambahkan Tujuan Pembelajaran dari Firebase
+                        const tp = getSelectedTP();
+                        if (tp) {
+                            html += `<div class="sub-title">1. Tujuan Pembelajaran</div>`;
+                            html += `<div class="text-block">${tp}</div>`;
+                        }
+                        // Flag untuk praktek pedagogis
+                        inPraktekPedagogis = true;
+                        html += `<div class="sub-title">2. Praktik Pedagogis</div>`;
+                        continue;
+                    }
+
+                    // Praktek Pedagogis items (8 poin) - kita tangani saat muncul
+                    if (inPraktekPedagogis && trimmed.includes('(') && trimmed.includes(')')) {
+                        // Ini adalah poin praktek pedagogis
+                        html += `<div class="praktek-item">${trimmed}</div>`;
+                        continue;
+                    }
+
+                    if (sectionLetter === 'E' && sectionTitle.toUpperCase().includes('PENGALAMAN BELAJAR')) {
+                        html += `<div class="section-title">E. PENGALAMAN BELAJAR</div>`;
+                        inPertemuan = true;
+                        continue;
+                    }
+
+                    if (sectionLetter === 'F' && sectionTitle.toUpperCase().includes('ASESMEN')) {
+                        html += `<div class="section-title">F. ASESMEN</div>`;
+                        continue;
+                    }
+
+                    if (sectionLetter === 'G' && sectionTitle.toUpperCase().includes('BAHAN BACAAN')) {
+                        html += `<div class="section-title">G. BAHAN BACAAN &amp; DAFTAR PUSTAKA</div>`;
+                        continue;
                     }
 
                     const isSubSection = sectionTitle.includes(':') || sectionTitle.includes('-');
@@ -408,23 +435,23 @@
                     } else {
                         html += `<div class="sub-title">${trimmed}</div>`;
                     }
-
-                    // Jika ini section B, kita perlu memastikan header tabel ditulis kapital
-                    if (sectionLetter === 'B') {
-                        // Kita akan proses baris berikutnya yang mungkin tabel
-                    }
                     continue;
                 }
 
-                // Jika kita sedang dalam section C, skip semua baris (karena sudah pakai CP dari Firebase)
+                // Jika sedang di section C, skip baris (sudah pakai CP dari Firebase)
                 if (inSectionC) {
-                    // Cek apakah sudah sampai section D
                     if (trimmed.match(/^D\.\s*/)) {
                         inSectionC = false;
-                        // Proses section D
                         const dMatch = trimmed.match(/^D\.\s*(.*)/);
                         if (dMatch) {
                             html += `<div class="section-title">D. ${dMatch[1].trim()}</div>`;
+                            const tp = getSelectedTP();
+                            if (tp) {
+                                html += `<div class="sub-title">1. Tujuan Pembelajaran</div>`;
+                                html += `<div class="text-block">${tp}</div>`;
+                            }
+                            inPraktekPedagogis = true;
+                            html += `<div class="sub-title">2. Praktik Pedagogis</div>`;
                         }
                     }
                     continue;
@@ -438,40 +465,48 @@
                     trimmed.toUpperCase().includes('PERTEMUAN KEEMPAT') ||
                     trimmed.toUpperCase().includes('PERTEMUAN KELIMA')) {
                     html += `<div class="pertemuan-title">${trimmed}</div>`;
+                    inPertemuan = true;
+                    continue;
+                }
+
+                // Deteksi Kegiatan Awal, Inti, Penutup
+                if (inPertemuan && trimmed.match(/^Kegiatan\s+(Awal|Inti|Penutup)/i)) {
+                    html += `<div class="sub-title" style="margin-top:8px;">${trimmed}</div>`;
+                    continue;
+                }
+
+                // Deteksi A., B., C. dalam Kegiatan Inti
+                if (inPertemuan && trimmed.match(/^[A-Z]\.\s+/)) {
+                    html += `<div style="font-weight:600;margin:4px 0 2px 12px;">${trimmed}</div>`;
                     continue;
                 }
 
                 // Deteksi tabel (baris dengan |)
                 if (trimmed.includes('|')) {
-                    // Cek apakah ini garis pemisah tabel
                     if (trimmed.replace(/[^|\-]/g, '').length > 3 && trimmed.includes('-')) {
                         continue;
                     }
 
-                    // Pisahkan sel
                     const cells = trimmed.split('|').map(c => c.trim()).filter(c => c !== '');
                     if (cells.length >= 2) {
-                        // Perbaikan: pastikan semua cell adalah string sebelum dioperasikan
                         const safeCells = cells.map(c => String(c).trim());
-                        // Cek apakah ini header (semua cell dimulai huruf kapital atau huruf kapital di setiap kata)
+                        // Deteksi header untuk tabel Profil & Deskripsi Integrasi
+                        const isProfilTable = safeCells.some(c => c.toUpperCase().includes('PROFIL')) ||
+                                              safeCells.some(c => c.toUpperCase().includes('DESKRIPSI'));
+                        let processedCells = safeCells;
+                        if (isProfilTable) {
+                            processedCells = safeCells.map(c => {
+                                if (c.toUpperCase().includes('PROFIL') || c.toUpperCase().includes('DESKRIPSI')) {
+                                    return c.toUpperCase();
+                                }
+                                return c;
+                            });
+                        }
                         const isHeader = safeCells.every(c => {
                             if (!c || c.length === 0) return false;
-                            // Cek apakah setiap kata dimulai huruf kapital
                             const words = c.split(' ');
                             return words.every(w => w.length > 0 && w[0] === w[0].toUpperCase());
                         }) || cells.length >= 2;
-
-                        // Jika section B dan ini header, pastikan kapital
-                        let processedCells = safeCells;
-                        if (trimmed.toUpperCase().includes('PROFIL') || trimmed.toUpperCase().includes('DESKRIPSI')) {
-                            processedCells = safeCells.map(c => {
-                                // Kapitalisasi setiap kata
-                                return c.split(' ').map(w => {
-                                    if (w.length === 0) return w;
-                                    return w[0].toUpperCase() + w.slice(1).toLowerCase();
-                                }).join(' ');
-                            });
-                        }
 
                         tableRows.push({ cells: processedCells, isHeader: isHeader || tableRows.length === 0 });
                         inTable = true;
@@ -479,7 +514,6 @@
                     }
                 }
 
-                // Jika sebelumnya dalam tabel dan line kosong, tutup tabel
                 if (inTable && trimmed === '') {
                     html += buildTable(tableRows);
                     tableRows = [];
@@ -487,7 +521,6 @@
                     continue;
                 }
 
-                // Jika masih dalam tabel tapi line tidak memiliki |
                 if (inTable) {
                     const lastRow = tableRows[tableRows.length - 1];
                     if (lastRow && !trimmed.includes('|')) {
@@ -501,9 +534,8 @@
                     }
                 }
 
-                // Teks biasa - skip baris kosong
+                // Teks biasa
                 if (trimmed !== '') {
-                    // Cek apakah ini daftar pustaka atau poin
                     if (trimmed.match(/^\d+\./) || trimmed.match(/^-/)) {
                         html += `<p style="margin:2px 0 2px 20px;">${trimmed}</p>`;
                     } else if (trimmed.includes(':') && !trimmed.startsWith('(')) {
@@ -511,7 +543,12 @@
                         if (parts.length >= 2) {
                             const label = parts[0].trim();
                             const value = parts.slice(1).join(':').trim();
-                            html += `<p><strong>${label}</strong>: ${value}</p>`;
+                            // Cek apakah ini soal + kunci jawaban
+                            if (label.match(/^Soal\s+\d+/) || trimmed.includes('Kunci Jawaban')) {
+                                html += `<div class="soal-item">${trimmed}</div>`;
+                            } else {
+                                html += `<p><strong>${label}</strong>: ${value}</p>`;
+                            }
                         } else {
                             html += `<p>${trimmed}</p>`;
                         }
@@ -521,7 +558,6 @@
                 }
             }
 
-            // Jika masih ada tabel yang belum ditutup
             if (inTable && tableRows.length > 0) {
                 html += buildTable(tableRows);
             }
@@ -536,7 +572,6 @@
                 const tag = (row.isHeader || idx === 0) ? 'th' : 'td';
                 html += '<tr>';
                 row.cells.forEach(cell => {
-                    // Pastikan cell adalah string
                     const cellText = String(cell || '').trim();
                     html += `<${tag}>${cellText}</${tag}>`;
                 });
@@ -546,6 +581,16 @@
             return html;
         }
 
+        // ===== GET SELECTED TP =====
+        function getSelectedTP() {
+            const select = document.getElementById('rpmTujuanSelect');
+            if (!select) return null;
+            const idx = select.value;
+            if (!idx) return null;
+            const tp = atpRows[parseInt(idx)];
+            return tp ? tp.tujuan : null;
+        }
+
         // ================================================================
         // ===== VIEW RPM =====
         // ================================================================
@@ -553,7 +598,6 @@
             const rpm = rpmList[index];
             if (!rpm) { toast('RPM tidak ditemukan.', 'error'); return; }
             document.getElementById('detailTitle').textContent = rpm.judul || 'Rencana Pembelajaran Mendalam';
-            // Gunakan CP dari Firebase (moduleData.atp) untuk section C
             const cpContent = moduleData ? moduleData.atp || '' : '';
             document.getElementById('detailContent').innerHTML = formatRPMContent(rpm.content || 'Konten kosong.', cpContent);
             document.getElementById('detailModal').classList.add('open');
@@ -580,8 +624,11 @@
                     .print-content .section-title { font-weight:700; font-size:16pt; margin:16px 0 8px; border-bottom:2px solid #000; padding-bottom:4px; }
                     .print-content .pertemuan-title { font-weight:700; font-size:13pt; margin:12px 0 6px; background:#f0f0f0; padding:4px 10px; border-left:4px solid #000; }
                     .print-content .sub-title { font-weight:600; font-size:12pt; margin:10px 0 4px; }
+                    .print-content .praktek-item { font-weight:600; margin:4px 0; }
                     .print-content p { margin:4px 0; }
                     .print-content .cp-content { background:#f9f9f9; padding:10px; border-left:4px solid #333; margin:6px 0; white-space:pre-wrap; }
+                    .print-content .text-block { background:#f9f9f9; padding:8px 12px; border-left:4px solid #333; margin:6px 0; }
+                    .print-content .soal-item { background:#f9f9f9; padding:4px 10px; margin:3px 0; border-left:3px solid #999; }
                 </style>
                 </head><body>
                 <div class="print-title">${title}</div>
@@ -633,7 +680,7 @@
         }
 
         // ================================================================
-        // ===== GENERATE RPM DENGAN GROQ =====
+        // ===== GENERATE RPM =====
         // ================================================================
         async function generateRPM(e) {
             e.preventDefault();
@@ -710,14 +757,15 @@
             const alokasiJP = parseInt(tp.alokasiJp) || 4;
             const jumlahPertemuan = Math.ceil(alokasiJP / jpPerMinggu);
 
-            // Membuat daftar pertemuan untuk prompt
+            // Daftar pertemuan
+            const angka = ['PERTAMA', 'KEDUA', 'KETIGA', 'KEEMPAT', 'KELIMA', 'KEENAM', 'KETUJUH', 'KEDELAPAN'];
             const pertemuanList = [];
             for (let i = 1; i <= jumlahPertemuan; i++) {
-                const angka = ['PERTAMA', 'KEDUA', 'KETIGA', 'KEEMPAT', 'KELIMA', 'KEENAM', 'KETUJUH', 'KEDELAPAN'];
                 const label = i <= angka.length ? angka[i-1] : `KE-${i}`;
                 pertemuanList.push(`PERTEMUAN ${label}`);
             }
-            const pertemuanStr = pertemuanList.map(p => `- ${p}`).join('\n');
+            const pertemuanStr = pertemuanList.map(p => `  ${p}\n`).join('');
+            const waktuInti = jpPerMinggu * 45 - 30;
 
             const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan siap pakai. Berikan jawaban dalam bahasa Indonesia yang baik dan benar.
 
@@ -726,12 +774,33 @@ FORMAT OUTPUT YANG DIWAJIBKAN:
 2. Untuk tabel, gunakan format dengan pemisah kolom "|" (pipa) dan baris baru untuk setiap baris.
 3. Jangan gunakan simbol "**", "__", atau garis "=================".
 4. Gunakan format yang rapi dan profesional.
-5. Untuk bagian PENGALAMAN BELAJAR, gunakan format:
-   PERTEMUAN PERTAMA
-   Kegiatan Awal (15 menit): [deskripsi]
-   Kegiatan Inti ([jumlah menit] menit): [deskripsi]
-   Kegiatan Penutup (15 menit): [deskripsi]
-   (ulangi untuk setiap pertemuan)`;
+
+Untuk DESAIN PEMBELAJARAN - Praktik Pedagogis, gunakan format poin dengan 8 item:
+Berkesadaran (Mindful) : [deskripsi]
+Bermakna (Meaningful) : [deskripsi]
+Menggembirakan (Joyful) : [deskripsi]
+Kemitraan Pembelajaran : [deskripsi]
+Lintas Mata Pelajaran : [deskripsi]
+Lingkungan Belajar : [deskripsi]
+Dimensi Keterampilan : [deskripsi]
+Pemanfaatan Digital : [deskripsi]
+
+Untuk PENGALAMAN BELAJAR, gunakan format:
+PERTEMUAN PERTAMA
+Kegiatan Awal (15 menit): [deskripsi]
+Kegiatan Inti (${waktuInti} menit):
+A. Memahami: [deskripsi]
+B. Mengaplikasikan: [deskripsi]
+C. Merefleksi: [deskripsi]
+Kegiatan Penutup (15 menit): [deskripsi]
+
+Untuk ASESMEN, gunakan format tabel atau poin:
+Asesmen Awal/Diagnostik: [deskripsi]
+Asesmen Proses/Formatif: [deskripsi]
+Asesmen Sumatif: [deskripsi]
+Soal 1: ...
+Soal 2: ...
+Kunci Jawaban: ...`;
 
             const userPrompt = `
 Buat Rencana Pembelajaran Mendalam (RPM) dengan format berikut:
@@ -751,32 +820,46 @@ ${profilLulusan.join('\n')}
 Buat tabel 2 kolom dengan header: "PROFIL" dan "DESKRIPSI INTEGRASI"
 
 D. DESAIN PEMBELAJARAN
-- Tujuan Pembelajaran: ${tp.tujuan || '-'}
-Buat poin-poin atau tabel untuk:
-- Konteks Boarding School
-- Pendekatan Konstruktivisme
-- Praktik Reflektif
+Tujuan Pembelajaran: ${tp.tujuan || '-'}
+
+Praktik Pedagogis:
+Berkesadaran (Mindful) : [jelaskan dengan contoh konkret]
+Bermakna (Meaningful) : [jelaskan dengan contoh konkret]
+Menggembirakan (Joyful) : [jelaskan dengan contoh konkret]
+Kemitraan Pembelajaran : [jelaskan dengan contoh konkret]
+Lintas Mata Pelajaran : [jelaskan dengan contoh konkret]
+Lingkungan Belajar : [jelaskan dengan contoh konkret]
+Dimensi Keterampilan : [jelaskan dengan contoh konkret]
+Pemanfaatan Digital : [jelaskan dengan contoh konkret]
 
 E. PENGALAMAN BELAJAR
-Buat rincian kegiatan untuk ${jumlahPertemuan} pertemuan dengan format:
+Buat rincian kegiatan untuk ${jumlahPertemuan} pertemuan:
 ${pertemuanStr}
 Setiap pertemuan:
-- Kegiatan Awal (15 menit): [jelaskan]
-- Kegiatan Inti (${jpPerMinggu * 45 - 30} menit): [jelaskan]
-- Kegiatan Penutup (15 menit): [jelaskan]
+Kegiatan Awal (15 menit): [deskripsi]
+Kegiatan Inti (${waktuInti} menit):
+A. Memahami: [deskripsi]
+B. Mengaplikasikan: [deskripsi]
+C. Merefleksi: [deskripsi]
+Kegiatan Penutup (15 menit): [deskripsi]
 
 F. ASESMEN
-Buat tabel dengan kolom: "JENIS ASESMEN" dan "DESKRIPSI"
-1. Asesmen Awal/Diagnostik
-2. Asesmen Proses/Formatif
-3. Asesmen Sumatif (buat 5 soal pilihan ganda a-e + kunci jawaban)
+Asesmen Awal/Diagnostik: [deskripsi]
+Asesmen Proses/Formatif: [deskripsi]
+Asesmen Sumatif: [deskripsi]
+Soal 1: [soal pilihan ganda]
+Soal 2: [soal pilihan ganda]
+Soal 3: [soal pilihan ganda]
+Soal 4: [soal pilihan ganda]
+Soal 5: [soal pilihan ganda]
+Kunci Jawaban: [kunci]
 
 G. BAHAN BACAAN & DAFTAR PUSTAKA
 Minimal 3 referensi.
 
 ${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
 
-Gunakan bahasa Indonesia formal. Pastikan semua tabel menggunakan format | untuk pemisah kolom. JANGAN gunakan simbol **, __, atau garis "=================".`;
+Gunakan bahasa Indonesia formal. JANGAN gunakan simbol **, __, atau garis "=================".`;
 
             const response = await fetch(GROQ_URL, {
                 method: 'POST',
