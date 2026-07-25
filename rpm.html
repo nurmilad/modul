@@ -23,33 +23,11 @@
             --secondary: #f39c12; --bg: #f0f4f8; --card-bg: #ffffff;
             --text: #1e293b; --text-light: #64748b; --border: #e2e8f0;
             --shadow: 0 4px 24px rgba(0,0,0,0.06); --radius: 16px; --radius-sm: 10px;
-            --transition: 0.25s ease; --header-height: 64px;
+            --transition: 0.25s ease;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
-        .sidebar { width:240px; background:var(--primary-dark); color:#fff; display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:1000; transition:transform var(--transition); overflow-y:auto; }
-        .sidebar-brand { padding:20px 24px; font-size:20px; font-weight:700; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:10px; }
-        .sidebar-brand i { font-size:26px; color:var(--secondary); }
-        .sidebar-brand small { font-size:12px; font-weight:400; opacity:0.7; display:block; margin-top:2px; }
-        .sidebar-menu { padding:16px 12px; flex:1; }
-        .sidebar-menu .menu-label { font-size:11px; text-transform:uppercase; letter-spacing:0.5px; opacity:0.5; padding:8px 12px 4px; font-weight:600; }
-        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:var(--radius-sm); color:rgba(255,255,255,0.7); text-decoration:none; font-weight:500; font-size:14px; transition:var(--transition); cursor:pointer; margin-bottom:2px; }
-        .sidebar-menu a:hover { background:rgba(255,255,255,0.08); color:#fff; }
-        .sidebar-menu a.active { background:rgba(255,255,255,0.14); color:#fff; }
-        .sidebar-menu a i { width:20px; text-align:center; font-size:16px; }
-        .sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,0.08); font-size:13px; opacity:0.6; display:flex; align-items:center; gap:8px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; }
 
-        .main { margin-left:240px; flex:1; display:flex; flex-direction:column; min-height:100vh; }
-        .topbar { height:var(--header-height); background:var(--card-bg); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 32px; position:sticky; top:0; z-index:500; backdrop-filter:blur(8px); background:rgba(255,255,255,0.92); }
-        .topbar-left { display:flex; align-items:center; gap:16px; }
-        .topbar-left .hamburger { display:none; background:none; border:none; font-size:20px; color:var(--text); cursor:pointer; }
-        .topbar-left h2 { font-size:18px; font-weight:600; }
-        .topbar-right { display:flex; align-items:center; gap:16px; }
-        .topbar-right .user-badge { display:flex; align-items:center; gap:8px; background:var(--bg); padding:6px 14px 6px 10px; border-radius:40px; font-size:13px; font-weight:500; }
-        .topbar-right .user-badge i { font-size:18px; color:var(--primary); }
-        .topbar-right .logout-btn { background:none; border:1px solid var(--border); padding:6px 14px; border-radius:40px; font-size:13px; color:var(--text-light); cursor:pointer; transition:var(--transition); }
-        .topbar-right .logout-btn:hover { background:#fee2e2; border-color:#f87171; color:#dc2626; }
-
-        .page-content { padding:28px 32px 40px; flex:1; }
+        .container { max-width:1200px; margin:0 auto; }
 
         .rpm-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:24px; }
         .rpm-header h1 { font-size:26px; font-weight:700; }
@@ -66,6 +44,7 @@
         .btn-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
         .btn-secondary:hover { background:var(--border); }
 
+        /* Cards */
         .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px,1fr)); gap:20px; }
         .rpm-card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; transition:var(--transition); display:flex; flex-direction:column; }
         .rpm-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.08); }
@@ -85,7 +64,7 @@
         .empty-state i { font-size:56px; opacity:0.3; margin-bottom:16px; }
         .empty-state h3 { font-size:20px; color:var(--text); margin-bottom:6px; }
 
-        /* MODAL */
+        /* Modal */
         .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:10000; display:none; align-items:center; justify-content:center; padding:20px; }
         .modal-overlay.open { display:flex; }
         .modal-box { background:#fff; border-radius:var(--radius); max-width:680px; width:100%; max-height:90vh; overflow-y:auto; padding:32px 36px; box-shadow:0 24px 64px rgba(0,0,0,0.2); animation:modalIn 0.25s ease; }
@@ -108,7 +87,10 @@
         .modal-box .modal-actions .btn-submit { background:var(--primary); color:#fff; }
         .modal-box .modal-actions .btn-submit:hover { background:var(--primary-light); }
 
-        /* TOAST */
+        /* Detail Modal */
+        .detail-content { font-size:14px; line-height:1.7; max-height:70vh; overflow-y:auto; padding-right:8px; white-space:pre-wrap; }
+
+        /* Toast */
         .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
         .toast { padding:12px 24px; border-radius:var(--radius-sm); color:#fff; font-weight:500; font-size:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; max-width:360px; }
         .toast-success { background:#10b981; }
@@ -119,15 +101,7 @@
         .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
-        #detailContent { font-size:14px; line-height:1.7; max-height:70vh; overflow-y:auto; padding-right:8px; white-space:pre-wrap; }
-
         @media (max-width:768px) {
-            .sidebar { transform:translateX(-100%); }
-            .sidebar.open { transform:translateX(0); }
-            .main { margin-left:0; }
-            .topbar-left .hamburger { display:block; }
-            .page-content { padding:16px; }
-            .topbar { padding:0 16px; }
             .modal-box .form-row { grid-template-columns:1fr; }
             .modal-box { padding:20px; }
             .cards-grid { grid-template-columns:1fr; }
@@ -136,66 +110,27 @@
 </head>
 <body>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <i class="fas fa-book-open"></i>
+    <div class="container">
+        <!-- Informasi Modul -->
+        <div id="moduleInfo" style="margin-bottom:16px;background:var(--card-bg);padding:14px 20px;border-radius:var(--radius);border:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
             <div>
-                Modul NBS
-                <small>RPM</small>
+                <strong id="modulMapel">-</strong> <span id="modulKelas">-</span>
+                <span style="color:var(--text-light);font-size:14px;margin-left:8px;" id="modulGuru">-</span>
+            </div>
+            <div style="font-size:14px;color:var(--text-light);">
+                <span id="modulJenjang">-</span> • <span id="modulFase">-</span> • <span id="modulTahun">-</span>
             </div>
         </div>
-        <nav class="sidebar-menu">
-            <div class="menu-label">Navigasi</div>
-            <a href="index.html" id="navIndex"><i class="fas fa-th-large"></i> Dashboard</a>
-            <a href="admin.html" id="navAdmin"><i class="fas fa-user-shield"></i> Admin</a>
-            <a href="guru.html" id="navGuru"><i class="fas fa-chalkboard-teacher"></i> Guru</a>
-            <a href="program.html" id="navProgram"><i class="fas fa-book"></i> Program</a>
-        </nav>
-        <div class="sidebar-footer">
-            <i class="fas fa-circle" style="color:#10b981;font-size:10px;"></i>
-            <span id="sidebarUser">Pengunjung</span>
+
+        <div class="rpm-header">
+            <div>
+                <h1>Rencana Pembelajaran Mendalam <small>RPM yang telah dibuat untuk modul ini</small></h1>
+            </div>
+            <button class="btn-plus" onclick="openModal()"><i class="fas fa-plus-circle"></i> Buat RPM Baru</button>
         </div>
-    </aside>
 
-    <!-- MAIN CONTENT -->
-    <div class="main">
-        <header class="topbar">
-            <div class="topbar-left">
-                <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-                <h2 id="pageTitle">RPM - Rencana Pembelajaran Mendalam</h2>
-            </div>
-            <div class="topbar-right">
-                <div class="user-badge">
-                    <i class="fas fa-user-circle"></i>
-                    <span id="topbarUser">Guest</span>
-                </div>
-                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Keluar</button>
-            </div>
-        </header>
-
-        <div class="page-content">
-            <!-- Informasi Modul -->
-            <div id="moduleInfo" style="margin-bottom:16px;background:var(--card-bg);padding:14px 20px;border-radius:var(--radius);border:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-                <div>
-                    <strong id="modulMapel">-</strong> <span id="modulKelas">-</span>
-                    <span style="color:var(--text-light);font-size:14px;margin-left:8px;" id="modulGuru">-</span>
-                </div>
-                <div style="font-size:14px;color:var(--text-light);">
-                    <span id="modulJenjang">-</span> • <span id="modulFase">-</span> • <span id="modulTahun">-</span>
-                </div>
-            </div>
-
-            <div class="rpm-header">
-                <div>
-                    <h1>Rencana Pembelajaran Mendalam <small>RPM yang telah dibuat untuk modul ini</small></h1>
-                </div>
-                <button class="btn-plus" onclick="openModal()"><i class="fas fa-plus-circle"></i> Buat RPM Baru</button>
-            </div>
-
-            <div class="cards-grid" id="rpmCards">
-                <!-- Akan di-render JS -->
-            </div>
+        <div class="cards-grid" id="rpmCards">
+            <!-- Akan di-render JS -->
         </div>
     </div>
 
@@ -218,7 +153,7 @@
                 <div class="form-group" id="rpmLoading" style="display:none;">
                     <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f4f8;border-radius:var(--radius-sm);">
                         <div class="spinner"></div>
-                        <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI... Mohon tunggu.</span>
+                        <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI (Groq)... Mohon tunggu.</span>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -229,16 +164,14 @@
         </div>
     </div>
 
-    <!-- ===== DETAIL RPM MODAL ===== -->
+    <!-- DETAIL RPM MODAL -->
     <div class="modal-overlay" id="detailModal">
         <div class="modal-box" style="max-width:900px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                 <h2 id="detailTitle">Rencana Pembelajaran Mendalam</h2>
                 <button onclick="closeDetailModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);">&times;</button>
             </div>
-            <div id="detailContent" style="font-size:14px;line-height:1.7;max-height:70vh;overflow-y:auto;padding-right:8px;white-space:pre-wrap;">
-                <!-- Isi RPM akan dirender di sini -->
-            </div>
+            <div id="detailContent" class="detail-content">Loading...</div>
             <div class="modal-actions" style="margin-top:16px;">
                 <button class="btn-success" onclick="printDetailRPM()"><i class="fas fa-print"></i> Cetak PDF</button>
                 <button class="btn-cancel" onclick="closeDetailModal()">Tutup</button>
@@ -261,11 +194,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ===== GEMINI API =====
-        // API Key baru dengan format Auth Key (AQ.)
-        const GEMINI_API_KEY = "AQ.AQ.Ab8RN6Kc7VmuBwJFoOHwigP0XqqQ6jQXPjGODcMSI5OgutHpjg";
-        const GEMINI_MODEL = "gemini-1.5-pro";
-        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+        // ===== GROQ API =====
+        const GROQ_API_KEY = "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";
+        const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+        const GROQ_MODEL = "llama-3.1-8b-instant"; // Model cepat dan gratis
 
         // ===== STATE =====
         let moduleId = null;
@@ -281,16 +213,6 @@
             el.textContent = msg;
             container.appendChild(el);
             setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
-        }
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-        }
-
-        function logout() {
-            localStorage.removeItem('nbs_user');
-            localStorage.removeItem('nbs_guru');
-            window.location.href = 'index.html';
         }
 
         // ===== LOAD MODULE =====
@@ -313,14 +235,6 @@
                 displayModuleInfo();
                 renderRPMCards();
                 populateTujuanSelect();
-                const user = localStorage.getItem('nbs_guru') || localStorage.getItem('nbs_user');
-                if (user) {
-                    try {
-                        const u = JSON.parse(user);
-                        document.getElementById('sidebarUser').textContent = u.name || 'Pengunjung';
-                        document.getElementById('topbarUser').textContent = u.name || 'Pengunjung';
-                    } catch (e) {}
-                }
             } catch (e) {
                 toast('Gagal memuat modul: ' + e.message, 'error');
             }
@@ -350,6 +264,7 @@
             });
         }
 
+        // ===== RENDER CARDS =====
         function renderRPMCards() {
             const container = document.getElementById('rpmCards');
             if (!rpmList || rpmList.length === 0) {
@@ -389,6 +304,7 @@
             container.innerHTML = html;
         }
 
+        // ===== VIEW RPM =====
         function viewRPM(index) {
             const rpm = rpmList[index];
             if (!rpm) { toast('RPM tidak ditemukan.', 'error'); return; }
@@ -423,6 +339,7 @@
             win.document.close();
         }
 
+        // ===== DELETE RPM =====
         async function deleteRPM(index) {
             if (!confirm('Hapus RPM ini?')) return;
             rpmList.splice(index, 1);
@@ -438,11 +355,12 @@
             }
         }
 
+        // ===== MODAL =====
         function openModal() {
             if (!moduleData) { toast('Modul belum dimuat.', 'error'); return; }
             const hasTP = atpRows.some(r => r.tujuan && r.tujuan.trim() !== '');
             if (!hasTP) {
-                toast('Belum ada Tujuan Pembelajaran. Isi ATP terlebih dahulu di tab ATP.', 'error');
+                toast('Belum ada Tujuan Pembelajaran. Isi ATP terlebih dahulu.', 'error');
                 return;
             }
             document.getElementById('modalOverlay').classList.add('open');
@@ -460,7 +378,7 @@
         }
 
         // ================================================================
-        // ===== GENERATE RPM DENGAN GEMINI =====
+        // ===== GENERATE RPM DENGAN GROQ =====
         // ================================================================
         async function generateRPM(e) {
             e.preventDefault();
@@ -479,7 +397,7 @@
             document.getElementById('btnGenerate').innerHTML = '<span class="spinner"></span> Memproses...';
 
             try {
-                const rpmContent = await callGemini(tp, deskripsi);
+                const rpmContent = await callGroq(tp, deskripsi);
                 const newRPM = {
                     judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
                     tujuanLabel: tp.tujuan.substring(0, 80) + (tp.tujuan.length > 80 ? '...' : ''),
@@ -503,14 +421,12 @@
             } catch (err) {
                 console.error(err);
                 let errorMsg = err.message;
-                if (err.message.includes('403') || err.message.includes('permission') || err.message.includes('API key not valid')) {
-                    errorMsg = 'API Key tidak valid atau tidak memiliki akses. Pastikan API Key Gemini benar dan Generative Language API sudah diaktifkan di Google Cloud Console.';
+                if (err.message.includes('401') || err.message.includes('key') || err.message.includes('auth')) {
+                    errorMsg = 'API Key Groq tidak valid. Periksa kembali API Key Anda.';
                 } else if (err.message.includes('429')) {
-                    errorMsg = 'Terlalu banyak permintaan. Tunggu beberapa saat dan coba lagi.';
-                } else if (err.message.includes('404') || err.message.includes('not found')) {
-                    errorMsg = 'Model tidak ditemukan. Coba gunakan model gemini-1.5-pro atau periksa API Key.';
-                } else if (err.message.includes('401') || err.message.includes('authentication')) {
-                    errorMsg = 'Otentikasi gagal. Pastikan API Key yang Anda gunakan aktif dan memiliki izin. Kunjungi https://aistudio.google.com/apikey untuk membuat API Key baru.';
+                    errorMsg = 'Kuota gratis Groq habis. Tunggu reset besok atau top up.';
+                } else if (err.message.includes('timeout')) {
+                    errorMsg = 'Waktu respons habis. Coba lagi nanti.';
                 }
                 toast('Gagal generate RPM: ' + errorMsg, 'error');
             } finally {
@@ -520,8 +436,8 @@
             }
         }
 
-        // ===== CALL GEMINI API =====
-        async function callGemini(tp, deskripsi) {
+        // ===== CALL GROQ API =====
+        async function callGroq(tp, deskripsi) {
             const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
 
             const profilLulusan = [
@@ -539,106 +455,69 @@
             const alokasiJP = parseInt(tp.alokasiJp) || 4;
             const jumlahPertemuan = Math.ceil(alokasiJP / jpPerMinggu);
 
-            const prompt = `
-Anda adalah asisten AI yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan profesional.
+            const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan siap pakai. Berikan jawaban dalam bahasa Indonesia yang baik dan benar, dengan format teks yang rapi dan terstruktur.`;
 
-### DATA MODUL
-- Unit Kerja / Sekolah: ${moduleData.jenjang || 'SMA'} Nurmilad Boarding School
-- Nama Guru: ${moduleData.guru || '-'}
-- Mata Pelajaran: ${moduleData.mapel || '-'}
-- Kelas / Fase: ${moduleData.kelas || '-'} / ${moduleData.fase || '-'}
-- Materi Pokok: ${tp.materi || '-'}
-- Alokasi Waktu: ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
-
-### CAPAIAN PEMBELAJARAN (CP)
-${cp}
-
-### TUJUAN PEMBELAJARAN (TP) YANG DIPILIH
-${tp.tujuan || '-'}
-
-### DESKRIPSI / ARAHAN KHUSUS DARI GURU
-${deskripsi || '(Tidak ada arahan khusus, buatlah secara profesional)'}
-
-### FORMAT RPM YANG HARUS DIHASILKAN
-Buat RPM dengan struktur berikut, gunakan format teks dengan heading dan sub-heading yang jelas:
+            const userPrompt = `
+Buat Rencana Pembelajaran Mendalam (RPM) dengan format berikut:
 
 ====================================================
 RENCANA PEMBELAJARAN MENDALAM (RPM)
 ====================================================
 
-A. IDENTITAS (dalam bentuk tabel)
-Buat tabel dengan 2 kolom:
+A. IDENTITAS (dalam bentuk tabel 2 kolom)
 - Unit Kerja    : ${moduleData.jenjang || 'SMA'} Nurmilad Boarding School
 - Nama Guru     : ${moduleData.guru || '-'}
 - Mata Pelajaran: ${moduleData.mapel || '-'}
 - Kelas/Fase    : ${moduleData.kelas || '-'} / ${moduleData.fase || '-'}
 - Materi Pokok  : ${tp.materi || '-'}
-- Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan)
+- Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
 
-B. PROFIL PELAJAR PANCASILA (dalam bentuk tabel 2 kolom)
-Pilih setidaknya 3-4 profil yang relevan dari daftar berikut:
+B. PROFIL PELAJAR PANCASILA (tabel 2 kolom)
+Pilih 3-4 profil yang relevan dari:
 ${profilLulusan.join('\n')}
-Untuk setiap profil yang dipilih, berikan deskripsi singkat bagaimana profil tersebut diintegrasikan dalam pembelajaran ini.
+Untuk setiap profil, berikan deskripsi singkat integrasinya.
 
 C. CAPAIAN PEMBELAJARAN
-Tuliskan CP yang telah diberikan di atas.
+${cp}
 
 D. DESAIN PEMBELAJARAN
 - Tujuan Pembelajaran: ${tp.tujuan || '-'}
 - Praktik Pedagogis:
-  * Konteks Boarding School: [jelaskan konteks]
+  * Konteks Boarding School: [jelaskan]
   * Pendekatan Konstruktivisme: [jelaskan]
   * Praktik Reflektif: [jelaskan]
 
-E. PENGALAMAN BELAJAR (dalam bentuk tabel per pertemuan)
-Buat rincian kegiatan untuk ${jumlahPertemuan} pertemuan.
-Setiap pertemuan = ${jpPerMinggu} JP (sekitar ${jpPerMinggu * 45} menit)
-Rincian per pertemuan:
-- Kegiatan Awal (15 menit)
-- Kegiatan Inti (sesuai sisa waktu)
-- Kegiatan Penutup (15 menit)
+E. PENGALAMAN BELAJAR (tabel per pertemuan)
+Buat rincian untuk ${jumlahPertemuan} pertemuan.
+Setiap pertemuan = ${jpPerMinggu} JP (${jpPerMinggu * 45} menit)
+Kolom: Pertemuan ke-, Kegiatan Awal (15 menit), Kegiatan Inti, Kegiatan Penutup (15 menit)
 
-Format tabel: kolom "Pertemuan ke-", "Kegiatan Awal", "Kegiatan Inti", "Kegiatan Penutup"
-
-F. ASESMEN (dalam bentuk tabel)
-1. Asesmen Awal/Diagnostik: [jelaskan]
-2. Asesmen Proses/Formatif: [jelaskan]
-3. Asesmen Sumatif (Akhir): 
-   - Buat 5 soal pilihan ganda (dengan 5 opsi a-e) dan kunci jawaban
-   - Jika ada arahan di deskripsi, sesuaikan dengan arahan tersebut
+F. ASESMEN (tabel)
+1. Asesmen Awal/Diagnostik
+2. Asesmen Proses/Formatif
+3. Asesmen Sumatif: 5 soal pilihan ganda (a-e) + kunci jawaban
 
 G. BAHAN BACAAN & DAFTAR PUSTAKA
-Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
+Minimal 3 referensi.
 
-### INSTRUKSI PENTING
-1. Gunakan bahasa Indonesia yang baik dan benar, formal namun mudah dipahami.
-2. Buatlah RPM yang detail, aplikatif, dan siap pakai.
-3. Jika ada arahan khusus di "DESKRIPSI / ARAHAN KHUSUS", pastikan untuk mengikutinya.
-4. Gunakan format tabel dengan teks yang jelas (gunakan tanda | untuk pemisah kolom).
-5. Jangan gunakan markdown atau format khusus, cukup teks biasa dengan pemisah baris.
-`;
+${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
 
-            // Panggil Gemini API dengan header x-goog-api-key
-            const response = await fetch(GEMINI_URL, {
+Gunakan bahasa Indonesia formal. Gunakan tanda | untuk pemisah kolom tabel. Jangan gunakan markdown.`;
+
+            const response = await fetch(GROQ_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-goog-api-key': GEMINI_API_KEY
+                    'Authorization': 'Bearer ' + GROQ_API_KEY
                 },
                 body: JSON.stringify({
-                    contents: [
-                        {
-                            parts: [
-                                { text: prompt }
-                            ]
-                        }
+                    model: GROQ_MODEL,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userPrompt }
                     ],
-                    generationConfig: {
-                        temperature: 0.7,
-                        maxOutputTokens: 4096,
-                        topP: 0.95,
-                        topK: 40
-                    }
+                    temperature: 0.7,
+                    max_tokens: 4096
                 })
             });
 
@@ -654,34 +533,25 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
             }
 
             const data = await response.json();
-            if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-                return data.candidates[0].content.parts[0].text;
+            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                return data.choices[0].message.content;
             } else {
-                throw new Error('Respons dari Gemini tidak valid: tidak ada konten.');
+                throw new Error('Respons dari Groq tidak valid.');
             }
         }
 
         // ===== INIT =====
         document.addEventListener('DOMContentLoaded', function() {
             loadModule();
+
             document.getElementById('modalOverlay').addEventListener('click', function(e) {
                 if (e.target === this) closeModal();
             });
             document.getElementById('detailModal').addEventListener('click', function(e) {
                 if (e.target === this) closeDetailModal();
             });
-            document.addEventListener('click', function(e) {
-                const sidebar = document.getElementById('sidebar');
-                if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
-                    if (!sidebar.contains(e.target) && !e.target.closest('.hamburger')) {
-                        sidebar.classList.remove('open');
-                    }
-                }
-            });
         });
 
-        window.toggleSidebar = toggleSidebar;
-        window.logout = logout;
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.generateRPM = generateRPM;
@@ -691,5 +561,6 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
         window.deleteRPM = deleteRPM;
         window.toast = toast;
     </script>
+
 </body>
 </html>
