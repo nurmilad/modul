@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* (CSS sama seperti sebelumnya, tidak diubah) */
+        /* ===== GAYA UTAMA ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -73,8 +73,17 @@
         .btn-plus { background:var(--primary); color:#fff; border:none; padding:10px 24px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); display:flex; align-items:center; gap:8px; }
         .btn-plus:hover { background:var(--primary-light); transform:scale(1.02); }
 
+        /* ===== CARDS - KLIKABLE ===== */
         .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:20px; }
-        .module-card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; transition:var(--transition); }
+        .module-card {
+            background:var(--card-bg);
+            border-radius:var(--radius);
+            box-shadow:var(--shadow);
+            border:1px solid var(--border);
+            overflow:hidden;
+            transition:var(--transition);
+            cursor:pointer;
+        }
         .module-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.08); }
         .module-card .card-cover { padding:18px 20px 14px; background:linear-gradient(135deg, var(--primary-dark), var(--primary-light)); color:#fff; position:relative; }
         .module-card .card-cover .card-title { font-size:18px; font-weight:600; }
@@ -83,21 +92,50 @@
         .module-card .card-body { padding:16px 20px 20px; }
         .module-card .card-body .card-meta { display:flex; flex-wrap:wrap; gap:6px 16px; font-size:13px; color:var(--text-light); margin-bottom:12px; }
         .module-card .card-body .card-meta i { width:16px; margin-right:4px; }
-        .module-card .card-actions { display:flex; gap:6px; flex-wrap:wrap; }
-        .module-card .card-actions button { padding:5px 14px; border:1px solid var(--border); background:#fff; border-radius:40px; font-size:12px; font-weight:500; cursor:pointer; transition:var(--transition); color:var(--text); }
-        .module-card .card-actions button:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
-        .module-card .card-actions .btn-atp { border-color:#8b5cf6; color:#8b5cf6; }
-        .module-card .card-actions .btn-atp:hover { background:#8b5cf6; color:#fff; }
-        .module-card .card-actions .btn-prota { border-color:#3b82f6; color:#3b82f6; }
-        .module-card .card-actions .btn-prota:hover { background:#3b82f6; color:#fff; }
-        .module-card .card-actions .btn-prosem { border-color:#10b981; color:#10b981; }
-        .module-card .card-actions .btn-prosem:hover { background:#10b981; color:#fff; }
-        .module-card .card-actions .btn-rpm { border-color:#f59e0b; color:#f59e0b; }
-        .module-card .card-actions .btn-rpm:hover { background:#f59e0b; color:#fff; }
-        .module-card .card-actions .btn-edit { border-color:#3b82f6; color:#3b82f6; }
-        .module-card .card-actions .btn-edit:hover { background:#3b82f6; color:#fff; }
-        .module-card .card-actions .btn-delete { border-color:#ef4444; color:#ef4444; margin-left:auto; }
-        .module-card .card-actions .btn-delete:hover { background:#ef4444; color:#fff; }
+        /* Tombol aksi di card */
+        .module-card .card-actions {
+            display:flex;
+            gap:6px;
+            flex-wrap:wrap;
+            margin-top:4px;
+        }
+        .module-card .card-actions button {
+            padding:4px 12px;
+            border:1px solid var(--border);
+            background:#fff;
+            border-radius:40px;
+            font-size:12px;
+            font-weight:500;
+            cursor:pointer;
+            transition:var(--transition);
+            color:var(--text);
+        }
+        .module-card .card-actions button:hover {
+            background:var(--primary);
+            color:#fff;
+            border-color:var(--primary);
+        }
+        .module-card .card-actions .btn-edit {
+            border-color:#3b82f6;
+            color:#3b82f6;
+        }
+        .module-card .card-actions .btn-edit:hover {
+            background:#3b82f6;
+            color:#fff;
+        }
+        .module-card .card-actions .btn-delete {
+            border-color:#ef4444;
+            color:#ef4444;
+        }
+        .module-card .card-actions .btn-delete:hover {
+            background:#ef4444;
+            color:#fff;
+        }
+        /* Saat hover card, efek pointer */
+        .module-card .card-actions button {
+            position:relative;
+            z-index:2;
+        }
 
         .empty-state { text-align:center; padding:60px 20px; color:var(--text-light); grid-column:1/-1; }
         .empty-state i { font-size:56px; opacity:0.3; margin-bottom:16px; }
@@ -203,14 +241,12 @@
             <p class="modal-sub" id="modalSub">Lengkapi data di bawah ini untuk memulai.</p>
             <form id="modalForm" onsubmit="submitModule(event)">
                 <input type="hidden" id="editModuleId" value="" />
-                <!-- Pilih Kelas (sudah mencakup jenjang dan fase) -->
                 <div class="form-group">
                     <label>Jenjang - Kelas (Fase)</label>
                     <select id="mKelas" required>
                         <option value="">-- Pilih Kelas --</option>
                     </select>
                 </div>
-                <!-- Hidden fields untuk jenjang dan fase yang akan diisi otomatis -->
                 <input type="hidden" id="mJenjang" value="" />
                 <input type="hidden" id="mFase" value="" />
 
@@ -357,12 +393,10 @@
         }
 
         async function loadModules() {
-            // Tanpa orderBy untuk menghindari index error
             const snap = await db.collection('modules')
                 .where('guru', '==', currentGuru.name)
                 .get();
             allModules = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            // Urutkan manual berdasarkan createdAt descending
             allModules.sort((a, b) => {
                 const t1 = a.createdAt ? a.createdAt.toMillis() : 0;
                 const t2 = b.createdAt ? b.createdAt.toMillis() : 0;
@@ -387,7 +421,6 @@
 
         // ===== POPULATE DROPDOWNS =====
         function populateDropdowns() {
-            // Populate kelas dropdown dengan format: Jenjang - Nama (Fase)
             const selKelas = document.getElementById('mKelas');
             selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
             allKelas.forEach(k => {
@@ -395,7 +428,6 @@
                 selKelas.innerHTML += `<option value="${k.id}" data-jenjang="${k.jenjang || ''}" data-fase="${k.fase || ''}">${label}</option>`;
             });
 
-            // Saat kelas dipilih, isi hidden fields
             selKelas.onchange = function() {
                 const opt = this.options[this.selectedIndex];
                 if (opt && opt.value) {
@@ -407,14 +439,12 @@
                 }
             };
 
-            // Mapel
             const selMapel = document.getElementById('mMapel');
             selMapel.innerHTML = '<option value="">-- Pilih --</option>';
             allMapel.forEach(m => {
                 selMapel.innerHTML += `<option value="${m.name}">${m.name}</option>`;
             });
 
-            // Kepsek
             const selKepsek = document.getElementById('mKepsek');
             selKepsek.innerHTML = '<option value="">-- Pilih --</option>';
             allKepsek.forEach(k => {
@@ -426,7 +456,6 @@
                 document.getElementById('mNip').value = nip;
             };
 
-            // Filter dropdowns di dashboard
             const filterMapel = document.getElementById('guruFilterMapel');
             if (filterMapel) {
                 const val = filterMapel.value;
@@ -438,7 +467,9 @@
             }
         }
 
-        // ===== RENDER DASHBOARD =====
+        // ================================================================
+        // ===== RENDER DASHBOARD (CARD KLIKABLE) =====
+        // ================================================================
         function renderDashboard() {
             const container = document.getElementById('guruContent');
             const search = document.getElementById('guruSearch') ? document.getElementById('guruSearch').value.toLowerCase() : '';
@@ -492,7 +523,7 @@
                     const faseLabel = m.fase && m.fase !== '-' ? 'Fase '+m.fase : '';
                     const subLabel = `${jenjangLabel} • ${kelasLabel}${faseLabel ? ' • '+faseLabel : ''}`;
                     html += `
-                        <div class="module-card" data-id="${m.id}">
+                        <div class="module-card" data-id="${m.id}" onclick="openModule('${m.id}')">
                             <div class="card-cover">
                                 <div class="card-title">${m.mapel || 'Tanpa Mapel'}</div>
                                 <div class="card-sub">${subLabel}</div>
@@ -504,13 +535,9 @@
                                     <span><i class="fas fa-calendar"></i> ${m.tahunPenyusunan || '-'}</span>
                                     <span><i class="fas fa-clock"></i> ${m.jpPerMinggu || '?'} JP/mg</span>
                                 </div>
-                                <div class="card-actions">
-                                    <button class="btn-atp" onclick="window.location.href='program.html?module=${m.id}&tab=atp'">ATP</button>
-                                    <button class="btn-prota" onclick="window.location.href='program.html?module=${m.id}&tab=prota'">Prota</button>
-                                    <button class="btn-prosem" onclick="window.location.href='program.html?module=${m.id}&tab=prosem'">Prosem</button>
-                                    <button class="btn-rpm" onclick="window.location.href='program.html?module=${m.id}&tab=rpm'">RPM</button>
-                                    <button class="btn-edit" onclick="editModule('${m.id}')"><i class="fas fa-pen"></i></button>
-                                    <button class="btn-delete" onclick="deleteModule('${m.id}')"><i class="fas fa-trash"></i></button>
+                                <div class="card-actions" onclick="event.stopPropagation();">
+                                    <button class="btn-edit" onclick="editModule('${m.id}')"><i class="fas fa-pen"></i> Edit</button>
+                                    <button class="btn-delete" onclick="deleteModule('${m.id}')"><i class="fas fa-trash"></i> Hapus</button>
                                 </div>
                             </div>
                         </div>
@@ -520,8 +547,13 @@
 
             html += `</div>`;
             container.innerHTML = html;
-            // Re-populate filter dropdowns (jika ada perubahan)
             populateDropdowns();
+        }
+
+        // ===== FUNGSI BUKA MODUL =====
+        function openModule(moduleId) {
+            // Buka program.html dengan tab ATP
+            window.location.href = 'program.html?module=' + moduleId + '&tab=atp';
         }
 
         function filterGuru() { renderDashboard(); }
@@ -545,21 +577,18 @@
             const mod = allModules.find(m => m.id === id);
             if (!mod) { toast('Modul tidak ditemukan.', 'error'); return; }
             
-            // Set judul dan tombol untuk mode edit
             document.getElementById('modalTitle').textContent = 'Edit Modul Ajar';
             document.getElementById('modalSub').textContent = 'Ubah data modul sesuai kebutuhan.';
             document.getElementById('btnSubmitText').textContent = 'Update Modul';
             document.getElementById('editModuleId').value = id;
             
-            // Isi form dengan data modul
-            // Cari kelas yang sesuai
+            // Isi form
             const kelasOption = document.querySelector(`#mKelas option[data-jenjang="${mod.jenjang}"][data-fase="${mod.fase}"]`);
             if (kelasOption) {
                 document.getElementById('mKelas').value = kelasOption.value;
                 document.getElementById('mJenjang').value = mod.jenjang || '';
                 document.getElementById('mFase').value = mod.fase || '';
             } else {
-                // Jika tidak ditemukan, coba cari berdasarkan nama kelas
                 const opt = Array.from(document.querySelectorAll('#mKelas option')).find(o => o.textContent.includes(mod.kelas));
                 if (opt) {
                     document.getElementById('mKelas').value = opt.value;
@@ -577,19 +606,16 @@
             document.getElementById('mTempat').value = mod.tempatPembuatan || '';
             document.getElementById('mTanggal').value = mod.tanggalPembuatan || new Date().toISOString().split('T')[0];
             
-            // Buka modal
             document.getElementById('modalOverlay').classList.add('open');
         }
 
         // ===== MODAL =====
         function openModal() {
             if (!currentGuru) { toast('Silakan login terlebih dahulu.', 'error'); return; }
-            // Reset untuk mode buat baru
             document.getElementById('modalTitle').textContent = 'Buat Modul Ajar Baru';
             document.getElementById('modalSub').textContent = 'Lengkapi data di bawah ini untuk memulai.';
             document.getElementById('btnSubmitText').textContent = 'Buat Modul';
             document.getElementById('editModuleId').value = '';
-            // Reset form
             document.getElementById('mKelas').value = '';
             document.getElementById('mJenjang').value = '';
             document.getElementById('mFase').value = '';
@@ -641,11 +667,9 @@
             }
             try {
                 if (isEdit) {
-                    // Update existing module
                     await db.collection('modules').doc(editId).update(data);
                     toast('Modul berhasil diperbarui!', 'success');
                 } else {
-                    // Create new module
                     data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                     data.data = [];
                     data.atp = '';
@@ -694,6 +718,7 @@
         window.closeModal = closeModal;
         window.submitModule = submitModule;
         window.editModule = editModule;
+        window.openModule = openModule;
         window.filterGuru = filterGuru;
         window.refreshGuru = refreshGuru;
         window.deleteModule = deleteModule;
@@ -702,6 +727,5 @@
         window.loadAllData = loadAllData;
         window.renderDashboard = renderDashboard;
     </script>
-
 </body>
 </html>
