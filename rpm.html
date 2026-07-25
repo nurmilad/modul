@@ -63,6 +63,8 @@
         .btn-danger:hover { background:#dc2626; }
         .btn-success { background:#10b981; color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
         .btn-success:hover { background:#059669; }
+        .btn-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
+        .btn-secondary:hover { background:var(--border); }
 
         .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px,1fr)); gap:20px; }
         .rpm-card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; transition:var(--transition); display:flex; flex-direction:column; }
@@ -104,10 +106,7 @@
         .modal-box .modal-actions .btn-cancel { background:var(--bg); color:var(--text); }
         .modal-box .modal-actions .btn-cancel:hover { background:var(--border); }
         .modal-box .modal-actions .btn-submit { background:var(--primary); color:#fff; }
-        .modal-box .modal-actions .btn-submit:disabled { opacity:0.6; cursor:not-allowed; }
-
-        /* Detail modal */
-        .detail-content { font-size:14px; line-height:1.8; max-height:70vh; overflow-y:auto; padding-right:8px; white-space:pre-wrap; }
+        .modal-box .modal-actions .btn-submit:hover { background:var(--primary-light); }
 
         /* TOAST */
         .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
@@ -117,8 +116,12 @@
         .toast-info { background:var(--primary); }
         @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
+        /* Loading spinner */
         .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* Detail modal */
+        #detailContent { font-size:14px; line-height:1.7; max-height:70vh; overflow-y:auto; padding-right:8px; white-space:pre-wrap; }
 
         @media (max-width:768px) {
             .sidebar { transform:translateX(-100%); }
@@ -127,6 +130,7 @@
             .topbar-left .hamburger { display:block; }
             .page-content { padding:16px; }
             .topbar { padding:0 16px; }
+            .modal-box .form-row { grid-template-columns:1fr; }
             .modal-box { padding:20px; }
             .cards-grid { grid-template-columns:1fr; }
         }
@@ -234,7 +238,9 @@
                 <h2 id="detailTitle">Rencana Pembelajaran Mendalam</h2>
                 <button onclick="closeDetailModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);">&times;</button>
             </div>
-            <div id="detailContent" class="detail-content"></div>
+            <div id="detailContent" style="font-size:14px;line-height:1.7;max-height:70vh;overflow-y:auto;padding-right:8px;white-space:pre-wrap;">
+                <!-- Isi RPM akan dirender di sini -->
+            </div>
             <div class="modal-actions" style="margin-top:16px;">
                 <button class="btn-success" onclick="printDetailRPM()"><i class="fas fa-print"></i> Cetak PDF</button>
                 <button class="btn-cancel" onclick="closeDetailModal()">Tutup</button>
@@ -259,7 +265,8 @@
 
         // ===== GEMINI API =====
         const GEMINI_API_KEY = "AIzaSyAUyYfNpCH37T4fIfIm6qXr6yzZS7xcVyo";
-        const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+        const GEMINI_MODEL = "gemini-1.5-pro"; // Model yang stabil dan support generateContent
+        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
         // ===== STATE =====
         let moduleId = null;
@@ -507,12 +514,14 @@
             } catch (err) {
                 console.error(err);
                 let errorMsg = err.message;
-                if (err.message.includes('403') || err.message.includes('permission') || err.message.includes('API key')) {
-                    errorMsg = 'API Key Gemini tidak valid atau tidak memiliki akses. Pastikan API Key benar dan sudah diaktifkan.';
+                if (err.message.includes('403') || err.message.includes('permission')) {
+                    errorMsg = 'API Key tidak valid atau tidak memiliki akses. Pastikan API Key Gemini benar dan sudah diaktifkan.';
                 } else if (err.message.includes('429')) {
                     errorMsg = 'Terlalu banyak permintaan. Tunggu beberapa saat dan coba lagi.';
                 } else if (err.message.includes('404')) {
-                    errorMsg = 'Model tidak ditemukan. Coba gunakan model gemini-1.5-flash atau periksa API Key.';
+                    errorMsg = 'Model tidak ditemukan. Coba gunakan model gemini-1.5-pro atau periksa API Key.';
+                } else if (err.message.includes('not found')) {
+                    errorMsg = 'Model tidak ditemukan. Pastikan API Key untuk Gemini sudah benar.';
                 }
                 toast('Gagal generate RPM: ' + errorMsg, 'error');
             } finally {
@@ -655,6 +664,7 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
             }
 
             const data = await response.json();
+            // Ekstrak teks dari response Gemini
             if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
                 return data.candidates[0].content.parts[0].text;
             } else {
