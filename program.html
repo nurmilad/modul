@@ -464,11 +464,10 @@
                 </div>
             </div>
 
-            <!-- ===== TAB RPM (LANGSUNG REDIRECT) ===== -->
+            <!-- ===== TAB RPM (MENGGUNAKAN IFRAME) ===== -->
             <div class="tab-content" id="tab-rpm">
-                <div style="padding:40px 20px;text-align:center;color:var(--text-light);">
-                    <i class="fas fa-spinner fa-spin" style="font-size:48px;opacity:0.5;margin-bottom:16px;"></i>
-                    <p>Mengalihkan ke halaman RPM...</p>
+                <div id="rpmIframeContainer" style="width:100%;height:800px;border:none;">
+                    <!-- Jika ada modul, iframe akan dibuat oleh JavaScript -->
                 </div>
             </div>
 
@@ -499,6 +498,7 @@
         let isDirty = false;
         let initialData = { cp: '', atpRows: [] };
         let dragSourceIndex = null;
+        let rpmIframeCreated = false;
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -1480,24 +1480,34 @@
         }
 
         // ================================================================
-        // ===== BUKA RPM LANGSUNG =====
-        // ================================================================
-        function openRPMDirect() {
-            if (!moduleId) {
-                toast('Modul belum dimuat.', 'error');
-                return;
-            }
-            window.open('rpm.html?module=' + moduleId, '_blank');
-        }
-
         // ===== SWITCH TAB =====
+        // ================================================================
         function switchTab(tabId) {
-            // Jika tab yang dipilih adalah RPM, langsung redirect
+            // Jika tab yang dipilih adalah RPM, tampilkan iframe (tanpa redirect)
             if (tabId === 'tab-rpm') {
-                openRPMDirect();
+                // Aktifkan tab
+                document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.program-tabs button').forEach(el => el.classList.remove('active'));
+                document.getElementById(tabId).classList.add('active');
+                document.querySelector(`.program-tabs button[data-tab="${tabId}"]`).classList.add('active');
+
+                // Buat iframe jika belum ada
+                const container = document.getElementById('rpmIframeContainer');
+                if (!container.querySelector('iframe') && moduleId) {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = 'rpm.html?module=' + moduleId;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '800px';
+                    iframe.style.border = 'none';
+                    iframe.style.display = 'block';
+                    container.appendChild(iframe);
+                } else if (!moduleId) {
+                    container.innerHTML = '<div style="color:var(--text-light);padding:40px;text-align:center;">Modul belum dimuat. Silakan pilih modul terlebih dahulu.</div>';
+                }
                 return;
             }
 
+            // Untuk tab lain, lakukan pengecekan dirty
             if (isDirty && !confirm('Ada data yang belum disimpan. Yakin ingin pindah tab?')) return;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.program-tabs button').forEach(el => el.classList.remove('active'));
@@ -1551,7 +1561,6 @@
         window.handleDragOver = handleDragOver;
         window.handleDragLeave = handleDragLeave;
         window.handleDrop = handleDrop;
-        window.openRPMDirect = openRPMDirect;
     </script>
 </body>
 </html>
