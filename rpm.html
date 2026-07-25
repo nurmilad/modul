@@ -17,6 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
+        /* ===== GAYA UTAMA (SAMA SEPERTI SEBELUMNYA) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -121,6 +122,9 @@
         .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
+        /* Detail modal */
+        #detailContent { font-size:14px; line-height:1.7; max-height:70vh; overflow-y:auto; padding-right:8px; white-space:pre-wrap; }
+
         @media (max-width:768px) {
             .sidebar { transform:translateX(-100%); }
             .sidebar.open { transform:translateX(0); }
@@ -218,7 +222,7 @@
                 <div class="form-group" id="rpmLoading" style="display:none;">
                     <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f4f8;border-radius:var(--radius-sm);">
                         <div class="spinner"></div>
-                        <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI... Mohon tunggu.</span>
+                        <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI (Gemini)... Mohon tunggu.</span>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -236,7 +240,7 @@
                 <h2 id="detailTitle">Rencana Pembelajaran Mendalam</h2>
                 <button onclick="closeDetailModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);">&times;</button>
             </div>
-            <div id="detailContent" style="font-size:14px;line-height:1.7;max-height:70vh;overflow-y:auto;padding-right:8px;">
+            <div id="detailContent" style="font-size:14px;line-height:1.7;max-height:70vh;overflow-y:auto;padding-right:8px;white-space:pre-wrap;">
                 <!-- Isi RPM akan dirender di sini -->
             </div>
             <div class="modal-actions" style="margin-top:16px;">
@@ -261,8 +265,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        const DEEPSEEK_API_KEY = "sk-b6b352ea4f58415d89fd9b3b2619b149";
-        const DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions";
+        // ===== GEMINI API =====
+        const GEMINI_API_KEY = "AQ.Ab8RN6LFRxo4eMLcqyslb7etkBFPzb8SMPn6aSv52DPvO7dsWA";
+        const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
 
         // ===== STATE =====
         let moduleId = null;
@@ -396,9 +401,7 @@
             const rpm = rpmList[index];
             if (!rpm) { toast('RPM tidak ditemukan.', 'error'); return; }
             document.getElementById('detailTitle').textContent = rpm.judul || 'Rencana Pembelajaran Mendalam';
-            // Render konten dengan format yang lebih rapi (preserve newlines)
-            const content = rpm.content || 'Konten kosong.';
-            document.getElementById('detailContent').innerHTML = content.replace(/\n/g, '<br>');
+            document.getElementById('detailContent').textContent = rpm.content || 'Konten kosong.';
             document.getElementById('detailModal').classList.add('open');
         }
 
@@ -407,7 +410,7 @@
         }
 
         function printDetailRPM() {
-            const content = document.getElementById('detailContent').innerHTML;
+            const content = document.getElementById('detailContent').textContent;
             const title = document.getElementById('detailTitle').textContent;
             const win = window.open('', '_blank', 'width=800,height=600');
             win.document.write(`
@@ -415,8 +418,7 @@
                 <style>
                     body { font-family:'Times New Roman',serif; padding:30px; line-height:1.6; max-width:1000px; margin:0 auto; }
                     .print-title { font-size:20pt; font-weight:700; text-align:center; margin-bottom:16px; text-transform:uppercase; }
-                    .print-content { font-size:11pt; }
-                    .print-content br { display:block; margin:4px 0; }
+                    .print-content { font-size:11pt; white-space:pre-wrap; }
                 </style>
                 </head><body>
                 <div class="print-title">${title}</div>
@@ -448,7 +450,6 @@
         // ===== MODAL =====
         function openModal() {
             if (!moduleData) { toast('Modul belum dimuat.', 'error'); return; }
-            // Periksa apakah ada TP
             const hasTP = atpRows.some(r => r.tujuan && r.tujuan.trim() !== '');
             if (!hasTP) {
                 toast('Belum ada Tujuan Pembelajaran. Isi ATP terlebih dahulu di tab ATP.', 'error');
@@ -468,7 +469,9 @@
             document.getElementById('btnGenerate').disabled = false;
         }
 
-        // ===== GENERATE RPM =====
+        // ================================================================
+        // ===== GENERATE RPM DENGAN GEMINI =====
+        // ================================================================
         async function generateRPM(e) {
             e.preventDefault();
             const tpIndex = document.getElementById('rpmTujuanSelect').value;
@@ -487,7 +490,7 @@
             document.getElementById('btnGenerate').innerHTML = '<span class="spinner"></span> Memproses...';
 
             try {
-                const rpmContent = await callDeepSeek(tp, deskripsi);
+                const rpmContent = await callGemini(tp, deskripsi);
                 // Simpan ke array rpmList
                 const newRPM = {
                     judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
@@ -503,15 +506,23 @@
                     rpmList: rpmList,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                toast('RPM berhasil dibuat!', 'success');
+                toast('RPM berhasil dibuat dengan Gemini!', 'success');
                 closeModal();
                 renderRPMCards();
-                // Tampilkan detail RPM yang baru dibuat
                 setTimeout(() => {
                     viewRPM(rpmList.length - 1);
                 }, 400);
             } catch (err) {
-                toast('Gagal generate RPM: ' + err.message, 'error');
+                console.error(err);
+                let errorMsg = err.message;
+                if (err.message.includes('403') || err.message.includes('permission')) {
+                    errorMsg = 'API Key tidak valid atau tidak memiliki akses. Pastikan API Key Gemini benar dan sudah diaktifkan.';
+                } else if (err.message.includes('429')) {
+                    errorMsg = 'Terlalu banyak permintaan. Tunggu beberapa saat dan coba lagi.';
+                } else if (err.message.includes('404')) {
+                    errorMsg = 'Model tidak ditemukan. Coba gunakan model gemini-1.5-flash atau periksa API Key.';
+                }
+                toast('Gagal generate RPM: ' + errorMsg, 'error');
             } finally {
                 document.getElementById('rpmLoading').style.display = 'none';
                 document.getElementById('btnGenerate').disabled = false;
@@ -519,11 +530,10 @@
             }
         }
 
-        // ===== CALL DEEPSEEK API =====
-        async function callDeepSeek(tp, deskripsi) {
+        // ===== CALL GEMINI API =====
+        async function callGemini(tp, deskripsi) {
             const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
 
-            // Siapkan data profil lulusan (8 profil)
             const profilLulusan = [
                 'Beriman & Bertakwa (Iman)',
                 'Berakhlak Mulia (Adab)',
@@ -618,29 +628,47 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
 5. Jangan gunakan markdown atau format khusus, cukup teks biasa dengan pemisah baris.
 `;
 
-            const response = await fetch(DEEPSEEK_URL, {
+            // Panggil Gemini API
+            const response = await fetch(GEMINI_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + DEEPSEEK_API_KEY
                 },
                 body: JSON.stringify({
-                    model: 'deepseek-chat',
-                    messages: [
-                        { role: 'system', content: 'Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan siap pakai. Berikan jawaban dalam bahasa Indonesia yang baik dan benar, dengan format teks yang rapi dan terstruktur.' },
-                        { role: 'user', content: prompt }
+                    contents: [
+                        {
+                            parts: [
+                                { text: prompt }
+                            ]
+                        }
                     ],
-                    temperature: 0.7,
-                    max_tokens: 4096
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 4096,
+                        topP: 0.95,
+                        topK: 40
+                    }
                 })
             });
 
             if (!response.ok) {
-                const err = await response.text();
-                throw new Error(`API Error (${response.status}): ${err}`);
+                const errorData = await response.json().catch(() => ({}));
+                let errorMsg = `HTTP ${response.status}`;
+                if (errorData.error && errorData.error.message) {
+                    errorMsg = errorData.error.message;
+                } else {
+                    errorMsg = response.statusText || 'Unknown error';
+                }
+                throw new Error(errorMsg);
             }
+
             const data = await response.json();
-            return data.choices[0].message.content;
+            // Ekstrak teks dari response Gemini
+            if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                throw new Error('Respons dari Gemini tidak valid: tidak ada konten.');
+            }
         }
 
         // ===== INIT =====
@@ -678,6 +706,5 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
         window.deleteRPM = deleteRPM;
         window.toast = toast;
     </script>
-
 </body>
 </html>
