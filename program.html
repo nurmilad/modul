@@ -310,7 +310,7 @@
                 text-align:center !important;
             }
             table.print-table-prosem td { text-align:center; }
-            table.print-table-prosem td.left { text-align:left !important; } /* perbaikan: rata kiri untuk tujuan pembelajaran */
+            table.print-table-prosem td.left { text-align:left !important; }
         }
     </style>
 </head>
@@ -464,12 +464,23 @@
                 </div>
             </div>
 
-            <!-- TAB RPM (placeholder) -->
+            <!-- ===== TAB RPM (DIPERBAIKI) ===== -->
             <div class="tab-content" id="tab-rpm">
-                <div style="padding:40px 20px;text-align:center;color:var(--text-light);">
-                    <i class="fas fa-robot" style="font-size:48px;opacity:0.3;margin-bottom:16px;"></i>
-                    <h3>Rencana Pembelajaran Mendalam (RPM)</h3>
-                    <p>Akan dikembangkan pada tahap berikutnya dengan integrasi AI.</p>
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                    <h3 style="font-size:18px;font-weight:600;">Rencana Pembelajaran Mendalam (RPM)</h3>
+                </div>
+                <div id="rpmContent" style="padding:20px;text-align:center;">
+                    <div style="background:var(--bg);border-radius:var(--radius-sm);padding:30px;border:1px solid var(--border);">
+                        <i class="fas fa-robot" style="font-size:48px;color:var(--primary);opacity:0.5;margin-bottom:12px;display:block;"></i>
+                        <h4 style="font-size:18px;font-weight:600;margin-bottom:8px;">Halaman RPM Terpisah</h4>
+                        <p style="color:var(--text-light);margin-bottom:16px;">Kelola Rencana Pembelajaran Mendalam di halaman khusus yang terintegrasi dengan AI DeepSeek.</p>
+                        <button class="btn-success" onclick="openRPM()" style="padding:10px 32px;font-size:16px;">
+                            <i class="fas fa-external-link-alt"></i> Buka Halaman RPM
+                        </button>
+                        <p style="margin-top:12px;font-size:12px;color:var(--text-light);">
+                            <i class="fas fa-info-circle"></i> Halaman RPM akan terbuka di tab baru.
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -603,6 +614,11 @@
                 moduleData = { id: doc.id, ...doc.data() };
                 displayModuleInfo();
                 loadATPData();
+                // Jika tab RPM diminta, buka otomatis
+                const tabParam = params.get('tab');
+                if (tabParam === 'rpm') {
+                    switchTab('tab-rpm');
+                }
             } catch (e) {
                 toast('Gagal memuat modul: ' + e.message, 'error');
             }
@@ -1475,6 +1491,17 @@
             });
         }
 
+        // ================================================================
+        // ===== BUKA RPM =====
+        // ================================================================
+        function openRPM() {
+            if (!moduleId) {
+                toast('Modul belum dimuat.', 'error');
+                return;
+            }
+            window.open('rpm.html?module=' + moduleId, '_blank');
+        }
+
         // ===== SWITCH TAB =====
         function switchTab(tabId) {
             if (isDirty && !confirm('Ada data yang belum disimpan. Yakin ingin pindah tab?')) return;
@@ -1488,6 +1515,7 @@
             } else if (tabId === 'tab-prosem') {
                 renderProsem();
             }
+            // Tidak ada render khusus untuk RPM karena sudah dihandle oleh tombol
         }
 
         // ===== INIT =====
@@ -1530,6 +1558,7 @@
         window.handleDragOver = handleDragOver;
         window.handleDragLeave = handleDragLeave;
         window.handleDrop = handleDrop;
+        window.openRPM = openRPM;
     </script>
 </body>
 </html>
