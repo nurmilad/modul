@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* semua CSS sama seperti sebelumnya (tidak ada perubahan) */
+        /* ===== RESET & VARIABLES ===== */
         * {
             margin: 0;
             padding: 0;
@@ -46,6 +46,8 @@
             display: flex;
             min-height: 100vh;
         }
+
+        /* ===== SIDEBAR ===== */
         .sidebar {
             width: 240px;
             background: var(--primary-dark);
@@ -135,6 +137,7 @@
             font-size: 14px;
         }
 
+        /* ===== MAIN ===== */
         .main {
             margin-left: 240px;
             flex: 1;
@@ -143,6 +146,7 @@
             min-height: 100vh;
         }
 
+        /* ===== TOPBAR ===== */
         .topbar {
             height: var(--header-height);
             background: var(--card-bg);
@@ -209,6 +213,7 @@
             color: #dc2626;
         }
 
+        /* ===== PAGE ===== */
         .page-content {
             padding: 28px 32px 40px;
             flex: 1;
@@ -272,6 +277,7 @@
             background: var(--primary-light);
         }
 
+        /* ===== STATS ===== */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -296,12 +302,14 @@
             margin-top: 2px;
         }
 
+        /* ===== CARDS GRID ===== */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
+        /* ===== MODULE CARD ===== */
         .module-card {
             background: var(--card-bg);
             border-radius: var(--radius);
@@ -309,10 +317,13 @@
             border: 1px solid var(--border);
             overflow: hidden;
             transition: var(--transition);
+            cursor: pointer;
+            /* seluruh card bisa diklik */
         }
         .module-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            transform: translateY(-6px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.10);
+            border-color: var(--primary-light);
         }
         .module-card .card-cover {
             padding: 18px 20px 14px;
@@ -326,7 +337,7 @@
         }
         .module-card .card-cover .card-sub {
             font-size: 13px;
-            opacity: 0.8;
+            opacity: 0.85;
             margin-top: 2px;
         }
         .module-card .card-cover .card-badge {
@@ -350,66 +361,32 @@
             gap: 6px 16px;
             font-size: 13px;
             color: var(--text-light);
-            margin-bottom: 12px;
+            margin-bottom: 4px;
         }
         .module-card .card-body .card-meta i {
             width: 16px;
             margin-right: 4px;
         }
-        .module-card .card-actions {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .module-card .card-actions button {
-            padding: 5px 14px;
-            border: 1px solid var(--border);
-            background: #fff;
-            border-radius: 40px;
+
+        /* Indikator klik di card */
+        .module-card .click-hint {
             font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--text);
+            color: var(--text-light);
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+            opacity: 0.6;
+            transition: opacity var(--transition);
         }
-        .module-card .card-actions button:hover {
-            background: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
-        .module-card .card-actions .btn-atp {
-            border-color: #8b5cf6;
-            color: #8b5cf6;
-        }
-        .module-card .card-actions .btn-atp:hover {
-            background: #8b5cf6;
-            color: #fff;
-        }
-        .module-card .card-actions .btn-prota {
-            border-color: #3b82f6;
-            color: #3b82f6;
-        }
-        .module-card .card-actions .btn-prota:hover {
-            background: #3b82f6;
-            color: #fff;
-        }
-        .module-card .card-actions .btn-prosem {
-            border-color: #10b981;
-            color: #10b981;
-        }
-        .module-card .card-actions .btn-prosem:hover {
-            background: #10b981;
-            color: #fff;
-        }
-        .module-card .card-actions .btn-rpm {
-            border-color: #f59e0b;
-            color: #f59e0b;
-        }
-        .module-card .card-actions .btn-rpm:hover {
-            background: #f59e0b;
-            color: #fff;
+        .module-card:hover .click-hint {
+            opacity: 1;
+            color: var(--primary);
         }
 
+        /* ===== EMPTY STATE ===== */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -427,6 +404,7 @@
             margin-bottom: 6px;
         }
 
+        /* ===== TOAST ===== */
         .toast-container {
             position: fixed;
             bottom: 24px;
@@ -466,6 +444,7 @@
             }
         }
 
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -515,7 +494,7 @@
 </head>
 <body>
 
-    <!-- SIDEBAR -->
+    <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <i class="fas fa-book-open"></i>
@@ -536,7 +515,7 @@
         </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
+    <!-- ===== MAIN ===== -->
     <div class="main">
         <!-- TOPBAR -->
         <header class="topbar">
@@ -549,11 +528,11 @@
                     <i class="fas fa-user-circle"></i>
                     <span id="topbarUser">Pengunjung</span>
                 </div>
-                <!-- Tidak ada tombol logout karena tidak login -->
+                <!-- Tidak ada tombol logout karena mode pengunjung (read-only) -->
             </div>
         </header>
 
-        <!-- PAGE CONTENT -->
+        <!-- ===== PAGE CONTENT ===== -->
         <div class="page-content">
             <div class="dash-header">
                 <div>
@@ -573,6 +552,7 @@
                 </div>
             </div>
 
+            <!-- STATS -->
             <div class="stats-row" id="dashStats">
                 <div class="stat-card"><div class="stat-number" id="statTotal">0</div><div class="stat-label">Total Modul</div></div>
                 <div class="stat-card"><div class="stat-number" id="statMapel">0</div><div class="stat-label">Mata Pelajaran</div></div>
@@ -580,16 +560,19 @@
                 <div class="stat-card"><div class="stat-number" id="statRPM">0</div><div class="stat-label">Dengan RPM</div></div>
             </div>
 
+            <!-- CARDS -->
             <div class="cards-grid" id="dashCards">
-                <!-- Cards akan di-render oleh JavaScript -->
+                <!-- Akan di-render oleh JavaScript -->
             </div>
         </div>
     </div>
 
-    <!-- TOAST CONTAINER -->
+    <!-- ===== TOAST ===== -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- FIREBASE & SCRIPT -->
+    <!-- ================================================================ -->
+    <!-- ===== FIREBASE & SCRIPT ===== -->
+    <!-- ================================================================ -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A",
@@ -604,6 +587,7 @@
 
         let allModules = [];
 
+        // ===== TOAST =====
         function toast(msg, type = 'info') {
             const container = document.getElementById('toastContainer');
             const el = document.createElement('div');
@@ -613,10 +597,12 @@
             setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
         }
 
+        // ===== SIDEBAR =====
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
 
+        // ===== LOAD MODULES =====
         async function loadModules() {
             try {
                 const snap = await db.collection('modules').orderBy('createdAt', 'desc').get();
@@ -628,6 +614,7 @@
             }
         }
 
+        // ===== POPULATE MAPEL FILTER =====
         function populateMapelFilter() {
             const sel = document.getElementById('dashFilterMapel');
             const mapelSet = new Set(allModules.map(m => m.mapel).filter(Boolean));
@@ -639,6 +626,7 @@
             sel.value = currentVal;
         }
 
+        // ===== RENDER DASHBOARD =====
         function renderDashboard() {
             const search = document.getElementById('dashSearch').value.toLowerCase();
             const filterJenjang = document.getElementById('dashFilterJenjang').value;
@@ -652,7 +640,7 @@
                 return matchSearch && matchJenjang && matchMapel;
             });
 
-            // Stats
+            // ===== STATS =====
             document.getElementById('statTotal').textContent = allModules.length;
             const mapelSet = new Set(allModules.map(m => m.mapel).filter(Boolean));
             document.getElementById('statMapel').textContent = mapelSet.size;
@@ -661,6 +649,7 @@
             const rpmCount = allModules.filter(m => m.rpm && m.rpm.length > 20).length;
             document.getElementById('statRPM').textContent = rpmCount;
 
+            // ===== CARDS =====
             const container = document.getElementById('dashCards');
             if (filtered.length === 0) {
                 container.innerHTML = `
@@ -676,10 +665,14 @@
             container.innerHTML = filtered.map(m => {
                 const jenjangLabel = m.jenjang || '-';
                 const kelasLabel = m.kelas || '-';
-                const faseLabel = m.fase && m.fase !== '-' ? 'Fase '+m.fase : '';
-                const subLabel = `${jenjangLabel} • ${kelasLabel}${faseLabel ? ' • '+faseLabel : ''}`;
+                const faseLabel = m.fase && m.fase !== '-' ? 'Fase ' + m.fase : '';
+                const subLabel = `${jenjangLabel} • ${kelasLabel}${faseLabel ? ' • ' + faseLabel : ''}`;
+
                 return `
-                    <div class="module-card" data-id="${m.id}">
+                    <div class="module-card" 
+                         data-id="${m.id}" 
+                         onclick="openModule('${m.id}')"
+                         title="Klik untuk membuka modul">
                         <div class="card-cover">
                             <div class="card-title">${m.mapel || 'Tanpa Mapel'}</div>
                             <div class="card-sub">${subLabel}</div>
@@ -691,11 +684,8 @@
                                 <span><i class="fas fa-calendar"></i> ${m.tahunPenyusunan || '-'}</span>
                                 <span><i class="fas fa-clock"></i> ${m.jpPerMinggu || '?'} JP/mg</span>
                             </div>
-                            <div class="card-actions">
-                                <button class="btn-atp" onclick="window.location.href='program.html?module=${m.id}&tab=atp'">ATP</button>
-                                <button class="btn-prota" onclick="window.location.href='program.html?module=${m.id}&tab=prota'">Prota</button>
-                                <button class="btn-prosem" onclick="window.location.href='program.html?module=${m.id}&tab=prosem'">Prosem</button>
-                                <button class="btn-rpm" onclick="window.location.href='program.html?module=${m.id}&tab=rpm'">RPM</button>
+                            <div class="click-hint">
+                                <i class="fas fa-arrow-right"></i> Klik untuk buka modul
                             </div>
                         </div>
                     </div>
@@ -703,6 +693,13 @@
             }).join('');
         }
 
+        // ===== BUKA MODUL (klik card) =====
+        function openModule(moduleId) {
+            // Arahkan ke program.html dengan tab ATP sebagai default
+            window.location.href = 'program.html?module=' + moduleId + '&tab=atp';
+        }
+
+        // ===== FILTER & REFRESH =====
         function filterModules() {
             renderDashboard();
         }
@@ -712,9 +709,10 @@
             toast('Dashboard diperbarui', 'info');
         }
 
+        // ===== CLOSE SIDEBAR ON OUTSIDE CLICK (MOBILE) =====
         document.addEventListener('DOMContentLoaded', function() {
             loadModules();
-            // Sidebar close on outside click mobile
+
             document.addEventListener('click', function(e) {
                 const sidebar = document.getElementById('sidebar');
                 if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
@@ -725,11 +723,13 @@
             });
         });
 
+        // ===== EXPOSE GLOBAL =====
         window.toggleSidebar = toggleSidebar;
         window.filterModules = filterModules;
         window.refreshModules = refreshModules;
-        window.loadModules = loadModules;
+        window.openModule = openModule;
         window.toast = toast;
+        window.loadModules = loadModules;
     </script>
 </body>
 </html>
