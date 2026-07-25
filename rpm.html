@@ -44,7 +44,6 @@
         .btn-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
         .btn-secondary:hover { background:var(--border); }
 
-        /* Cards */
         .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px,1fr)); gap:20px; }
         .rpm-card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; transition:var(--transition); display:flex; flex-direction:column; }
         .rpm-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.08); }
@@ -64,7 +63,6 @@
         .empty-state i { font-size:56px; opacity:0.3; margin-bottom:16px; }
         .empty-state h3 { font-size:20px; color:var(--text); margin-bottom:6px; }
 
-        /* Modal */
         .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:10000; display:none; align-items:center; justify-content:center; padding:20px; }
         .modal-overlay.open { display:flex; }
         .modal-box { background:#fff; border-radius:var(--radius); max-width:680px; width:100%; max-height:90vh; overflow-y:auto; padding:32px 36px; box-shadow:0 24px 64px rgba(0,0,0,0.2); animation:modalIn 0.25s ease; }
@@ -87,10 +85,19 @@
         .modal-box .modal-actions .btn-submit { background:var(--primary); color:#fff; }
         .modal-box .modal-actions .btn-submit:hover { background:var(--primary-light); }
 
-        /* Detail Modal */
-        .detail-content { font-size:14px; line-height:1.7; max-height:70vh; overflow-y:auto; padding-right:8px; white-space:pre-wrap; }
+        /* Detail Modal - RAPI DENGAN TABEL */
+        .detail-modal-box { max-width:1000px !important; }
+        .detail-content { font-size:14px; line-height:1.8; max-height:70vh; overflow-y:auto; padding-right:8px; }
+        .detail-content .section-title { font-weight:700; font-size:18px; color:var(--primary); margin:20px 0 10px; border-bottom:2px solid var(--border); padding-bottom:6px; }
+        .detail-content .section-title:first-of-type { margin-top:0; }
+        .detail-content .sub-title { font-weight:600; font-size:15px; margin:14px 0 6px; color:var(--text); }
+        .detail-content table { width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:13px; }
+        .detail-content table th { background:var(--bg); font-weight:600; text-align:left; padding:8px 10px; border:1px solid var(--border); }
+        .detail-content table td { padding:8px 10px; border:1px solid var(--border); vertical-align:top; }
+        .detail-content table tr:nth-child(even) td { background:#fafafa; }
+        .detail-content p { margin:6px 0; }
+        .detail-content .text-block { background:var(--bg); padding:12px 16px; border-radius:var(--radius-sm); border-left:4px solid var(--primary); margin:6px 0 12px; }
 
-        /* Toast */
         .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
         .toast { padding:12px 24px; border-radius:var(--radius-sm); color:#fff; font-weight:500; font-size:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; max-width:360px; }
         .toast-success { background:#10b981; }
@@ -101,10 +108,24 @@
         .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
+        /* Print Styles */
+        @media print {
+            .no-print { display:none !important; }
+            .modal-overlay { position:relative !important; background:none !important; backdrop-filter:none !important; display:block !important; }
+            .modal-box { box-shadow:none !important; padding:20px !important; max-height:none !important; overflow:visible !important; }
+            .detail-content { max-height:none !important; overflow:visible !important; }
+            .detail-content table { font-size:10pt; }
+            .detail-content table th,
+            .detail-content table td { padding:4px 6px; }
+        }
+
         @media (max-width:768px) {
             .modal-box .form-row { grid-template-columns:1fr; }
             .modal-box { padding:20px; }
             .cards-grid { grid-template-columns:1fr; }
+            .detail-content table { font-size:12px; }
+            .detail-content table th,
+            .detail-content table td { padding:5px 6px; }
         }
     </style>
 </head>
@@ -126,7 +147,7 @@
             <div>
                 <h1>Rencana Pembelajaran Mendalam <small>RPM yang telah dibuat untuk modul ini</small></h1>
             </div>
-            <button class="btn-plus" onclick="openModal()"><i class="fas fa-plus-circle"></i> Buat RPM Baru</button>
+            <button class="btn-plus no-print" onclick="openModal()"><i class="fas fa-plus-circle"></i> Buat RPM Baru</button>
         </div>
 
         <div class="cards-grid" id="rpmCards">
@@ -135,7 +156,7 @@
     </div>
 
     <!-- MODAL BUAT RPM -->
-    <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-overlay no-print" id="modalOverlay">
         <div class="modal-box">
             <h2>Buat Rencana Pembelajaran Mendalam (RPM)</h2>
             <p class="modal-sub">Pilih Tujuan Pembelajaran dan berikan deskripsi opsional untuk mengarahkan AI.</p>
@@ -153,7 +174,7 @@
                 <div class="form-group" id="rpmLoading" style="display:none;">
                     <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f4f8;border-radius:var(--radius-sm);">
                         <div class="spinner"></div>
-                        <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI (Groq)... Mohon tunggu.</span>
+                        <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI... Mohon tunggu.</span>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -166,13 +187,15 @@
 
     <!-- DETAIL RPM MODAL -->
     <div class="modal-overlay" id="detailModal">
-        <div class="modal-box" style="max-width:900px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div class="modal-box detail-modal-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;" class="no-print">
                 <h2 id="detailTitle">Rencana Pembelajaran Mendalam</h2>
                 <button onclick="closeDetailModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);">&times;</button>
             </div>
-            <div id="detailContent" class="detail-content">Loading...</div>
-            <div class="modal-actions" style="margin-top:16px;">
+            <div id="detailContent" class="detail-content">
+                <!-- Akan diisi oleh JavaScript -->
+            </div>
+            <div class="modal-actions no-print" style="margin-top:16px;">
                 <button class="btn-success" onclick="printDetailRPM()"><i class="fas fa-print"></i> Cetak PDF</button>
                 <button class="btn-cancel" onclick="closeDetailModal()">Tutup</button>
             </div>
@@ -197,7 +220,7 @@
         // ===== GROQ API =====
         const GROQ_API_KEY = "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";
         const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-        const GROQ_MODEL = "llama-3.1-8b-instant"; // Model cepat dan gratis
+        const GROQ_MODEL = "llama-3.1-8b-instant";
 
         // ===== STATE =====
         let moduleId = null;
@@ -304,12 +327,150 @@
             container.innerHTML = html;
         }
 
+        // ================================================================
+        // ===== FORMAT KONTEN RPM MENJADI HTML RAPI =====
+        // ================================================================
+        function formatRPMContent(text) {
+            if (!text) return '<p>Konten kosong.</p>';
+
+            // Pisahkan baris
+            const lines = text.split('\n');
+            let html = '';
+            let inTable = false;
+            let tableRows = [];
+            let currentSection = '';
+            let isFirstSection = true;
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+
+                // Deteksi judul utama "RENCANA PEMBELAJARAN MENDALAM (RPM)"
+                if (line.trim().toUpperCase().includes('RENCANA PEMBELAJARAN MENDALAM') ||
+                    line.trim().toUpperCase().includes('RENCANA PEMBELAJARAN MENDALAM (RPM)')) {
+                    html += `<div class="section-title" style="text-align:center;font-size:20px;border-bottom:3px double var(--primary);">${line.trim()}</div>`;
+                    continue;
+                }
+
+                // Deteksi section heading (A., B., C., dst)
+                const sectionMatch = line.match(/^([A-Z]\.)\s*(.*)/);
+                if (sectionMatch) {
+                    const sectionLetter = sectionMatch[1];
+                    const sectionTitle = sectionMatch[2].trim();
+                    const isSubSection = sectionTitle.includes(':') || sectionTitle.includes('-');
+                    if (!isSubSection) {
+                        html += `<div class="section-title">${sectionLetter} ${sectionTitle}</div>`;
+                        currentSection = sectionLetter;
+                        isFirstSection = false;
+                    } else {
+                        html += `<div class="sub-title">${line.trim()}</div>`;
+                    }
+                    continue;
+                }
+
+                // Deteksi sub-section dengan angka (1., 2., dst)
+                const subMatch = line.match(/^(\d+)\.\s*(.*)/);
+                if (subMatch) {
+                    html += `<div class="sub-title" style="margin-top:10px;">${line.trim()}</div>`;
+                    continue;
+                }
+
+                // Deteksi tabel (baris dengan |)
+                const trimmed = line.trim();
+                if (trimmed.includes('|')) {
+                    // Cek apakah ini header tabel (garis pemisah)
+                    if (trimmed.replace(/[^|\-]/g, '').length > 3 && trimmed.includes('-')) {
+                        // Ini adalah garis pemisah, abaikan
+                        continue;
+                    }
+
+                    // Pisahkan sel
+                    const cells = trimmed.split('|').map(c => c.trim()).filter(c => c !== '');
+                    if (cells.length >= 2) {
+                        // Cek apakah ini header (kata-kata dengan huruf kapital)
+                        const isHeader = cells.every(c => c.charAt(0) === c.charAt(0).toUpperCase() || c.length < 5);
+                        tableRows.push({ cells, isHeader });
+                        inTable = true;
+                        continue;
+                    }
+                }
+
+                // Jika sebelumnya dalam tabel dan line kosong, tutup tabel
+                if (inTable && trimmed === '') {
+                    html += buildTable(tableRows);
+                    tableRows = [];
+                    inTable = false;
+                    continue;
+                }
+
+                // Jika masih dalam tabel tapi line tidak memiliki |
+                if (inTable) {
+                    // Coba cek apakah line ini lanjutan dari sel sebelumnya
+                    const lastRow = tableRows[tableRows.length - 1];
+                    if (lastRow && !trimmed.includes('|')) {
+                        // Gabungkan ke sel terakhir
+                        const lastCell = lastRow.cells[lastRow.cells.length - 1];
+                        lastRow.cells[lastRow.cells.length - 1] = lastCell + ' ' + trimmed;
+                        continue;
+                    } else {
+                        // Tutup tabel dan proses line sebagai teks biasa
+                        html += buildTable(tableRows);
+                        tableRows = [];
+                        inTable = false;
+                    }
+                }
+
+                // Teks biasa
+                if (trimmed !== '') {
+                    // Cek apakah ini daftar pustaka (diawali angka atau "-")
+                    if (trimmed.match(/^\d+\./) || trimmed.match(/^-/)) {
+                        html += `<p style="margin:2px 0 2px 20px;">${trimmed}</p>`;
+                    } else if (trimmed.includes(':')) {
+                        // Mungkin label dengan nilai
+                        const parts = trimmed.split(':');
+                        if (parts.length >= 2) {
+                            const label = parts[0].trim();
+                            const value = parts.slice(1).join(':').trim();
+                            html += `<p><strong>${label}</strong>: ${value}</p>`;
+                        } else {
+                            html += `<p>${trimmed}</p>`;
+                        }
+                    } else {
+                        html += `<p>${trimmed}</p>`;
+                    }
+                }
+            }
+
+            // Jika masih ada tabel yang belum ditutup
+            if (inTable && tableRows.length > 0) {
+                html += buildTable(tableRows);
+            }
+
+            return html;
+        }
+
+        function buildTable(rows) {
+            if (rows.length === 0) return '';
+            let html = '<table>';
+            rows.forEach((row, idx) => {
+                const tag = row.isHeader || idx === 0 ? 'th' : 'td';
+                html += '<tr>';
+                row.cells.forEach(cell => {
+                    html += `<${tag}>${cell}</${tag}>`;
+                });
+                html += '</tr>';
+            });
+            html += '</table>';
+            return html;
+        }
+
+        // ================================================================
         // ===== VIEW RPM =====
+        // ================================================================
         function viewRPM(index) {
             const rpm = rpmList[index];
             if (!rpm) { toast('RPM tidak ditemukan.', 'error'); return; }
             document.getElementById('detailTitle').textContent = rpm.judul || 'Rencana Pembelajaran Mendalam';
-            document.getElementById('detailContent').textContent = rpm.content || 'Konten kosong.';
+            document.getElementById('detailContent').innerHTML = formatRPMContent(rpm.content || 'Konten kosong.');
             document.getElementById('detailModal').classList.add('open');
         }
 
@@ -318,7 +479,7 @@
         }
 
         function printDetailRPM() {
-            const content = document.getElementById('detailContent').textContent;
+            const content = document.getElementById('detailContent').innerHTML;
             const title = document.getElementById('detailTitle').textContent;
             const win = window.open('', '_blank', 'width=800,height=600');
             win.document.write(`
@@ -326,7 +487,14 @@
                 <style>
                     body { font-family:'Times New Roman',serif; padding:30px; line-height:1.6; max-width:1000px; margin:0 auto; }
                     .print-title { font-size:20pt; font-weight:700; text-align:center; margin-bottom:16px; text-transform:uppercase; }
-                    .print-content { font-size:11pt; white-space:pre-wrap; }
+                    .print-content { font-size:11pt; }
+                    .print-content table { width:100%; border-collapse:collapse; margin:8px 0; font-size:10pt; }
+                    .print-content table th,
+                    .print-content table td { border:1px solid #000; padding:4px 6px; text-align:left; }
+                    .print-content table th { background:#f0f0f0; font-weight:600; }
+                    .print-content .section-title { font-weight:700; font-size:16pt; margin:16px 0 8px; border-bottom:2px solid #000; padding-bottom:4px; }
+                    .print-content .sub-title { font-weight:600; font-size:12pt; margin:10px 0 4px; }
+                    .print-content p { margin:4px 0; }
                 </style>
                 </head><body>
                 <div class="print-title">${title}</div>
@@ -455,7 +623,21 @@
             const alokasiJP = parseInt(tp.alokasiJp) || 4;
             const jumlahPertemuan = Math.ceil(alokasiJP / jpPerMinggu);
 
-            const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan siap pakai. Berikan jawaban dalam bahasa Indonesia yang baik dan benar, dengan format teks yang rapi dan terstruktur.`;
+            const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan siap pakai. Berikan jawaban dalam bahasa Indonesia yang baik dan benar.
+
+FORMAT OUTPUT YANG DIWAJIBKAN:
+1. Setiap bagian (A, B, C, dst) diawali dengan huruf kapital dan titik (contoh: "A. IDENTITAS")
+2. Untuk tabel, gunakan format dengan pemisah kolom "|" (pipa) dan baris baru untuk setiap baris.
+3. Untuk header tabel, tulis dengan huruf kapital di awal setiap kata.
+4. Untuk sub-bagian, gunakan angka (1., 2., 3.) atau tanda strip (-).
+5. Jangan gunakan markdown, cukup teks biasa dengan pemisah baris.
+
+Contoh format tabel yang benar:
+| Kolom 1 | Kolom 2 | Kolom 3 |
+| Nilai A | Nilai B | Nilai C |
+| Nilai D | Nilai E | Nilai F |
+
+Pastikan semua tabel memiliki header yang jelas dan data yang rapi.`;
 
             const userPrompt = `
 Buat Rencana Pembelajaran Mendalam (RPM) dengan format berikut:
@@ -464,7 +646,8 @@ Buat Rencana Pembelajaran Mendalam (RPM) dengan format berikut:
 RENCANA PEMBELAJARAN MENDALAM (RPM)
 ====================================================
 
-A. IDENTITAS (dalam bentuk tabel 2 kolom)
+A. IDENTITAS
+Buat tabel 2 kolom dengan data:
 - Unit Kerja    : ${moduleData.jenjang || 'SMA'} Nurmilad Boarding School
 - Nama Guru     : ${moduleData.guru || '-'}
 - Mata Pelajaran: ${moduleData.mapel || '-'}
@@ -472,37 +655,37 @@ A. IDENTITAS (dalam bentuk tabel 2 kolom)
 - Materi Pokok  : ${tp.materi || '-'}
 - Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
 
-B. PROFIL PELAJAR PANCASILA (tabel 2 kolom)
-Pilih 3-4 profil yang relevan dari:
+B. PROFIL PELAJAR PANCASILA
+Pilih 3-4 profil yang relevan dari daftar:
 ${profilLulusan.join('\n')}
-Untuk setiap profil, berikan deskripsi singkat integrasinya.
+Buat tabel 2 kolom: "Profil" dan "Deskripsi Integrasi"
 
 C. CAPAIAN PEMBELAJARAN
 ${cp}
 
 D. DESAIN PEMBELAJARAN
 - Tujuan Pembelajaran: ${tp.tujuan || '-'}
-- Praktik Pedagogis:
-  * Konteks Boarding School: [jelaskan]
-  * Pendekatan Konstruktivisme: [jelaskan]
-  * Praktik Reflektif: [jelaskan]
+Buat tabel atau poin-poin untuk:
+- Konteks Boarding School
+- Pendekatan Konstruktivisme
+- Praktik Reflektif
 
-E. PENGALAMAN BELAJAR (tabel per pertemuan)
-Buat rincian untuk ${jumlahPertemuan} pertemuan.
-Setiap pertemuan = ${jpPerMinggu} JP (${jpPerMinggu * 45} menit)
-Kolom: Pertemuan ke-, Kegiatan Awal (15 menit), Kegiatan Inti, Kegiatan Penutup (15 menit)
+E. PENGALAMAN BELAJAR
+Buat tabel dengan kolom: "Pertemuan ke-", "Kegiatan Awal (15 menit)", "Kegiatan Inti", "Kegiatan Penutup (15 menit)"
+Jumlah pertemuan: ${jumlahPertemuan}
 
-F. ASESMEN (tabel)
+F. ASESMEN
+Buat tabel dengan kolom: "Jenis Asesmen" dan "Deskripsi"
 1. Asesmen Awal/Diagnostik
 2. Asesmen Proses/Formatif
-3. Asesmen Sumatif: 5 soal pilihan ganda (a-e) + kunci jawaban
+3. Asesmen Sumatif (buat 5 soal pilihan ganda a-e + kunci jawaban)
 
 G. BAHAN BACAAN & DAFTAR PUSTAKA
 Minimal 3 referensi.
 
 ${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
 
-Gunakan bahasa Indonesia formal. Gunakan tanda | untuk pemisah kolom tabel. Jangan gunakan markdown.`;
+Gunakan bahasa Indonesia formal. Pastikan semua tabel menggunakan format | untuk pemisah kolom. Jangan gunakan markdown.`;
 
             const response = await fetch(GROQ_URL, {
                 method: 'POST',
@@ -516,7 +699,7 @@ Gunakan bahasa Indonesia formal. Gunakan tanda | untuk pemisah kolom tabel. Jang
                         { role: 'system', content: systemPrompt },
                         { role: 'user', content: userPrompt }
                     ],
-                    temperature: 0.7,
+                    temperature: 0.6,
                     max_tokens: 4096
                 })
             });
@@ -561,6 +744,5 @@ Gunakan bahasa Indonesia formal. Gunakan tanda | untuk pemisah kolom tabel. Jang
         window.deleteRPM = deleteRPM;
         window.toast = toast;
     </script>
-
 </body>
 </html>
