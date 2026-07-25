@@ -220,7 +220,7 @@
                 <div class="form-group" id="rpmLoading" style="display:none;">
                     <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f4f8;border-radius:var(--radius-sm);">
                         <div class="spinner"></div>
-                        <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI (Gemini)... Mohon tunggu.</span>
+                        <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI... Mohon tunggu.</span>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -264,15 +264,9 @@
         const db = firebase.firestore();
 
         // ===== GEMINI API =====
-        // Gunakan API Key yang baru
-        const GEMINI_API_KEY = "AQ.Ab8RN6KnbS_UAlW4nslugGqC8v0KViBKsfXH2pv_6jPwBZQoHw";
-        // Coba beberapa model, mulai dari yang paling stabil
-        const GEMINI_MODELS = [
-            "gemini-1.5-pro",
-            "gemini-1.5-flash",
-            "gemini-pro"
-        ];
-        // Kita akan coba satu per satu
+        const GEMINI_API_KEY = "AQ.Ab8RN6Kc7VmuBwJFoOHwigP0XqqQ6jQXPjGODcMSI5OgutHpjg";
+        const GEMINI_MODEL = "gemini-1.5-pro"; // Model stabil
+        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
         // ===== STATE =====
         let moduleId = null;
@@ -475,7 +469,7 @@
         }
 
         // ================================================================
-        // ===== GENERATE RPM DENGAN GEMINI (dengan fallback model) =====
+        // ===== GENERATE RPM DENGAN GEMINI =====
         // ================================================================
         async function generateRPM(e) {
             e.preventDefault();
@@ -495,7 +489,7 @@
             document.getElementById('btnGenerate').innerHTML = '<span class="spinner"></span> Memproses...';
 
             try {
-                const rpmContent = await callGeminiWithFallback(tp, deskripsi);
+                const rpmContent = await callGemini(tp, deskripsi);
                 // Simpan ke array rpmList
                 const newRPM = {
                     judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
@@ -511,7 +505,7 @@
                     rpmList: rpmList,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                toast('RPM berhasil dibuat dengan Gemini!', 'success');
+                toast('RPM berhasil dibuat!', 'success');
                 closeModal();
                 renderRPMCards();
                 setTimeout(() => {
@@ -520,14 +514,12 @@
             } catch (err) {
                 console.error(err);
                 let errorMsg = err.message;
-                if (err.message.includes('403') || err.message.includes('permission') || err.message.includes('API key')) {
-                    errorMsg = 'API Key tidak valid. Pastikan Anda menggunakan API Key Google Gemini yang valid (diawali AIzaSy...).';
+                if (err.message.includes('403') || err.message.includes('permission') || err.message.includes('API key not valid')) {
+                    errorMsg = 'API Key tidak valid atau tidak memiliki akses. Pastikan API Key Gemini benar dan sudah diaktifkan.';
                 } else if (err.message.includes('429')) {
                     errorMsg = 'Terlalu banyak permintaan. Tunggu beberapa saat dan coba lagi.';
                 } else if (err.message.includes('404') || err.message.includes('not found')) {
-                    errorMsg = 'Model tidak ditemukan. Coba gunakan model gemini-pro atau periksa API Key.';
-                } else {
-                    errorMsg = err.message;
+                    errorMsg = 'Model tidak ditemukan. Coba gunakan model gemini-1.5-pro atau periksa API Key.';
                 }
                 toast('Gagal generate RPM: ' + errorMsg, 'error');
             } finally {
@@ -537,8 +529,8 @@
             }
         }
 
-        // ===== CALL GEMINI API DENGAN FALLBACK MODEL =====
-        async function callGeminiWithFallback(tp, deskripsi) {
+        // ===== CALL GEMINI API =====
+        async function callGemini(tp, deskripsi) {
             const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
 
             const profilLulusan = [
@@ -635,66 +627,46 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
 5. Jangan gunakan markdown atau format khusus, cukup teks biasa dengan pemisah baris.
 `;
 
-            // Coba beberapa model secara berurutan
-            const models = GEMINI_MODELS;
-            let lastError = null;
+            // Panggil Gemini API
+            const response = await fetch(GEMINI_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contents: [
+                        {
+                            parts: [
+                                { text: prompt }
+                            ]
+                        }
+                    ],
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 4096,
+                        topP: 0.95,
+                        topK: 40
+                    }
+                })
+            });
 
-            for (const model of models) {
+            if (!response.ok) {
+                let errorMsg = `HTTP ${response.status}`;
                 try {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            contents: [
-                                {
-                                    parts: [
-                                        { text: prompt }
-                                    ]
-                                }
-                            ],
-                            generationConfig: {
-                                temperature: 0.7,
-                                maxOutputTokens: 4096,
-                                topP: 0.95,
-                                topK: 40
-                            }
-                        })
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-                            return data.candidates[0].content.parts[0].text;
-                        } else {
-                            throw new Error('Respons dari Gemini tidak valid: tidak ada konten.');
-                        }
-                    } else {
-                        const errorData = await response.json().catch(() => ({}));
-                        let errorMsg = `HTTP ${response.status}`;
-                        if (errorData.error && errorData.error.message) {
-                            errorMsg = errorData.error.message;
-                        }
-                        lastError = new Error(errorMsg);
-                        // Lanjut ke model berikutnya jika model tidak ditemukan
-                        if (response.status === 404 || errorMsg.includes('not found')) {
-                            continue;
-                        } else {
-                            throw new Error(errorMsg);
-                        }
+                    const errorData = await response.json();
+                    if (errorData.error && errorData.error.message) {
+                        errorMsg = errorData.error.message;
                     }
-                } catch (err) {
-                    lastError = err;
-                    if (err.message.includes('404') || err.message.includes('not found')) {
-                        continue;
-                    } else {
-                        throw err;
-                    }
-                }
+                } catch (e) {}
+                throw new Error(errorMsg);
             }
-            throw lastError || new Error('Semua model gagal dipanggil.');
+
+            const data = await response.json();
+            if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                throw new Error('Respons dari Gemini tidak valid: tidak ada konten.');
+            }
         }
 
         // ===== INIT =====
