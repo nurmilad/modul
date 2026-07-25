@@ -85,21 +85,20 @@
         .modal-box .modal-actions .btn-submit { background:var(--primary); color:#fff; }
         .modal-box .modal-actions .btn-submit:hover { background:var(--primary-light); }
 
-        /* Detail Modal */
+        /* Detail Modal - RAPI DENGAN TABEL */
         .detail-modal-box { max-width:1000px !important; }
         .detail-content { font-size:14px; line-height:1.8; max-height:70vh; overflow-y:auto; padding-right:8px; }
         .detail-content .section-title { font-weight:700; font-size:18px; color:var(--primary); margin:20px 0 10px; border-bottom:2px solid var(--border); padding-bottom:6px; }
         .detail-content .section-title:first-of-type { margin-top:0; }
-        .detail-content .section-title.center { text-align:center; border-bottom:3px double var(--primary); }
         .detail-content .sub-title { font-weight:600; font-size:15px; margin:14px 0 6px; color:var(--text); }
-        .detail-content .sub-title.pertemuan { font-size:16px; color:var(--primary); margin-top:16px; }
+        .detail-content .pertemuan-title { font-weight:700; font-size:16px; margin:16px 0 8px; color:var(--primary-dark); background:var(--bg); padding:6px 12px; border-radius:var(--radius-sm); border-left:4px solid var(--primary); }
         .detail-content table { width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:13px; }
         .detail-content table th { background:var(--bg); font-weight:600; text-align:left; padding:8px 10px; border:1px solid var(--border); }
         .detail-content table td { padding:8px 10px; border:1px solid var(--border); vertical-align:top; }
         .detail-content table tr:nth-child(even) td { background:#fafafa; }
         .detail-content p { margin:6px 0; }
         .detail-content .text-block { background:var(--bg); padding:12px 16px; border-radius:var(--radius-sm); border-left:4px solid var(--primary); margin:6px 0 12px; }
-        .detail-content .cp-block { background:#f8f9fa; padding:12px 16px; border-radius:var(--radius-sm); border-left:4px solid #8b5cf6; margin:6px 0 12px; white-space:pre-wrap; }
+        .detail-content .cp-content { background:#f0f7ff; padding:12px 16px; border-radius:var(--radius-sm); border-left:4px solid #3b82f6; margin:6px 0 12px; white-space:pre-wrap; }
 
         .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
         .toast { padding:12px 24px; border-radius:var(--radius-sm); color:#fff; font-weight:500; font-size:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; max-width:360px; }
@@ -111,6 +110,7 @@
         .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
+        /* Print Styles */
         @media print {
             .no-print { display:none !important; }
             .modal-overlay { position:relative !important; background:none !important; backdrop-filter:none !important; display:block !important; }
@@ -330,34 +330,49 @@
         }
 
         // ================================================================
+        // ===== CLEAN TEXT (hilangkan simbol-simbol) =====
+        // ================================================================
+        function cleanText(text) {
+            if (!text) return '';
+            // Hilangkan baris yang berisi "==="
+            text = text.replace(/^[=\-]{5,}\s*$/gm, '');
+            // Hilangkan "**" (format bold)
+            text = text.replace(/\*\*/g, '');
+            // Hilangkan "__" (format underline)
+            text = text.replace(/__/g, '');
+            // Hilangkan "_" di awal/akhir kata
+            text = text.replace(/_(?! )/g, '');
+            // Hilangkan multiple newlines
+            text = text.replace(/\n{3,}/g, '\n\n');
+            return text.trim();
+        }
+
+        // ================================================================
         // ===== FORMAT KONTEN RPM MENJADI HTML RAPI =====
         // ================================================================
-        function formatRPMContent(text) {
+        function formatRPMContent(text, cpFromFirebase) {
             if (!text) return '<p>Konten kosong.</p>';
 
-            const lines = text.split('\n');
+            // Bersihkan teks dari simbol-simbol
+            let cleaned = cleanText(text);
+
+            // Pisahkan baris
+            const lines = cleaned.split('\n');
             let html = '';
             let inTable = false;
             let tableRows = [];
-            let inCP = false;
-            let cpText = [];
+
+            // Flag untuk melacak apakah kita sedang di section C (CAPAIAN PEMBELAJARAN)
+            let inSectionC = false;
 
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
-                let trimmed = line.trim();
-
-                // Skip garis pemisah "===="
-                if (trimmed.match(/^={3,}$/)) {
-                    continue;
-                }
-
-                // Skip tanda "**" di awal/akhir
-                trimmed = trimmed.replace(/^\*\*|\*\*$/g, '');
+                const trimmed = line.trim();
 
                 // Deteksi judul utama
                 if (trimmed.toUpperCase().includes('RENCANA PEMBELAJARAN MENDALAM') ||
                     trimmed.toUpperCase().includes('RENCANA PEMBELAJARAN MENDALAM (RPM)')) {
-                    html += `<div class="section-title center">${trimmed}</div>`;
+                    html += `<div class="section-title" style="text-align:center;font-size:20px;border-bottom:3px double var(--primary);">RENCANA PEMBELAJARAN MENDALAM (RPM)</div>`;
                     continue;
                 }
 
@@ -366,78 +381,105 @@
                 if (sectionMatch) {
                     const sectionLetter = sectionMatch[1];
                     const sectionTitle = sectionMatch[2].trim();
-                    // Cek apakah ini bagian CP (C. CAPAIAN PEMBELAJARAN)
+
+                    // Jika section C (CAPAIAN PEMBELAJARAN), tandai
                     if (sectionLetter === 'C' && sectionTitle.toUpperCase().includes('CAPAIAN PEMBELAJARAN')) {
-                        html += `<div class="section-title">${sectionLetter}. ${sectionTitle}</div>`;
-                        inCP = true;
-                        cpText = [];
+                        inSectionC = true;
+                        html += `<div class="section-title">C. CAPAIAN PEMBELAJARAN</div>`;
+                        // Gunakan CP dari Firebase, bukan dari AI
+                        if (cpFromFirebase) {
+                            html += `<div class="cp-content">${cpFromFirebase}</div>`;
+                        } else {
+                            html += `<div class="cp-content">(Belum ada Capaian Pembelajaran yang diisi)</div>`;
+                        }
+                        // Lewati sisa baris yang berisi konten CP dari AI
+                        // Kita akan terus membaca sampai ketemu section D
                         continue;
+                    }
+
+                    // Jika section D (DESAIN PEMBELAJARAN) atau section lain, matikan flag C
+                    if (sectionLetter === 'D' || sectionLetter === 'E' || sectionLetter === 'F' || sectionLetter === 'G') {
+                        inSectionC = false;
+                    }
+
+                    const isSubSection = sectionTitle.includes(':') || sectionTitle.includes('-');
+                    if (!isSubSection) {
+                        html += `<div class="section-title">${sectionLetter}. ${sectionTitle}</div>`;
                     } else {
-                        if (inCP && cpText.length > 0) {
-                            html += `<div class="cp-block">${cpText.join('\n')}</div>`;
-                            cpText = [];
-                            inCP = false;
-                        }
-                        html += `<div class="section-title">${sectionLetter}. ${sectionTitle}</div>`;
-                        continue;
+                        html += `<div class="sub-title">${trimmed}</div>`;
                     }
-                }
 
-                // Jika dalam mode CP, kumpulkan teks
-                if (inCP) {
-                    if (trimmed === '' || trimmed.match(/^[A-Z]\.\s/)) {
-                        // Akhiri CP jika section baru
-                        if (cpText.length > 0) {
-                            html += `<div class="cp-block">${cpText.join('\n')}</div>`;
-                            cpText = [];
-                            inCP = false;
-                        }
-                        if (trimmed) {
-                            html += `<p>${trimmed}</p>`;
-                        }
-                        continue;
+                    // Jika ini section B, kita perlu memastikan header tabel ditulis kapital
+                    if (sectionLetter === 'B') {
+                        // Kita akan proses baris berikutnya yang mungkin tabel
                     }
-                    cpText.push(trimmed);
                     continue;
                 }
 
-                // Deteksi "PERTEMUAN PERTAMA", "PERTEMUAN KEDUA", dst
-                const pertemuanMatch = trimmed.match(/^PERTEMUAN\s+(KE|)\s*(\w+)/i);
-                if (pertemuanMatch) {
-                    const pertemuanKe = pertemuanMatch[2] || 'PERTAMA';
-                    html += `<div class="sub-title pertemuan">PERTEMUAN ${pertemuanKe.toUpperCase()}</div>`;
+                // Jika kita sedang dalam section C, skip semua baris (karena sudah pakai CP dari Firebase)
+                if (inSectionC) {
+                    // Cek apakah sudah sampai section D
+                    if (trimmed.match(/^D\.\s*/)) {
+                        inSectionC = false;
+                        // Proses section D
+                        const dMatch = trimmed.match(/^D\.\s*(.*)/);
+                        if (dMatch) {
+                            html += `<div class="section-title">D. ${dMatch[1].trim()}</div>`;
+                        }
+                    }
                     continue;
                 }
 
-                // Deteksi sub-section dengan angka (1., 2., dst) atau "-"
-                const subMatch = trimmed.match(/^(\d+)\.\s*(.*)/);
-                if (subMatch) {
-                    html += `<div class="sub-title">${trimmed}</div>`;
-                    continue;
-                }
-                if (trimmed.match(/^-\s*/)) {
-                    html += `<p style="margin:2px 0 2px 20px;">${trimmed.replace(/^-\s*/, '• ')}</p>`;
+                // Deteksi PERTEMUAN PERTAMA, KEDUA, dst
+                const pertemuanMatch = trimmed.match(/^PERTEMUAN\s+(KE-?\s*)?([A-Za-z]+)/i);
+                if (pertemuanMatch || trimmed.toUpperCase().includes('PERTEMUAN PERTAMA') ||
+                    trimmed.toUpperCase().includes('PERTEMUAN KEDUA') ||
+                    trimmed.toUpperCase().includes('PERTEMUAN KETIGA') ||
+                    trimmed.toUpperCase().includes('PERTEMUAN KEEMPAT') ||
+                    trimmed.toUpperCase().includes('PERTEMUAN KELIMA')) {
+                    html += `<div class="pertemuan-title">${trimmed}</div>`;
                     continue;
                 }
 
                 // Deteksi tabel (baris dengan |)
                 if (trimmed.includes('|')) {
-                    // Abaikan garis pemisah tabel
+                    // Cek apakah ini garis pemisah tabel
                     if (trimmed.replace(/[^|\-]/g, '').length > 3 && trimmed.includes('-')) {
                         continue;
                     }
 
+                    // Pisahkan sel
                     const cells = trimmed.split('|').map(c => c.trim()).filter(c => c !== '');
                     if (cells.length >= 2) {
-                        // Cek header (huruf kapital semua)
-                        const isHeader = cells.every(c => c.charAt(0) === c.charAt(0).toUpperCase() || c.length < 3);
-                        tableRows.push({ cells, isHeader });
+                        // Perbaikan: pastikan semua cell adalah string sebelum dioperasikan
+                        const safeCells = cells.map(c => String(c).trim());
+                        // Cek apakah ini header (semua cell dimulai huruf kapital atau huruf kapital di setiap kata)
+                        const isHeader = safeCells.every(c => {
+                            if (!c || c.length === 0) return false;
+                            // Cek apakah setiap kata dimulai huruf kapital
+                            const words = c.split(' ');
+                            return words.every(w => w.length > 0 && w[0] === w[0].toUpperCase());
+                        }) || cells.length >= 2;
+
+                        // Jika section B dan ini header, pastikan kapital
+                        let processedCells = safeCells;
+                        if (trimmed.toUpperCase().includes('PROFIL') || trimmed.toUpperCase().includes('DESKRIPSI')) {
+                            processedCells = safeCells.map(c => {
+                                // Kapitalisasi setiap kata
+                                return c.split(' ').map(w => {
+                                    if (w.length === 0) return w;
+                                    return w[0].toUpperCase() + w.slice(1).toLowerCase();
+                                }).join(' ');
+                            });
+                        }
+
+                        tableRows.push({ cells: processedCells, isHeader: isHeader || tableRows.length === 0 });
                         inTable = true;
                         continue;
                     }
                 }
 
-                // Tutup tabel jika ada baris kosong
+                // Jika sebelumnya dalam tabel dan line kosong, tutup tabel
                 if (inTable && trimmed === '') {
                     html += buildTable(tableRows);
                     tableRows = [];
@@ -445,7 +487,7 @@
                     continue;
                 }
 
-                // Jika masih dalam tabel
+                // Jika masih dalam tabel tapi line tidak memiliki |
                 if (inTable) {
                     const lastRow = tableRows[tableRows.length - 1];
                     if (lastRow && !trimmed.includes('|')) {
@@ -459,9 +501,12 @@
                     }
                 }
 
-                // Teks biasa
+                // Teks biasa - skip baris kosong
                 if (trimmed !== '') {
-                    if (trimmed.includes(':')) {
+                    // Cek apakah ini daftar pustaka atau poin
+                    if (trimmed.match(/^\d+\./) || trimmed.match(/^-/)) {
+                        html += `<p style="margin:2px 0 2px 20px;">${trimmed}</p>`;
+                    } else if (trimmed.includes(':') && !trimmed.startsWith('(')) {
                         const parts = trimmed.split(':');
                         if (parts.length >= 2) {
                             const label = parts[0].trim();
@@ -476,10 +521,7 @@
                 }
             }
 
-            // Sisa CP atau tabel
-            if (inCP && cpText.length > 0) {
-                html += `<div class="cp-block">${cpText.join('\n')}</div>`;
-            }
+            // Jika masih ada tabel yang belum ditutup
             if (inTable && tableRows.length > 0) {
                 html += buildTable(tableRows);
             }
@@ -489,13 +531,14 @@
 
         function buildTable(rows) {
             if (rows.length === 0) return '';
-            // Cek apakah semua header memiliki huruf kapital
             let html = '<table>';
             rows.forEach((row, idx) => {
                 const tag = (row.isHeader || idx === 0) ? 'th' : 'td';
                 html += '<tr>';
                 row.cells.forEach(cell => {
-                    html += `<${tag}>${cell}</${tag}>`;
+                    // Pastikan cell adalah string
+                    const cellText = String(cell || '').trim();
+                    html += `<${tag}>${cellText}</${tag}>`;
                 });
                 html += '</tr>';
             });
@@ -510,7 +553,9 @@
             const rpm = rpmList[index];
             if (!rpm) { toast('RPM tidak ditemukan.', 'error'); return; }
             document.getElementById('detailTitle').textContent = rpm.judul || 'Rencana Pembelajaran Mendalam';
-            document.getElementById('detailContent').innerHTML = formatRPMContent(rpm.content || 'Konten kosong.');
+            // Gunakan CP dari Firebase (moduleData.atp) untuk section C
+            const cpContent = moduleData ? moduleData.atp || '' : '';
+            document.getElementById('detailContent').innerHTML = formatRPMContent(rpm.content || 'Konten kosong.', cpContent);
             document.getElementById('detailModal').classList.add('open');
         }
 
@@ -533,9 +578,10 @@
                     .print-content table td { border:1px solid #000; padding:4px 6px; text-align:left; }
                     .print-content table th { background:#f0f0f0; font-weight:600; }
                     .print-content .section-title { font-weight:700; font-size:16pt; margin:16px 0 8px; border-bottom:2px solid #000; padding-bottom:4px; }
+                    .print-content .pertemuan-title { font-weight:700; font-size:13pt; margin:12px 0 6px; background:#f0f0f0; padding:4px 10px; border-left:4px solid #000; }
                     .print-content .sub-title { font-weight:600; font-size:12pt; margin:10px 0 4px; }
                     .print-content p { margin:4px 0; }
-                    .print-content .cp-block { white-space:pre-wrap; }
+                    .print-content .cp-content { background:#f9f9f9; padding:10px; border-left:4px solid #333; margin:6px 0; white-space:pre-wrap; }
                 </style>
                 </head><body>
                 <div class="print-title">${title}</div>
@@ -664,63 +710,60 @@
             const alokasiJP = parseInt(tp.alokasiJp) || 4;
             const jumlahPertemuan = Math.ceil(alokasiJP / jpPerMinggu);
 
-            // Bangun daftar pertemuan untuk prompt
-            let pertemuanList = '';
+            // Membuat daftar pertemuan untuk prompt
+            const pertemuanList = [];
             for (let i = 1; i <= jumlahPertemuan; i++) {
-                const waktuInti = (jpPerMinggu * 45) - 30; // total menit - awal - penutup
-                pertemuanList += `PERTEMUAN ${i === 1 ? 'PERTAMA' : i === 2 ? 'KEDUA' : i === 3 ? 'KETIGA' : 'KE-' + i.toUpperCase()}
-Kegiatan Awal (15 menit): [Jelaskan kegiatan pembuka]
-Kegiatan Inti (${waktuInti} menit): [Jelaskan kegiatan inti]
-Kegiatan Penutup (15 menit): [Jelaskan kegiatan penutup]\n\n`;
+                const angka = ['PERTAMA', 'KEDUA', 'KETIGA', 'KEEMPAT', 'KELIMA', 'KEENAM', 'KETUJUH', 'KEDELAPAN'];
+                const label = i <= angka.length ? angka[i-1] : `KE-${i}`;
+                pertemuanList.push(`PERTEMUAN ${label}`);
             }
+            const pertemuanStr = pertemuanList.map(p => `- ${p}`).join('\n');
 
             const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan siap pakai. Berikan jawaban dalam bahasa Indonesia yang baik dan benar.
 
 FORMAT OUTPUT YANG DIWAJIBKAN:
 1. Setiap bagian (A, B, C, dst) diawali dengan huruf kapital dan titik (contoh: "A. IDENTITAS")
-2. Untuk tabel, gunakan format dengan pemisah kolom "|" (pipa)
-3. Untuk header tabel, tulis dengan HURUF KAPITAL semua atau huruf kapital di awal setiap kata
-4. Jangan gunakan simbol "**", "=", atau markdown
-5. Untuk bagian Pengalaman Belajar, gunakan format:
+2. Untuk tabel, gunakan format dengan pemisah kolom "|" (pipa) dan baris baru untuk setiap baris.
+3. Jangan gunakan simbol "**", "__", atau garis "=================".
+4. Gunakan format yang rapi dan profesional.
+5. Untuk bagian PENGALAMAN BELAJAR, gunakan format:
    PERTEMUAN PERTAMA
    Kegiatan Awal (15 menit): [deskripsi]
-   Kegiatan Inti (X menit): [deskripsi]
+   Kegiatan Inti ([jumlah menit] menit): [deskripsi]
    Kegiatan Penutup (15 menit): [deskripsi]
-
-CONTOH TABEL:
-| KOLOM 1 | KOLOM 2 | KOLOM 3 |
-| Data 1  | Data 2  | Data 3  |
-| Data 4  | Data 5  | Data 6  |`;
+   (ulangi untuk setiap pertemuan)`;
 
             const userPrompt = `
 Buat Rencana Pembelajaran Mendalam (RPM) dengan format berikut:
 
 A. IDENTITAS
 Buat tabel 2 kolom dengan data:
-Unit Kerja    : ${moduleData.jenjang || 'SMA'} Nurmilad Boarding School
-Nama Guru     : ${moduleData.guru || '-'}
-Mata Pelajaran: ${moduleData.mapel || '-'}
-Kelas/Fase    : ${moduleData.kelas || '-'} / ${moduleData.fase || '-'}
-Materi Pokok  : ${tp.materi || '-'}
-Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
+- Unit Kerja    : ${moduleData.jenjang || 'SMA'} Nurmilad Boarding School
+- Nama Guru     : ${moduleData.guru || '-'}
+- Mata Pelajaran: ${moduleData.mapel || '-'}
+- Kelas/Fase    : ${moduleData.kelas || '-'} / ${moduleData.fase || '-'}
+- Materi Pokok  : ${tp.materi || '-'}
+- Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
 
 B. PROFIL PELAJAR PANCASILA
 Pilih 3-4 profil yang relevan dari daftar:
 ${profilLulusan.join('\n')}
-Buat tabel 2 kolom: "PROFIL" dan "DESKRIPSI INTEGRASI"
-
-C. CAPAIAN PEMBELAJARAN
-${cp}
+Buat tabel 2 kolom dengan header: "PROFIL" dan "DESKRIPSI INTEGRASI"
 
 D. DESAIN PEMBELAJARAN
-Tujuan Pembelajaran: ${tp.tujuan || '-'}
-Buat poin-poin untuk:
+- Tujuan Pembelajaran: ${tp.tujuan || '-'}
+Buat poin-poin atau tabel untuk:
 - Konteks Boarding School
 - Pendekatan Konstruktivisme
 - Praktik Reflektif
 
 E. PENGALAMAN BELAJAR
-${pertemuanList}
+Buat rincian kegiatan untuk ${jumlahPertemuan} pertemuan dengan format:
+${pertemuanStr}
+Setiap pertemuan:
+- Kegiatan Awal (15 menit): [jelaskan]
+- Kegiatan Inti (${jpPerMinggu * 45 - 30} menit): [jelaskan]
+- Kegiatan Penutup (15 menit): [jelaskan]
 
 F. ASESMEN
 Buat tabel dengan kolom: "JENIS ASESMEN" dan "DESKRIPSI"
@@ -733,7 +776,7 @@ Minimal 3 referensi.
 
 ${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
 
-Gunakan bahasa Indonesia formal. Pastikan semua tabel menggunakan format | untuk pemisah kolom. Jangan gunakan simbol ** atau =====.`;
+Gunakan bahasa Indonesia formal. Pastikan semua tabel menggunakan format | untuk pemisah kolom. JANGAN gunakan simbol **, __, atau garis "=================".`;
 
             const response = await fetch(GROQ_URL, {
                 method: 'POST',
@@ -747,7 +790,7 @@ Gunakan bahasa Indonesia formal. Pastikan semua tabel menggunakan format | untuk
                         { role: 'system', content: systemPrompt },
                         { role: 'user', content: userPrompt }
                     ],
-                    temperature: 0.5,
+                    temperature: 0.6,
                     max_tokens: 4096
                 })
             });
