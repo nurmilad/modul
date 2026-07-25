@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modul NBS - RPM</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
+            --secondary: #f39c12; --bg: #f0f4f8; --card-bg: #ffffff;
+            --text: #1e293b; --text-light: #64748b; --border: #e2e8f0;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06); --radius: 16px; --radius-sm: 10px;
+            --transition: 0.25s ease; --header-height: 64px;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+        .sidebar { width:240px; background:var(--primary-dark); color:#fff; display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:1000; transition:transform var(--transition); overflow-y:auto; }
+        .sidebar-brand { padding:20px 24px; font-size:20px; font-weight:700; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:10px; }
+        .sidebar-brand i { font-size:26px; color:var(--secondary); }
+        .sidebar-brand small { font-size:12px; font-weight:400; opacity:0.7; display:block; margin-top:2px; }
+        .sidebar-menu { padding:16px 12px; flex:1; }
+        .sidebar-menu .menu-label { font-size:11px; text-transform:uppercase; letter-spacing:0.5px; opacity:0.5; padding:8px 12px 4px; font-weight:600; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:var(--radius-sm); color:rgba(255,255,255,0.7); text-decoration:none; font-weight:500; font-size:14px; transition:var(--transition); cursor:pointer; margin-bottom:2px; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.08); color:#fff; }
+        .sidebar-menu a.active { background:rgba(255,255,255,0.14); color:#fff; }
+        .sidebar-menu a i { width:20px; text-align:center; font-size:16px; }
+        .sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,0.08); font-size:13px; opacity:0.6; display:flex; align-items:center; gap:8px; }
+
+        .main { margin-left:240px; flex:1; display:flex; flex-direction:column; min-height:100vh; }
+        .topbar { height:var(--header-height); background:var(--card-bg); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 32px; position:sticky; top:0; z-index:500; backdrop-filter:blur(8px); background:rgba(255,255,255,0.92); }
+        .topbar-left { display:flex; align-items:center; gap:16px; }
+        .topbar-left .hamburger { display:none; background:none; border:none; font-size:20px; color:var(--text); cursor:pointer; }
+        .topbar-left h2 { font-size:18px; font-weight:600; }
+        .topbar-right { display:flex; align-items:center; gap:16px; }
+        .topbar-right .user-badge { display:flex; align-items:center; gap:8px; background:var(--bg); padding:6px 14px 6px 10px; border-radius:40px; font-size:13px; font-weight:500; }
+        .topbar-right .user-badge i { font-size:18px; color:var(--primary); }
+        .topbar-right .logout-btn { background:none; border:1px solid var(--border); padding:6px 14px; border-radius:40px; font-size:13px; color:var(--text-light); cursor:pointer; transition:var(--transition); }
+        .topbar-right .logout-btn:hover { background:#fee2e2; border-color:#f87171; color:#dc2626; }
+
+        .page-content { padding:28px 32px 40px; flex:1; }
+
+        .rpm-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:24px; }
+        .rpm-header h1 { font-size:26px; font-weight:700; }
+        .rpm-header h1 small { font-weight:400; font-size:16px; color:var(--text-light); display:block; margin-top:4px; }
+
+        .btn-plus { background:var(--primary); color:#fff; border:none; padding:10px 24px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); display:flex; align-items:center; gap:8px; }
+        .btn-plus:hover { background:var(--primary-light); transform:scale(1.02); }
+        .btn-primary { background:var(--primary); color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
+        .btn-primary:hover { background:var(--primary-light); }
+        .btn-danger { background:#ef4444; color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
+        .btn-danger:hover { background:#dc2626; }
+        .btn-success { background:#10b981; color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
+        .btn-success:hover { background:#059669; }
+        .btn-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
+        .btn-secondary:hover { background:var(--border); }
+
+        .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px,1fr)); gap:20px; }
+        .rpm-card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; transition:var(--transition); display:flex; flex-direction:column; }
+        .rpm-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.08); }
+        .rpm-card .card-cover { padding:14px 20px; background:linear-gradient(135deg, #7c3aed, #6d28d9); color:#fff; }
+        .rpm-card .card-cover .card-title { font-size:16px; font-weight:600; }
+        .rpm-card .card-cover .card-sub { font-size:12px; opacity:0.85; margin-top:2px; }
+        .rpm-card .card-body { padding:16px 20px 20px; flex:1; display:flex; flex-direction:column; }
+        .rpm-card .card-body .rpm-preview { font-size:13px; color:var(--text-light); line-height:1.5; overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; flex:1; }
+        .rpm-card .card-body .rpm-meta { display:flex; flex-wrap:wrap; gap:6px 12px; font-size:12px; color:var(--text-light); margin:8px 0 12px; }
+        .rpm-card .card-actions { display:flex; gap:6px; flex-wrap:wrap; }
+        .rpm-card .card-actions button { padding:4px 14px; border:1px solid var(--border); background:#fff; border-radius:40px; font-size:12px; font-weight:500; cursor:pointer; transition:var(--transition); color:var(--text); }
+        .rpm-card .card-actions button:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+        .rpm-card .card-actions .btn-delete { border-color:#ef4444; color:#ef4444; }
+        .rpm-card .card-actions .btn-delete:hover { background:#ef4444; color:#fff; }
+
+        .empty-state { text-align:center; padding:60px 20px; color:var(--text-light); grid-column:1/-1; }
+        .empty-state i { font-size:56px; opacity:0.3; margin-bottom:16px; }
+        .empty-state h3 { font-size:20px; color:var(--text); margin-bottom:6px; }
+
+        /* MODAL */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:10000; display:none; align-items:center; justify-content:center; padding:20px; }
+        .modal-overlay.open { display:flex; }
+        .modal-box { background:#fff; border-radius:var(--radius); max-width:680px; width:100%; max-height:90vh; overflow-y:auto; padding:32px 36px; box-shadow:0 24px 64px rgba(0,0,0,0.2); animation:modalIn 0.25s ease; }
+        @keyframes modalIn { from { opacity:0; transform:scale(0.96) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
+        .modal-box h2 { font-size:22px; font-weight:700; margin-bottom:6px; }
+        .modal-box .modal-sub { color:var(--text-light); font-size:14px; margin-bottom:20px; }
+        .modal-box .form-group { margin-bottom:16px; }
+        .modal-box .form-group label { font-size:13px; font-weight:500; color:var(--text-light); display:block; margin-bottom:4px; }
+        .modal-box .form-group select,
+        .modal-box .form-group textarea,
+        .modal-box .form-group input { width:100%; padding:9px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:14px; background:#fff; color:var(--text); outline:none; transition:var(--transition); font-family:inherit; }
+        .modal-box .form-group select:focus,
+        .modal-box .form-group textarea:focus,
+        .modal-box .form-group input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,95,122,0.10); }
+        .modal-box .form-group textarea { resize:vertical; min-height:80px; }
+        .modal-box .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .modal-box .modal-actions { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; }
+        .modal-box .modal-actions button { padding:10px 28px; border:none; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
+        .modal-box .modal-actions .btn-cancel { background:var(--bg); color:var(--text); }
+        .modal-box .modal-actions .btn-cancel:hover { background:var(--border); }
+        .modal-box .modal-actions .btn-submit { background:var(--primary); color:#fff; }
+        .modal-box .modal-actions .btn-submit:hover { background:var(--primary-light); }
+
+        /* TOAST */
+        .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
+        .toast { padding:12px 24px; border-radius:var(--radius-sm); color:#fff; font-weight:500; font-size:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; max-width:360px; }
+        .toast-success { background:#10b981; }
+        .toast-error { background:#ef4444; }
+        .toast-info { background:var(--primary); }
+        @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+        /* Loading spinner */
+        .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        @media (max-width:768px) {
+            .sidebar { transform:translateX(-100%); }
+            .sidebar.open { transform:translateX(0); }
+            .main { margin-left:0; }
+            .topbar-left .hamburger { display:block; }
+            .page-content { padding:16px; }
+            .topbar { padding:0 16px; }
+            .modal-box .form-row { grid-template-columns:1fr; }
+            .modal-box { padding:20px; }
+            .cards-grid { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-book-open"></i>
+            <div>
+                Modul NBS
+                <small>RPM</small>
+            </div>
+        </div>
+        <nav class="sidebar-menu">
+            <div class="menu-label">Navigasi</div>
+            <a href="index.html" id="navIndex"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="admin.html" id="navAdmin"><i class="fas fa-user-shield"></i> Admin</a>
+            <a href="guru.html" id="navGuru"><i class="fas fa-chalkboard-teacher"></i> Guru</a>
+            <a href="program.html" id="navProgram"><i class="fas fa-book"></i> Program</a>
+        </nav>
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#10b981;font-size:10px;"></i>
+            <span id="sidebarUser">Pengunjung</span>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <h2 id="pageTitle">RPM - Rencana Pembelajaran Mendalam</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="user-badge">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="topbarUser">Guest</span>
+                </div>
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+            </div>
+        </header>
+
+        <div class="page-content">
+            <!-- Informasi Modul -->
+            <div id="moduleInfo" style="margin-bottom:16px;background:var(--card-bg);padding:14px 20px;border-radius:var(--radius);border:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                <div>
+                    <strong id="modulMapel">-</strong> <span id="modulKelas">-</span>
+                    <span style="color:var(--text-light);font-size:14px;margin-left:8px;" id="modulGuru">-</span>
+                </div>
+                <div style="font-size:14px;color:var(--text-light);">
+                    <span id="modulJenjang">-</span> • <span id="modulFase">-</span> • <span id="modulTahun">-</span>
+                </div>
+            </div>
+
+            <div class="rpm-header">
+                <div>
+                    <h1>Rencana Pembelajaran Mendalam <small>RPM yang telah dibuat untuk modul ini</small></h1>
+                </div>
+                <button class="btn-plus" onclick="openModal()"><i class="fas fa-plus-circle"></i> Buat RPM Baru</button>
+            </div>
+
+            <div class="cards-grid" id="rpmCards">
+                <!-- Akan di-render JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL BUAT RPM -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <h2>Buat Rencana Pembelajaran Mendalam (RPM)</h2>
+            <p class="modal-sub">Pilih Tujuan Pembelajaran dan berikan deskripsi opsional untuk mengarahkan AI.</p>
+            <form id="modalForm" onsubmit="generateRPM(event)">
+                <div class="form-group">
+                    <label>Tujuan Pembelajaran (TP) <span style="color:red;">*</span></label>
+                    <select id="rpmTujuanSelect" required>
+                        <option value="">-- Pilih Tujuan Pembelajaran --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi / Arahan Khusus (Opsional)</label>
+                    <textarea id="rpmDeskripsi" rows="4" placeholder="Tuliskan arahan untuk RPM yang diinginkan. Misalnya: metode yang diinginkan, jenis penilaian, fokus materi, dll. Kosongkan jika ingin AI membuat sepenuhnya."></textarea>
+                </div>
+                <div class="form-group" id="rpmLoading" style="display:none;">
+                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f4f8;border-radius:var(--radius-sm);">
+                        <div class="spinner"></div>
+                        <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI... Mohon tunggu.</span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
+                    <button type="submit" class="btn-submit" id="btnGenerate"><i class="fas fa-magic"></i> Generate RPM</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== DETAIL RPM MODAL ===== -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-box" style="max-width:900px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h2 id="detailTitle">Rencana Pembelajaran Mendalam</h2>
+                <button onclick="closeDetailModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);">&times;</button>
+            </div>
+            <div id="detailContent" style="font-size:14px;line-height:1.7;max-height:70vh;overflow-y:auto;padding-right:8px;">
+                <!-- Isi RPM akan dirender di sini -->
+            </div>
+            <div class="modal-actions" style="margin-top:16px;">
+                <button class="btn-success" onclick="printDetailRPM()"><i class="fas fa-print"></i> Cetak PDF</button>
+                <button class="btn-cancel" onclick="closeDetailModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A",
+            authDomain: "modul-fae5a.firebaseapp.com",
+            projectId: "modul-fae5a",
+            storageBucket: "modul-fae5a.firebasestorage.app",
+            messagingSenderId: "837647902643",
+            appId: "1:837647902643:web:adfa809d9f8adbeaeacdc6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const DEEPSEEK_API_KEY = "sk-b6b352ea4f58415d89fd9b3b2619b149";
+        const DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions";
+
+        // ===== STATE =====
+        let moduleId = null;
+        let moduleData = null;
+        let atpRows = [];
+        let rpmList = [];
+        let currentUser = null;
+
+        // ===== TOAST =====
+        function toast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = 'toast toast-' + type;
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function logout() {
+            localStorage.removeItem('nbs_user');
+            localStorage.removeItem('nbs_guru');
+            window.location.href = 'index.html';
+        }
+
+        // ===== LOAD MODULE =====
+        async function loadModule() {
+            const params = new URLSearchParams(window.location.search);
+            moduleId = params.get('module');
+            if (!moduleId) {
+                document.getElementById('moduleInfo').innerHTML = '<div style="color:var(--text-light);">Modul tidak ditemukan. Silakan pilih modul dari dashboard guru.</div>';
+                return;
+            }
+            try {
+                const doc = await db.collection('modules').doc(moduleId).get();
+                if (!doc.exists) {
+                    toast('Modul tidak ditemukan.', 'error');
+                    return;
+                }
+                moduleData = { id: doc.id, ...doc.data() };
+                atpRows = moduleData.atpTable || [];
+                rpmList = moduleData.rpmList || [];
+                displayModuleInfo();
+                renderRPMCards();
+                populateTujuanSelect();
+                // Update user info
+                const user = localStorage.getItem('nbs_guru') || localStorage.getItem('nbs_user');
+                if (user) {
+                    try {
+                        const u = JSON.parse(user);
+                        document.getElementById('sidebarUser').textContent = u.name || 'Pengunjung';
+                        document.getElementById('topbarUser').textContent = u.name || 'Pengunjung';
+                        currentUser = u;
+                    } catch (e) {}
+                }
+            } catch (e) {
+                toast('Gagal memuat modul: ' + e.message, 'error');
+            }
+        }
+
+        function displayModuleInfo() {
+            if (!moduleData) return;
+            document.getElementById('modulMapel').textContent = moduleData.mapel || '-';
+            document.getElementById('modulKelas').textContent = moduleData.kelas || '-';
+            document.getElementById('modulGuru').textContent = moduleData.guru || '-';
+            document.getElementById('modulJenjang').textContent = moduleData.jenjang || '-';
+            document.getElementById('modulFase').textContent = moduleData.fase || '-';
+            document.getElementById('modulTahun').textContent = moduleData.tahunPenyusunan || '-';
+        }
+
+        // ===== POPULATE TP SELECT =====
+        function populateTujuanSelect() {
+            const select = document.getElementById('rpmTujuanSelect');
+            select.innerHTML = '<option value="">-- Pilih Tujuan Pembelajaran --</option>';
+            const filtered = atpRows.filter(r => r.tujuan && r.tujuan.trim() !== '');
+            if (filtered.length === 0) {
+                select.innerHTML += '<option value="" disabled>Belum ada TP. Isi ATP terlebih dahulu.</option>';
+                return;
+            }
+            filtered.forEach((row, idx) => {
+                const label = (row.tujuan || '').substring(0, 100) + (row.tujuan && row.tujuan.length > 100 ? '...' : '');
+                select.innerHTML += `<option value="${idx}">${label}</option>`;
+            });
+        }
+
+        // ===== RENDER RPM CARDS =====
+        function renderRPMCards() {
+            const container = document.getElementById('rpmCards');
+            if (!rpmList || rpmList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>Belum ada RPM</h3>
+                        <p>Klik tombol "Buat RPM Baru" untuk membuat Rencana Pembelajaran Mendalam.</p>
+                    </div>
+                `;
+                return;
+            }
+            let html = '';
+            rpmList.forEach((rpm, index) => {
+                const preview = rpm.content ? rpm.content.substring(0, 200) + '...' : 'Kosong';
+                const tpLabel = rpm.tujuanLabel || 'TP #' + (index+1);
+                html += `
+                    <div class="rpm-card">
+                        <div class="card-cover">
+                            <div class="card-title">${rpm.judul || 'RPM - ' + (moduleData.mapel || '')}</div>
+                            <div class="card-sub">${tpLabel}</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="rpm-preview">${preview}</div>
+                            <div class="rpm-meta">
+                                <span><i class="fas fa-calendar"></i> ${rpm.createdAt || '-'}</span>
+                                <span><i class="fas fa-clock"></i> ${rpm.alokasiWaktu || '-'} JP</span>
+                            </div>
+                            <div class="card-actions">
+                                <button onclick="viewRPM(${index})"><i class="fas fa-eye"></i> Lihat</button>
+                                <button class="btn-delete" onclick="deleteRPM(${index})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ===== VIEW RPM =====
+        function viewRPM(index) {
+            const rpm = rpmList[index];
+            if (!rpm) { toast('RPM tidak ditemukan.', 'error'); return; }
+            document.getElementById('detailTitle').textContent = rpm.judul || 'Rencana Pembelajaran Mendalam';
+            // Render konten dengan format yang lebih rapi (preserve newlines)
+            const content = rpm.content || 'Konten kosong.';
+            document.getElementById('detailContent').innerHTML = content.replace(/\n/g, '<br>');
+            document.getElementById('detailModal').classList.add('open');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('open');
+        }
+
+        function printDetailRPM() {
+            const content = document.getElementById('detailContent').innerHTML;
+            const title = document.getElementById('detailTitle').textContent;
+            const win = window.open('', '_blank', 'width=800,height=600');
+            win.document.write(`
+                <html><head><title>${title}</title>
+                <style>
+                    body { font-family:'Times New Roman',serif; padding:30px; line-height:1.6; max-width:1000px; margin:0 auto; }
+                    .print-title { font-size:20pt; font-weight:700; text-align:center; margin-bottom:16px; text-transform:uppercase; }
+                    .print-content { font-size:11pt; }
+                    .print-content br { display:block; margin:4px 0; }
+                </style>
+                </head><body>
+                <div class="print-title">${title}</div>
+                <div class="print-content">${content}</div>
+                <script>
+                    window.onload = function() { window.print(); window.close(); }
+                <\/script>
+                </body></html>
+            `);
+            win.document.close();
+        }
+
+        // ===== DELETE RPM =====
+        async function deleteRPM(index) {
+            if (!confirm('Hapus RPM ini?')) return;
+            rpmList.splice(index, 1);
+            try {
+                await db.collection('modules').doc(moduleId).update({
+                    rpmList: rpmList,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                toast('RPM dihapus.', 'info');
+                renderRPMCards();
+            } catch (e) {
+                toast('Gagal hapus: ' + e.message, 'error');
+            }
+        }
+
+        // ===== MODAL =====
+        function openModal() {
+            if (!moduleData) { toast('Modul belum dimuat.', 'error'); return; }
+            // Periksa apakah ada TP
+            const hasTP = atpRows.some(r => r.tujuan && r.tujuan.trim() !== '');
+            if (!hasTP) {
+                toast('Belum ada Tujuan Pembelajaran. Isi ATP terlebih dahulu di tab ATP.', 'error');
+                return;
+            }
+            document.getElementById('modalOverlay').classList.add('open');
+            document.getElementById('rpmDeskripsi').value = '';
+            document.getElementById('rpmLoading').style.display = 'none';
+            document.getElementById('btnGenerate').disabled = false;
+            document.getElementById('btnGenerate').innerHTML = '<i class="fas fa-magic"></i> Generate RPM';
+            populateTujuanSelect();
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('open');
+            document.getElementById('rpmLoading').style.display = 'none';
+            document.getElementById('btnGenerate').disabled = false;
+        }
+
+        // ===== GENERATE RPM =====
+        async function generateRPM(e) {
+            e.preventDefault();
+            const tpIndex = document.getElementById('rpmTujuanSelect').value;
+            if (tpIndex === '') {
+                toast('Pilih Tujuan Pembelajaran terlebih dahulu.', 'error');
+                return;
+            }
+            const deskripsi = document.getElementById('rpmDeskripsi').value.trim();
+
+            const tp = atpRows[parseInt(tpIndex)];
+            if (!tp) { toast('TP tidak ditemukan.', 'error'); return; }
+
+            // Tampilkan loading
+            document.getElementById('rpmLoading').style.display = 'block';
+            document.getElementById('btnGenerate').disabled = true;
+            document.getElementById('btnGenerate').innerHTML = '<span class="spinner"></span> Memproses...';
+
+            try {
+                const rpmContent = await callDeepSeek(tp, deskripsi);
+                // Simpan ke array rpmList
+                const newRPM = {
+                    judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
+                    tujuanLabel: tp.tujuan.substring(0, 80) + (tp.tujuan.length > 80 ? '...' : ''),
+                    tujuan: tp.tujuan,
+                    alokasiWaktu: tp.alokasiJp || moduleData.jpPerMinggu || 4,
+                    content: rpmContent,
+                    createdAt: new Date().toLocaleDateString('id-ID'),
+                    deskripsi: deskripsi || '-'
+                };
+                rpmList.push(newRPM);
+                await db.collection('modules').doc(moduleId).update({
+                    rpmList: rpmList,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                toast('RPM berhasil dibuat!', 'success');
+                closeModal();
+                renderRPMCards();
+                // Tampilkan detail RPM yang baru dibuat
+                setTimeout(() => {
+                    viewRPM(rpmList.length - 1);
+                }, 400);
+            } catch (err) {
+                toast('Gagal generate RPM: ' + err.message, 'error');
+            } finally {
+                document.getElementById('rpmLoading').style.display = 'none';
+                document.getElementById('btnGenerate').disabled = false;
+                document.getElementById('btnGenerate').innerHTML = '<i class="fas fa-magic"></i> Generate RPM';
+            }
+        }
+
+        // ===== CALL DEEPSEEK API =====
+        async function callDeepSeek(tp, deskripsi) {
+            const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
+
+            // Siapkan data profil lulusan (8 profil)
+            const profilLulusan = [
+                'Beriman & Bertakwa (Iman)',
+                'Berakhlak Mulia (Adab)',
+                'Cerdas & Ilmiah (Kognitif)',
+                'Terampil & Mandiri (Skill)',
+                'Berjiwa Pemimpin (Leadership)',
+                'Adaptif & Kolaboratif (Kerja Sama)',
+                'Sehat Jasmani & Rohani (Fisik)',
+                'Peduli Lingkungan (Kepedulian)'
+            ];
+
+            const jpPerMinggu = moduleData.jpPerMinggu || 2;
+            const alokasiJP = parseInt(tp.alokasiJp) || 4;
+            const jumlahPertemuan = Math.ceil(alokasiJP / jpPerMinggu);
+
+            const prompt = `
+Anda adalah asisten AI yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan profesional.
+
+### DATA MODUL
+- Unit Kerja / Sekolah: ${moduleData.jenjang || 'SMA'} Nurmilad Boarding School
+- Nama Guru: ${moduleData.guru || '-'}
+- Mata Pelajaran: ${moduleData.mapel || '-'}
+- Kelas / Fase: ${moduleData.kelas || '-'} / ${moduleData.fase || '-'}
+- Materi Pokok: ${tp.materi || '-'}
+- Alokasi Waktu: ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
+
+### CAPAIAN PEMBELAJARAN (CP)
+${cp}
+
+### TUJUAN PEMBELAJARAN (TP) YANG DIPILIH
+${tp.tujuan || '-'}
+
+### DESKRIPSI / ARAHAN KHUSUS DARI GURU
+${deskripsi || '(Tidak ada arahan khusus, buatlah secara profesional)'}
+
+### FORMAT RPM YANG HARUS DIHASILKAN
+Buat RPM dengan struktur berikut, gunakan format teks dengan heading dan sub-heading yang jelas:
+
+====================================================
+RENCANA PEMBELAJARAN MENDALAM (RPM)
+====================================================
+
+A. IDENTITAS (dalam bentuk tabel)
+Buat tabel dengan 2 kolom:
+- Unit Kerja    : ${moduleData.jenjang || 'SMA'} Nurmilad Boarding School
+- Nama Guru     : ${moduleData.guru || '-'}
+- Mata Pelajaran: ${moduleData.mapel || '-'}
+- Kelas/Fase    : ${moduleData.kelas || '-'} / ${moduleData.fase || '-'}
+- Materi Pokok  : ${tp.materi || '-'}
+- Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan)
+
+B. PROFIL PELAJAR PANCASILA (dalam bentuk tabel 2 kolom)
+Pilih setidaknya 3-4 profil yang relevan dari daftar berikut:
+${profilLulusan.join('\n')}
+Untuk setiap profil yang dipilih, berikan deskripsi singkat bagaimana profil tersebut diintegrasikan dalam pembelajaran ini.
+
+C. CAPAIAN PEMBELAJARAN
+Tuliskan CP yang telah diberikan di atas.
+
+D. DESAIN PEMBELAJARAN
+- Tujuan Pembelajaran: ${tp.tujuan || '-'}
+- Praktik Pedagogis:
+  * Konteks Boarding School: [jelaskan konteks]
+  * Pendekatan Konstruktivisme: [jelaskan]
+  * Praktik Reflektif: [jelaskan]
+
+E. PENGALAMAN BELAJAR (dalam bentuk tabel per pertemuan)
+Buat rincian kegiatan untuk ${jumlahPertemuan} pertemuan.
+Setiap pertemuan = ${jpPerMinggu} JP (sekitar ${jpPerMinggu * 45} menit)
+Rincian per pertemuan:
+- Kegiatan Awal (15 menit)
+- Kegiatan Inti (sesuai sisa waktu)
+- Kegiatan Penutup (15 menit)
+
+Format tabel: kolom "Pertemuan ke-", "Kegiatan Awal", "Kegiatan Inti", "Kegiatan Penutup"
+
+F. ASESMEN (dalam bentuk tabel)
+1. Asesmen Awal/Diagnostik: [jelaskan]
+2. Asesmen Proses/Formatif: [jelaskan]
+3. Asesmen Sumatif (Akhir): 
+   - Buat 5 soal pilihan ganda (dengan 5 opsi a-e) dan kunci jawaban
+   - Jika ada arahan di deskripsi, sesuaikan dengan arahan tersebut
+
+G. BAHAN BACAAN & DAFTAR PUSTAKA
+Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
+
+### INSTRUKSI PENTING
+1. Gunakan bahasa Indonesia yang baik dan benar, formal namun mudah dipahami.
+2. Buatlah RPM yang detail, aplikatif, dan siap pakai.
+3. Jika ada arahan khusus di "DESKRIPSI / ARAHAN KHUSUS", pastikan untuk mengikutinya.
+4. Gunakan format tabel dengan teks yang jelas (gunakan tanda | untuk pemisah kolom).
+5. Jangan gunakan markdown atau format khusus, cukup teks biasa dengan pemisah baris.
+`;
+
+            const response = await fetch(DEEPSEEK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + DEEPSEEK_API_KEY
+                },
+                body: JSON.stringify({
+                    model: 'deepseek-chat',
+                    messages: [
+                        { role: 'system', content: 'Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail dan siap pakai. Berikan jawaban dalam bahasa Indonesia yang baik dan benar, dengan format teks yang rapi dan terstruktur.' },
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 4096
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.text();
+                throw new Error(`API Error (${response.status}): ${err}`);
+            }
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', function() {
+            loadModule();
+
+            // Tutup modal saat klik di luar
+            document.getElementById('modalOverlay').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+            document.getElementById('detailModal').addEventListener('click', function(e) {
+                if (e.target === this) closeDetailModal();
+            });
+
+            // Sidebar close on mobile
+            document.addEventListener('click', function(e) {
+                const sidebar = document.getElementById('sidebar');
+                if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                    if (!sidebar.contains(e.target) && !e.target.closest('.hamburger')) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+        });
+
+        // Expose global
+        window.toggleSidebar = toggleSidebar;
+        window.logout = logout;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.generateRPM = generateRPM;
+        window.viewRPM = viewRPM;
+        window.closeDetailModal = closeDetailModal;
+        window.printDetailRPM = printDetailRPM;
+        window.deleteRPM = deleteRPM;
+        window.toast = toast;
+    </script>
+
+</body>
+</html>
