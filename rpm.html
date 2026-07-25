@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== GAYA UTAMA (SAMA SEPERTI SEBELUMNYA, tidak diubah) ===== */
+        /* ===== GAYA UTAMA (SAMA SEPERTI SEBELUMNYA) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -86,6 +86,7 @@
         .empty-state i { font-size:56px; opacity:0.3; margin-bottom:16px; }
         .empty-state h3 { font-size:20px; color:var(--text); margin-bottom:6px; }
 
+        /* MODAL */
         .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:10000; display:none; align-items:center; justify-content:center; padding:20px; }
         .modal-overlay.open { display:flex; }
         .modal-box { background:#fff; border-radius:var(--radius); max-width:680px; width:100%; max-height:90vh; overflow-y:auto; padding:32px 36px; box-shadow:0 24px 64px rgba(0,0,0,0.2); animation:modalIn 0.25s ease; }
@@ -109,6 +110,7 @@
         .modal-box .modal-actions .btn-submit { background:var(--primary); color:#fff; }
         .modal-box .modal-actions .btn-submit:hover { background:var(--primary-light); }
 
+        /* TOAST */
         .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
         .toast { padding:12px 24px; border-radius:var(--radius-sm); color:#fff; font-weight:500; font-size:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; max-width:360px; }
         .toast-success { background:#10b981; }
@@ -116,9 +118,11 @@
         .toast-info { background:var(--primary); }
         @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
+        /* Loading spinner */
         .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
+        /* Detail modal */
         #detailContent { font-size:14px; line-height:1.7; max-height:70vh; overflow-y:auto; padding-right:8px; white-space:pre-wrap; }
 
         @media (max-width:768px) {
@@ -261,11 +265,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ===== GEMINI API - PERBAIKI DENGAN API KEY YANG BENAR =====
-        // GANTI API_KEY_INI dengan API Key yang benar dari Google AI Studio
-        // Format yang benar: AIzaSy... (bukan AQ.Ab8...)
-        const GEMINI_API_KEY = "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A"; // <-- GANTI INI
-        const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+        // ===== GEMINI API =====
+        // Gunakan API Key baru yang Anda berikan
+        const GEMINI_API_KEY = "AQ.Ab8RN6IFB_b1MX_srH9L3w4Il0GUHkCB-F1FSEY1Xw44Kq8AMA";
+        // Model yang digunakan (fallback ke gemini-pro jika 1.5-flash error)
+        const GEMINI_MODEL = "gemini-1.5-flash";
+        const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent?key=" + GEMINI_API_KEY;
 
         // ===== STATE =====
         let moduleId = null;
@@ -514,11 +519,11 @@
                 console.error(err);
                 let errorMsg = err.message;
                 if (err.message.includes('403') || err.message.includes('permission') || err.message.includes('authentication')) {
-                    errorMsg = 'API Key tidak valid atau tidak memiliki akses. Pastikan API Key Gemini benar (format AIzaSy...) dan sudah diaktifkan di Google AI Studio.';
+                    errorMsg = 'API Key tidak valid atau tidak memiliki akses. Pastikan Anda menggunakan API Key yang benar dari Google AI Studio. Format API Key yang valid biasanya diawali dengan "AIza".';
                 } else if (err.message.includes('429')) {
                     errorMsg = 'Terlalu banyak permintaan. Tunggu beberapa saat dan coba lagi.';
-                } else if (err.message.includes('404')) {
-                    errorMsg = 'Model tidak ditemukan. Coba gunakan model gemini-1.5-flash atau periksa API Key.';
+                } else if (err.message.includes('404') || err.message.includes('model')) {
+                    errorMsg = 'Model tidak ditemukan. Coba gunakan model "gemini-pro" atau "gemini-1.5-flash".';
                 }
                 toast('Gagal generate RPM: ' + errorMsg, 'error');
             } finally {
@@ -654,6 +659,8 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
                 let errorMsg = `HTTP ${response.status}`;
                 if (errorData.error && errorData.error.message) {
                     errorMsg = errorData.error.message;
+                } else if (response.status === 403) {
+                    errorMsg = 'API Key tidak valid. Pastikan Anda menggunakan API Key yang benar dari Google AI Studio.';
                 } else {
                     errorMsg = response.statusText || 'Unknown error';
                 }
