@@ -17,7 +17,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== GAYA UTAMA (SAMA SEPERTI SEBELUMNYA) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -64,8 +63,6 @@
         .btn-danger:hover { background:#dc2626; }
         .btn-success { background:#10b981; color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
         .btn-success:hover { background:#059669; }
-        .btn-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
-        .btn-secondary:hover { background:var(--border); }
 
         .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px,1fr)); gap:20px; }
         .rpm-card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; transition:var(--transition); display:flex; flex-direction:column; }
@@ -102,13 +99,15 @@
         .modal-box .form-group textarea:focus,
         .modal-box .form-group input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,95,122,0.10); }
         .modal-box .form-group textarea { resize:vertical; min-height:80px; }
-        .modal-box .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
         .modal-box .modal-actions { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; }
         .modal-box .modal-actions button { padding:10px 28px; border:none; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
         .modal-box .modal-actions .btn-cancel { background:var(--bg); color:var(--text); }
         .modal-box .modal-actions .btn-cancel:hover { background:var(--border); }
         .modal-box .modal-actions .btn-submit { background:var(--primary); color:#fff; }
-        .modal-box .modal-actions .btn-submit:hover { background:var(--primary-light); }
+        .modal-box .modal-actions .btn-submit:disabled { opacity:0.6; cursor:not-allowed; }
+
+        /* Detail modal */
+        .detail-content { font-size:14px; line-height:1.8; max-height:70vh; overflow-y:auto; padding-right:8px; white-space:pre-wrap; }
 
         /* TOAST */
         .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
@@ -118,12 +117,8 @@
         .toast-info { background:var(--primary); }
         @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
-        /* Loading spinner */
         .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
-
-        /* Detail modal */
-        #detailContent { font-size:14px; line-height:1.7; max-height:70vh; overflow-y:auto; padding-right:8px; white-space:pre-wrap; }
 
         @media (max-width:768px) {
             .sidebar { transform:translateX(-100%); }
@@ -132,7 +127,6 @@
             .topbar-left .hamburger { display:block; }
             .page-content { padding:16px; }
             .topbar { padding:0 16px; }
-            .modal-box .form-row { grid-template-columns:1fr; }
             .modal-box { padding:20px; }
             .cards-grid { grid-template-columns:1fr; }
         }
@@ -240,9 +234,7 @@
                 <h2 id="detailTitle">Rencana Pembelajaran Mendalam</h2>
                 <button onclick="closeDetailModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);">&times;</button>
             </div>
-            <div id="detailContent" style="font-size:14px;line-height:1.7;max-height:70vh;overflow-y:auto;padding-right:8px;white-space:pre-wrap;">
-                <!-- Isi RPM akan dirender di sini -->
-            </div>
+            <div id="detailContent" class="detail-content"></div>
             <div class="modal-actions" style="margin-top:16px;">
                 <button class="btn-success" onclick="printDetailRPM()"><i class="fas fa-print"></i> Cetak PDF</button>
                 <button class="btn-cancel" onclick="closeDetailModal()">Tutup</button>
@@ -266,11 +258,8 @@
         const db = firebase.firestore();
 
         // ===== GEMINI API =====
-        // Gunakan API Key baru yang Anda berikan
-        const GEMINI_API_KEY = "AQ.Ab8RN6IFB_b1MX_srH9L3w4Il0GUHkCB-F1FSEY1Xw44Kq8AMA";
-        // Model yang digunakan (fallback ke gemini-pro jika 1.5-flash error)
-        const GEMINI_MODEL = "gemini-1.5-flash";
-        const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent?key=" + GEMINI_API_KEY;
+        const GEMINI_API_KEY = "AIzaSyAUyYfNpCH37T4fIfIm6qXr6yzZS7xcVyo";
+        const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
 
         // ===== STATE =====
         let moduleId = null;
@@ -518,12 +507,12 @@
             } catch (err) {
                 console.error(err);
                 let errorMsg = err.message;
-                if (err.message.includes('403') || err.message.includes('permission') || err.message.includes('authentication')) {
-                    errorMsg = 'API Key tidak valid atau tidak memiliki akses. Pastikan Anda menggunakan API Key yang benar dari Google AI Studio. Format API Key yang valid biasanya diawali dengan "AIza".';
+                if (err.message.includes('403') || err.message.includes('permission') || err.message.includes('API key')) {
+                    errorMsg = 'API Key Gemini tidak valid atau tidak memiliki akses. Pastikan API Key benar dan sudah diaktifkan.';
                 } else if (err.message.includes('429')) {
                     errorMsg = 'Terlalu banyak permintaan. Tunggu beberapa saat dan coba lagi.';
-                } else if (err.message.includes('404') || err.message.includes('model')) {
-                    errorMsg = 'Model tidak ditemukan. Coba gunakan model "gemini-pro" atau "gemini-1.5-flash".';
+                } else if (err.message.includes('404')) {
+                    errorMsg = 'Model tidak ditemukan. Coba gunakan model gemini-1.5-flash atau periksa API Key.';
                 }
                 toast('Gagal generate RPM: ' + errorMsg, 'error');
             } finally {
@@ -659,8 +648,6 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
                 let errorMsg = `HTTP ${response.status}`;
                 if (errorData.error && errorData.error.message) {
                     errorMsg = errorData.error.message;
-                } else if (response.status === 403) {
-                    errorMsg = 'API Key tidak valid. Pastikan Anda menggunakan API Key yang benar dari Google AI Studio.';
                 } else {
                     errorMsg = response.statusText || 'Unknown error';
                 }
@@ -668,7 +655,6 @@ Berikan minimal 3 referensi buku atau sumber belajar yang relevan.
             }
 
             const data = await response.json();
-            // Ekstrak teks dari response Gemini
             if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
                 return data.candidates[0].content.parts[0].text;
             } else {
