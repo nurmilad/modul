@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== GAYA UTAMA (SAMA SEPERTI SEBELUMNYA) ===== */
+        /* ===== GAYA UTAMA ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -30,91 +30,390 @@
 
         .container { max-width:1200px; margin:0 auto; }
 
-        .rpm-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:24px; }
-        .rpm-header h1 { font-size:26px; font-weight:700; }
-        .rpm-header h1 small { font-weight:400; font-size:16px; color:var(--text-light); display:block; margin-top:4px; }
+        /* ===== TAB ===== */
+        .rpm-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .rpm-tabs button {
+            padding: 10px 24px;
+            background: none;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            margin-bottom: -2px;
+        }
+        .rpm-tabs button:hover { color: var(--text); }
+        .rpm-tabs button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
 
-        .btn-plus { background:var(--primary); color:#fff; border:none; padding:10px 24px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); display:flex; align-items:center; gap:8px; }
-        .btn-plus:hover { background:var(--primary-light); transform:scale(1.02); }
-        .btn-primary { background:var(--primary); color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
-        .btn-primary:hover { background:var(--primary-light); }
-        .btn-danger { background:#ef4444; color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
-        .btn-danger:hover { background:#dc2626; }
-        .btn-success { background:#10b981; color:#fff; border:none; padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
-        .btn-success:hover { background:#059669; }
-        .btn-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); padding:8px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
-        .btn-secondary:hover { background:var(--border); }
+        .tab-content {
+            display: none;
+            animation: fadeUp 0.25s ease;
+        }
+        .tab-content.active { display: block; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
-        .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px,1fr)); gap:20px; }
-        .rpm-card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; transition:var(--transition); display:flex; flex-direction:column; }
-        .rpm-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.08); }
-        .rpm-card .card-cover { padding:14px 20px; background:linear-gradient(135deg, #7c3aed, #6d28d9); color:#fff; }
-        .rpm-card .card-cover .card-title { font-size:16px; font-weight:600; }
-        .rpm-card .card-cover .card-sub { font-size:12px; opacity:0.85; margin-top:2px; }
-        .rpm-card .card-body { padding:16px 20px 20px; flex:1; display:flex; flex-direction:column; }
-        .rpm-card .card-body .rpm-preview { font-size:13px; color:var(--text-light); line-height:1.5; overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; flex:1; }
-        .rpm-card .card-body .rpm-meta { display:flex; flex-wrap:wrap; gap:6px 12px; font-size:12px; color:var(--text-light); margin:8px 0 12px; }
-        .rpm-card .card-actions { display:flex; gap:6px; flex-wrap:wrap; }
-        .rpm-card .card-actions button { padding:4px 14px; border:1px solid var(--border); background:#fff; border-radius:40px; font-size:12px; font-weight:500; cursor:pointer; transition:var(--transition); color:var(--text); }
-        .rpm-card .card-actions button:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
-        .rpm-card .card-actions .btn-delete { border-color:#ef4444; color:#ef4444; }
-        .rpm-card .card-actions .btn-delete:hover { background:#ef4444; color:#fff; }
+        /* ===== TABEL ATP (readonly) ===== */
+        .atp-table-wrap { overflow-x: auto; margin-top: 8px; }
+        .atp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: #fff;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .atp-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--bg);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .atp-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            background: #fff;
+        }
+        .atp-table td input,
+        .atp-table td select,
+        .atp-table td textarea {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            background: #f9f9f9;
+            color: var(--text);
+            font-family: inherit;
+            pointer-events: none; /* nonaktif interaksi */
+            cursor: default;
+            resize: none;
+        }
+        .atp-table td textarea {
+            min-height: 32px;
+            resize: vertical;
+        }
+        .atp-table td .btn-buat-rpm {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .atp-table td .btn-buat-rpm:hover {
+            background: var(--primary-light);
+            transform: scale(1.04);
+        }
+        .atp-table td .btn-buat-rpm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .atp-table .drag-handle { display: none; } /* tidak perlu drag */
 
-        .empty-state { text-align:center; padding:60px 20px; color:var(--text-light); grid-column:1/-1; }
-        .empty-state i { font-size:56px; opacity:0.3; margin-bottom:16px; }
-        .empty-state h3 { font-size:20px; color:var(--text); margin-bottom:6px; }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+        .empty-state i { font-size: 48px; opacity: 0.3; margin-bottom: 16px; }
 
-        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:10000; display:none; align-items:center; justify-content:center; padding:20px; }
-        .modal-overlay.open { display:flex; }
-        .modal-box { background:#fff; border-radius:var(--radius); max-width:680px; width:100%; max-height:90vh; overflow-y:auto; padding:32px 36px; box-shadow:0 24px 64px rgba(0,0,0,0.2); animation:modalIn 0.25s ease; }
-        @keyframes modalIn { from { opacity:0; transform:scale(0.96) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
+        /* ===== CARD RPM ===== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px,1fr));
+            gap: 20px;
+        }
+        .rpm-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+        .rpm-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+        }
+        .rpm-card .card-cover {
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: #fff;
+        }
+        .rpm-card .card-cover .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .rpm-card .card-cover .card-sub {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+        .rpm-card .card-body {
+            padding: 16px 20px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .rpm-card .card-body .rpm-preview {
+            font-size: 13px;
+            color: var(--text-light);
+            line-height: 1.5;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            flex: 1;
+        }
+        .rpm-card .card-body .rpm-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 12px;
+            font-size: 12px;
+            color: var(--text-light);
+            margin: 8px 0 12px;
+        }
+        .rpm-card .card-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .rpm-card .card-actions button {
+            padding: 4px 14px;
+            border: 1px solid var(--border);
+            background: #fff;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text);
+        }
+        .rpm-card .card-actions button:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .rpm-card .card-actions .btn-delete {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        .rpm-card .card-actions .btn-delete:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: var(--radius);
+            max-width: 680px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 32px 36px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from { opacity:0; transform:scale(0.96) translateY(20px); }
+            to { opacity:1; transform:scale(1) translateY(0); }
+        }
         .modal-box h2 { font-size:22px; font-weight:700; margin-bottom:6px; }
         .modal-box .modal-sub { color:var(--text-light); font-size:14px; margin-bottom:20px; }
         .modal-box .form-group { margin-bottom:16px; }
-        .modal-box .form-group label { font-size:13px; font-weight:500; color:var(--text-light); display:block; margin-bottom:4px; }
-        .modal-box .form-group select,
+        .modal-box .form-group label {
+            font-size:13px; font-weight:500; color:var(--text-light);
+            display:block; margin-bottom:4px;
+        }
+        .modal-box .form-group .tp-full,
+        .modal-box .form-group .materi-full {
+            background: var(--bg);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
         .modal-box .form-group textarea,
-        .modal-box .form-group input { width:100%; padding:9px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:14px; background:#fff; color:var(--text); outline:none; transition:var(--transition); font-family:inherit; }
-        .modal-box .form-group select:focus,
+        .modal-box .form-group select,
+        .modal-box .form-group input {
+            width: 100%;
+            padding: 9px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+            transition: var(--transition);
+            font-family: inherit;
+        }
         .modal-box .form-group textarea:focus,
-        .modal-box .form-group input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,95,122,0.10); }
-        .modal-box .form-group textarea { resize:vertical; min-height:80px; }
-        .modal-box .modal-actions { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; }
-        .modal-box .modal-actions button { padding:10px 28px; border:none; border-radius:var(--radius-sm); font-weight:600; font-size:14px; cursor:pointer; transition:var(--transition); }
-        .modal-box .modal-actions .btn-cancel { background:var(--bg); color:var(--text); }
-        .modal-box .modal-actions .btn-cancel:hover { background:var(--border); }
-        .modal-box .modal-actions .btn-submit { background:var(--primary); color:#fff; }
-        .modal-box .modal-actions .btn-submit:hover { background:var(--primary-light); }
+        .modal-box .form-group select:focus,
+        .modal-box .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26,95,122,0.10);
+        }
+        .modal-box .form-group textarea { resize: vertical; min-height: 80px; }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .modal-box .modal-actions button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-box .modal-actions .btn-cancel {
+            background: var(--bg);
+            color: var(--text);
+        }
+        .modal-box .modal-actions .btn-cancel:hover { background: var(--border); }
+        .modal-box .modal-actions .btn-submit {
+            background: var(--primary);
+            color: #fff;
+        }
+        .modal-box .modal-actions .btn-submit:hover { background: var(--primary-light); }
+        .modal-box .modal-actions .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-        /* Detail Modal */
+        /* Detail RPM modal (sama seperti sebelumnya) */
         .detail-modal-box { max-width:1000px !important; }
-        .detail-content { font-size:14px; line-height:1.8; max-height:70vh; overflow-y:auto; padding-right:8px; }
-        .detail-content .section-title { font-weight:700; font-size:18px; color:var(--primary); margin:20px 0 10px; border-bottom:2px solid var(--border); padding-bottom:6px; }
+        .detail-content {
+            font-size: 14px;
+            line-height: 1.8;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        .detail-content .section-title {
+            font-weight:700; font-size:18px; color:var(--primary);
+            margin:20px 0 10px; border-bottom:2px solid var(--border); padding-bottom:6px;
+        }
         .detail-content .section-title:first-of-type { margin-top:0; }
         .detail-content .sub-title { font-weight:600; font-size:15px; margin:14px 0 6px; color:var(--text); }
-        .detail-content .pertemuan-title { font-weight:700; font-size:16px; margin:16px 0 8px; color:var(--primary-dark); background:var(--bg); padding:6px 12px; border-radius:var(--radius-sm); border-left:4px solid var(--primary); }
+        .detail-content .pertemuan-title {
+            font-weight:700; font-size:16px; margin:16px 0 8px;
+            color:var(--primary-dark); background:var(--bg);
+            padding:6px 12px; border-radius:var(--radius-sm); border-left:4px solid var(--primary);
+        }
         .detail-content .praktek-item { font-weight:600; margin:6px 0 2px; }
         .detail-content .kegiatan-label { font-weight:600; margin:6px 0 2px; color:var(--primary-dark); }
-        .detail-content table { width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:13px; }
-        .detail-content table th { background:var(--bg); font-weight:600; text-align:left; padding:8px 10px; border:1px solid var(--border); }
-        .detail-content table td { padding:8px 10px; border:1px solid var(--border); vertical-align:top; }
+        .detail-content table {
+            width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:13px;
+        }
+        .detail-content table th {
+            background:var(--bg); font-weight:600; text-align:left;
+            padding:8px 10px; border:1px solid var(--border);
+        }
+        .detail-content table td {
+            padding:8px 10px; border:1px solid var(--border); vertical-align:top;
+        }
         .detail-content table tr:nth-child(even) td { background:#fafafa; }
         .detail-content p { margin:6px 0; }
-        .detail-content .text-block { background:var(--bg); padding:12px 16px; border-radius:var(--radius-sm); border-left:4px solid var(--primary); margin:6px 0 12px; }
-        .detail-content .cp-content { background:#f0f7ff; padding:12px 16px; border-radius:var(--radius-sm); border-left:4px solid #3b82f6; margin:6px 0 12px; white-space:pre-wrap; }
-        .detail-content .soal-item { background:#f9f9f9; padding:8px 12px; border-radius:var(--radius-sm); margin:4px 0; border-left:3px solid var(--secondary); }
-        .detail-content .activity-detail { padding:4px 8px 4px 16px; border-left:2px solid var(--border); margin:2px 0; }
+        .detail-content .text-block {
+            background:var(--bg); padding:12px 16px; border-radius:var(--radius-sm);
+            border-left:4px solid var(--primary); margin:6px 0 12px;
+        }
+        .detail-content .cp-content {
+            background:#f0f7ff; padding:12px 16px; border-radius:var(--radius-sm);
+            border-left:4px solid #3b82f6; margin:6px 0 12px; white-space:pre-wrap;
+        }
+        .detail-content .soal-item {
+            background:#f9f9f9; padding:8px 12px; border-radius:var(--radius-sm);
+            margin:4px 0; border-left:3px solid var(--secondary);
+        }
+        .detail-content .activity-detail {
+            padding:4px 8px 4px 16px; border-left:2px solid var(--border); margin:2px 0;
+        }
 
-        .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
-        .toast { padding:12px 24px; border-radius:var(--radius-sm); color:#fff; font-weight:500; font-size:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; max-width:360px; }
-        .toast-success { background:#10b981; }
-        .toast-error { background:#ef4444; }
-        .toast-info { background:var(--primary); }
-        @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            animation: slideUp 0.3s ease;
+            max-width: 360px;
+        }
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-info { background: var(--primary); }
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(16px); }
+            to { opacity:1; transform:translateY(0); }
+        }
 
-        .spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
         @keyframes spin { to { transform:rotate(360deg); } }
 
+        /* ===== PRINT ===== */
         @media print {
             .no-print { display:none !important; }
             .modal-overlay { position:relative !important; background:none !important; backdrop-filter:none !important; display:block !important; }
@@ -126,648 +425,429 @@
         }
 
         @media (max-width:768px) {
-            .modal-box .form-row { grid-template-columns:1fr; }
             .modal-box { padding:20px; }
             .cards-grid { grid-template-columns:1fr; }
             .detail-content table { font-size:12px; }
             .detail-content table th,
             .detail-content table td { padding:5px 6px; }
+            .atp-table { font-size:12px; }
+            .atp-table th, .atp-table td { padding:6px 6px; }
+            .atp-table td textarea { min-height:24px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Informasi Modul -->
-        <div id="moduleInfo" style="margin-bottom:16px;background:var(--card-bg);padding:14px 20px;border-radius:var(--radius);border:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-            <div>
-                <strong id="modulMapel">-</strong> <span id="modulKelas">-</span>
-                <span style="color:var(--text-light);font-size:14px;margin-left:8px;" id="modulGuru">-</span>
-            </div>
-            <div style="font-size:14px;color:var(--text-light);">
-                <span id="modulJenjang">-</span> • <span id="modulFase">-</span> • <span id="modulTahun">-</span>
-            </div>
+<div class="container">
+    <!-- Informasi Modul -->
+    <div id="moduleInfo" style="margin-bottom:16px;background:var(--card-bg);padding:14px 20px;border-radius:var(--radius);border:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+            <strong id="modulMapel">-</strong> <span id="modulKelas">-</span>
+            <span style="color:var(--text-light);font-size:14px;margin-left:8px;" id="modulGuru">-</span>
         </div>
-
-        <div class="rpm-header">
-            <div>
-                <h1>Rencana Pembelajaran Mendalam <small>RPM yang telah dibuat untuk modul ini</small></h1>
-            </div>
-            <button class="btn-plus no-print" onclick="openModal()"><i class="fas fa-plus-circle"></i> Buat RPM Baru</button>
+        <div style="font-size:14px;color:var(--text-light);">
+            <span id="modulJenjang">-</span> • <span id="modulFase">-</span> • <span id="modulTahun">-</span>
         </div>
+    </div>
 
+    <!-- Tabs -->
+    <div class="rpm-tabs">
+        <button class="active" data-tab="tab-atp" onclick="switchTab('tab-atp')">📋 ATP</button>
+        <button data-tab="tab-rpm" onclick="switchTab('tab-rpm')">📄 RPM</button>
+    </div>
+
+    <!-- ===== TAB ATP ===== -->
+    <div class="tab-content active" id="tab-atp">
+        <h3 style="font-size:18px;font-weight:600;margin-bottom:16px;">Alur Tujuan Pembelajaran (ATP)</h3>
+        <div id="atpTableContainer">
+            <!-- Tabel ATP akan dirender oleh JS -->
+        </div>
+        <div id="atpEmpty" class="empty-state" style="display:none;">
+            <i class="fas fa-table"></i>
+            <p>Belum ada data ATP untuk modul ini.</p>
+        </div>
+    </div>
+
+    <!-- ===== TAB RPM ===== -->
+    <div class="tab-content" id="tab-rpm">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+            <h3 style="font-size:18px;font-weight:600;">Daftar RPM yang Telah Dibuat</h3>
+        </div>
         <div class="cards-grid" id="rpmCards">
             <!-- Akan di-render JS -->
         </div>
     </div>
+</div>
 
-    <!-- MODAL BUAT RPM -->
-    <div class="modal-overlay no-print" id="modalOverlay">
-        <div class="modal-box">
-            <h2>Buat Rencana Pembelajaran Mendalam (RPM)</h2>
-            <p class="modal-sub">Pilih Tujuan Pembelajaran dan berikan deskripsi opsional untuk mengarahkan AI.</p>
-            <form id="modalForm" onsubmit="generateRPM(event)">
-                <div class="form-group">
-                    <label>Tujuan Pembelajaran (TP) <span style="color:red;">*</span></label>
-                    <select id="rpmTujuanSelect" required>
-                        <option value="">-- Pilih Tujuan Pembelajaran --</option>
-                    </select>
+<!-- ===== MODAL BUAT RPM ===== -->
+<div class="modal-overlay no-print" id="modalOverlay">
+    <div class="modal-box">
+        <h2>Buat Rencana Pembelajaran Mendalam (RPM)</h2>
+        <p class="modal-sub">Informasi tujuan pembelajaran dan materi pokok ditampilkan lengkap di bawah ini.</p>
+        <form id="modalForm" onsubmit="generateRPM(event)">
+            <div class="form-group">
+                <label>Tujuan Pembelajaran (TP)</label>
+                <div class="tp-full" id="modalTpFull">-</div>
+            </div>
+            <div class="form-group">
+                <label>Materi Pokok</label>
+                <div class="materi-full" id="modalMateriFull">-</div>
+            </div>
+            <div class="form-group">
+                <label>Deskripsi / Arahan Khusus (Opsional)</label>
+                <textarea id="rpmDeskripsi" rows="4" placeholder="Tuliskan arahan untuk RPM yang diinginkan. Misalnya: metode yang diinginkan, jenis penilaian, fokus materi, dll. Kosongkan jika ingin AI membuat sepenuhnya."></textarea>
+            </div>
+            <div class="form-group" id="rpmLoading" style="display:none;">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f4f8;border-radius:var(--radius-sm);">
+                    <div class="spinner"></div>
+                    <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI... Mohon tunggu.</span>
                 </div>
-                <div class="form-group">
-                    <label>Deskripsi / Arahan Khusus (Opsional)</label>
-                    <textarea id="rpmDeskripsi" rows="4" placeholder="Tuliskan arahan untuk RPM yang diinginkan. Misalnya: metode yang diinginkan, jenis penilaian, fokus materi, dll. Kosongkan jika ingin AI membuat sepenuhnya."></textarea>
-                </div>
-                <div class="form-group" id="rpmLoading" style="display:none;">
-                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f4f8;border-radius:var(--radius-sm);">
-                        <div class="spinner"></div>
-                        <span style="font-size:14px;color:var(--text);">Sedang menghasilkan RPM dengan AI... Mohon tunggu.</span>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
-                    <button type="submit" class="btn-submit" id="btnGenerate"><i class="fas fa-magic"></i> Generate RPM</button>
-                </div>
-            </form>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
+                <button type="submit" class="btn-submit" id="btnGenerate"><i class="fas fa-magic"></i> Generate RPM</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== DETAIL RPM MODAL ===== -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal-box detail-modal-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;" class="no-print">
+            <h2 id="detailTitle">Rencana Pembelajaran Mendalam</h2>
+            <button onclick="closeDetailModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);">&times;</button>
+        </div>
+        <div id="detailContent" class="detail-content">
+            <!-- Akan diisi oleh JavaScript -->
+        </div>
+        <div class="modal-actions no-print" style="margin-top:16px;">
+            <button class="btn-success" onclick="printDetailRPM()"><i class="fas fa-print"></i> Cetak PDF</button>
+            <button class="btn-cancel" onclick="closeDetailModal()">Tutup</button>
         </div>
     </div>
+</div>
 
-    <!-- DETAIL RPM MODAL -->
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal-box detail-modal-box">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;" class="no-print">
-                <h2 id="detailTitle">Rencana Pembelajaran Mendalam</h2>
-                <button onclick="closeDetailModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);">&times;</button>
-            </div>
-            <div id="detailContent" class="detail-content">
-                <!-- Akan diisi oleh JavaScript -->
-            </div>
-            <div class="modal-actions no-print" style="margin-top:16px;">
-                <button class="btn-success" onclick="printDetailRPM()"><i class="fas fa-print"></i> Cetak PDF</button>
-                <button class="btn-cancel" onclick="closeDetailModal()">Tutup</button>
-            </div>
-        </div>
-    </div>
+<!-- ===== TOAST ===== -->
+<div class="toast-container" id="toastContainer"></div>
 
-    <!-- TOAST -->
-    <div class="toast-container" id="toastContainer"></div>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A",
+        authDomain: "modul-fae5a.firebaseapp.com",
+        projectId: "modul-fae5a",
+        storageBucket: "modul-fae5a.firebasestorage.app",
+        messagingSenderId: "837647902643",
+        appId: "1:837647902643:web:adfa809d9f8adbeaeacdc6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A",
-            authDomain: "modul-fae5a.firebaseapp.com",
-            projectId: "modul-fae5a",
-            storageBucket: "modul-fae5a.firebasestorage.app",
-            messagingSenderId: "837647902643",
-            appId: "1:837647902643:web:adfa809d9f8adbeaeacdc6"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    // ===== GROQ API =====
+    const GROQ_API_KEY = "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";
+    const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+    const GROQ_MODEL = "llama-3.1-8b-instant";
 
-        // ===== GROQ API =====
-        const GROQ_API_KEY = "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";
-        const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-        const GROQ_MODEL = "llama-3.1-8b-instant";
+    // ===== STATE =====
+    let moduleId = null;
+    let moduleData = null;
+    let atpRows = [];
+    let rpmList = [];
+    let currentUser = null;
+    let canEdit = false;
 
-        // ===== STATE =====
-        let moduleId = null;
-        let moduleData = null;
-        let atpRows = [];
-        let rpmList = [];
+    // ===== TOAST =====
+    function toast(msg, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = 'toast toast-' + type;
+        el.textContent = msg;
+        container.appendChild(el);
+        setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
+    }
 
-        // ===== TOAST =====
-        function toast(msg, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const el = document.createElement('div');
-            el.className = 'toast toast-' + type;
-            el.textContent = msg;
-            container.appendChild(el);
-            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
-        }
+    // ===== CEK AKSES =====
+    function checkAccess() {
+        const guruStr = localStorage.getItem('nbs_guru');
+        const userStr = localStorage.getItem('nbs_user');
+        let role = 'guest';
+        let user = null;
 
-        // ===== LOAD MODULE =====
-        async function loadModule() {
-            const params = new URLSearchParams(window.location.search);
-            moduleId = params.get('module');
-            if (!moduleId) {
-                document.getElementById('moduleInfo').innerHTML = '<div style="color:var(--text-light);">Modul tidak ditemukan. Silakan pilih modul dari dashboard guru.</div>';
-                return;
-            }
+        if (guruStr) {
             try {
-                const doc = await db.collection('modules').doc(moduleId).get();
-                if (!doc.exists) {
-                    toast('Modul tidak ditemukan.', 'error');
-                    return;
-                }
-                moduleData = { id: doc.id, ...doc.data() };
-                atpRows = moduleData.atpTable || [];
-                rpmList = moduleData.rpmList || [];
-                displayModuleInfo();
-                renderRPMCards();
-                populateTujuanSelect();
-            } catch (e) {
-                toast('Gagal memuat modul: ' + e.message, 'error');
-            }
-        }
-
-        function displayModuleInfo() {
-            if (!moduleData) return;
-            document.getElementById('modulMapel').textContent = moduleData.mapel || '-';
-            document.getElementById('modulKelas').textContent = moduleData.kelas || '-';
-            document.getElementById('modulGuru').textContent = moduleData.guru || '-';
-            document.getElementById('modulJenjang').textContent = moduleData.jenjang || '-';
-            document.getElementById('modulFase').textContent = moduleData.fase || '-';
-            document.getElementById('modulTahun').textContent = moduleData.tahunPenyusunan || '-';
-        }
-
-        function populateTujuanSelect() {
-            const select = document.getElementById('rpmTujuanSelect');
-            select.innerHTML = '<option value="">-- Pilih Tujuan Pembelajaran --</option>';
-            const filtered = atpRows.filter(r => r.tujuan && r.tujuan.trim() !== '');
-            if (filtered.length === 0) {
-                select.innerHTML += '<option value="" disabled>Belum ada TP. Isi ATP terlebih dahulu.</option>';
-                return;
-            }
-            filtered.forEach((row, idx) => {
-                const label = (row.tujuan || '').substring(0, 100) + (row.tujuan && row.tujuan.length > 100 ? '...' : '');
-                select.innerHTML += `<option value="${idx}">${label}</option>`;
-            });
-        }
-
-        // ===== RENDER CARDS =====
-        function renderRPMCards() {
-            const container = document.getElementById('rpmCards');
-            if (!rpmList || rpmList.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-file-alt"></i>
-                        <h3>Belum ada RPM</h3>
-                        <p>Klik tombol "Buat RPM Baru" untuk membuat Rencana Pembelajaran Mendalam.</p>
-                    </div>
-                `;
-                return;
-            }
-            let html = '';
-            rpmList.forEach((rpm, index) => {
-                const preview = rpm.content ? rpm.content.substring(0, 200) + '...' : 'Kosong';
-                const tpLabel = rpm.tujuanLabel || 'TP #' + (index+1);
-                html += `
-                    <div class="rpm-card">
-                        <div class="card-cover">
-                            <div class="card-title">${rpm.judul || 'RPM - ' + (moduleData.mapel || '')}</div>
-                            <div class="card-sub">${tpLabel}</div>
-                        </div>
-                        <div class="card-body">
-                            <div class="rpm-preview">${preview}</div>
-                            <div class="rpm-meta">
-                                <span><i class="fas fa-calendar"></i> ${rpm.createdAt || '-'}</span>
-                                <span><i class="fas fa-clock"></i> ${rpm.alokasiWaktu || '-'} JP</span>
-                            </div>
-                            <div class="card-actions">
-                                <button onclick="viewRPM(${index})"><i class="fas fa-eye"></i> Lihat</button>
-                                <button class="btn-delete" onclick="deleteRPM(${index})"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        // ================================================================
-        // ===== CLEAN TEXT =====
-        // ================================================================
-        function cleanText(text) {
-            if (!text) return '';
-            text = text.replace(/^[=\-]{5,}\s*$/gm, '');
-            text = text.replace(/\*\*/g, '');
-            text = text.replace(/__/g, '');
-            text = text.replace(/_(?! )/g, '');
-            text = text.replace(/\n{3,}/g, '\n\n');
-            return text.trim();
-        }
-
-        // ================================================================
-        // ===== FORMAT KONTEN RPM =====
-        // ================================================================
-        function formatRPMContent(text, cpFromFirebase) {
-            if (!text) return '<p>Konten kosong.</p>';
-
-            let cleaned = cleanText(text);
-            const lines = cleaned.split('\n');
-            let html = '';
-            let inTable = false;
-            let tableRows = [];
-            let inSectionC = false;
-            let inPraktekPedagogis = false;
-            let inPertemuan = false;
-
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i];
-                const trimmed = line.trim();
-
-                // Judul utama
-                if (trimmed.toUpperCase().includes('RENCANA PEMBELAJARAN MENDALAM') ||
-                    trimmed.toUpperCase().includes('RENCANA PEMBELAJARAN MENDALAM (RPM)')) {
-                    html += `<div class="section-title" style="text-align:center;font-size:20px;border-bottom:3px double var(--primary);">RENCANA PEMBELAJARAN MENDALAM (RPM)</div>`;
-                    continue;
-                }
-
-                // Deteksi section heading (A., B., C., dst)
-                const sectionMatch = trimmed.match(/^([A-Z])\.\s*(.*)/);
-                if (sectionMatch) {
-                    const sectionLetter = sectionMatch[1];
-                    const sectionTitle = sectionMatch[2].trim();
-
-                    inSectionC = false;
-                    inPraktekPedagogis = false;
-                    inPertemuan = false;
-
-                    if (sectionLetter === 'C' && sectionTitle.toUpperCase().includes('CAPAIAN PEMBELAJARAN')) {
-                        inSectionC = true;
-                        html += `<div class="section-title">C. CAPAIAN PEMBELAJARAN</div>`;
-                        if (cpFromFirebase) {
-                            html += `<div class="cp-content">${cpFromFirebase}</div>`;
-                        } else {
-                            html += `<div class="cp-content">(Belum ada Capaian Pembelajaran yang diisi)</div>`;
-                        }
-                        continue;
-                    }
-
-                    if (sectionLetter === 'D' && sectionTitle.toUpperCase().includes('DESAIN PEMBELAJARAN')) {
-                        html += `<div class="section-title">D. DESAIN PEMBELAJARAN</div>`;
-                        const tp = getSelectedTP();
-                        if (tp) {
-                            html += `<div class="sub-title">1. Tujuan Pembelajaran</div>`;
-                            html += `<div class="text-block">${tp}</div>`;
-                        }
-                        inPraktekPedagogis = true;
-                        html += `<div class="sub-title">2. Praktik Pedagogis</div>`;
-                        continue;
-                    }
-
-                    if (inPraktekPedagogis && trimmed.includes('(') && trimmed.includes(')')) {
-                        html += `<div class="praktek-item">${trimmed}</div>`;
-                        continue;
-                    }
-
-                    if (sectionLetter === 'E' && sectionTitle.toUpperCase().includes('PENGALAMAN BELAJAR')) {
-                        html += `<div class="section-title">E. PENGALAMAN BELAJAR</div>`;
-                        inPertemuan = true;
-                        continue;
-                    }
-
-                    if (sectionLetter === 'F' && sectionTitle.toUpperCase().includes('ASESMEN')) {
-                        html += `<div class="section-title">F. ASESMEN</div>`;
-                        continue;
-                    }
-
-                    if (sectionLetter === 'G' && sectionTitle.toUpperCase().includes('BAHAN BACAAN')) {
-                        html += `<div class="section-title">G. BAHAN BACAAN &amp; DAFTAR PUSTAKA</div>`;
-                        continue;
-                    }
-
-                    const isSubSection = sectionTitle.includes(':') || sectionTitle.includes('-');
-                    if (!isSubSection) {
-                        html += `<div class="section-title">${sectionLetter}. ${sectionTitle}</div>`;
-                    } else {
-                        html += `<div class="sub-title">${trimmed}</div>`;
-                    }
-                    continue;
-                }
-
-                if (inSectionC) {
-                    if (trimmed.match(/^D\.\s*/)) {
-                        inSectionC = false;
-                        const dMatch = trimmed.match(/^D\.\s*(.*)/);
-                        if (dMatch) {
-                            html += `<div class="section-title">D. ${dMatch[1].trim()}</div>`;
-                            const tp = getSelectedTP();
-                            if (tp) {
-                                html += `<div class="sub-title">1. Tujuan Pembelajaran</div>`;
-                                html += `<div class="text-block">${tp}</div>`;
-                            }
-                            inPraktekPedagogis = true;
-                            html += `<div class="sub-title">2. Praktik Pedagogis</div>`;
-                        }
-                    }
-                    continue;
-                }
-
-                // Deteksi PERTEMUAN
-                const pertemuanMatch = trimmed.match(/^PERTEMUAN\s+(KE-?\s*)?([A-Za-z]+)/i);
-                if (pertemuanMatch || trimmed.toUpperCase().includes('PERTEMUAN PERTAMA') ||
-                    trimmed.toUpperCase().includes('PERTEMUAN KEDUA') ||
-                    trimmed.toUpperCase().includes('PERTEMUAN KETIGA') ||
-                    trimmed.toUpperCase().includes('PERTEMUAN KEEMPAT') ||
-                    trimmed.toUpperCase().includes('PERTEMUAN KELIMA')) {
-                    html += `<div class="pertemuan-title">${trimmed}</div>`;
-                    inPertemuan = true;
-                    continue;
-                }
-
-                // Deteksi Kegiatan Awal, Inti, Penutup
-                if (inPertemuan && trimmed.match(/^Kegiatan\s+(Awal|Inti|Penutup)/i)) {
-                    html += `<div class="kegiatan-label">${trimmed}</div>`;
-                    continue;
-                }
-
-                // Deteksi A., B., C. dalam Kegiatan Inti
-                if (inPertemuan && trimmed.match(/^[A-Z]\.\s+/)) {
-                    html += `<div style="font-weight:600;margin:4px 0 2px 12px;">${trimmed}</div>`;
-                    continue;
-                }
-
-                // Deteksi tabel (baris dengan |)
-                if (trimmed.includes('|')) {
-                    if (trimmed.replace(/[^|\-]/g, '').length > 3 && trimmed.includes('-')) {
-                        continue;
-                    }
-
-                    const cells = trimmed.split('|').map(c => c.trim()).filter(c => c !== '');
-                    if (cells.length >= 2) {
-                        const safeCells = cells.map(c => String(c).trim());
-                        const isProfilTable = safeCells.some(c => c.toUpperCase().includes('PROFIL')) ||
-                                              safeCells.some(c => c.toUpperCase().includes('DESKRIPSI'));
-                        let processedCells = safeCells;
-                        if (isProfilTable) {
-                            processedCells = safeCells.map(c => {
-                                if (c.toUpperCase().includes('PROFIL') || c.toUpperCase().includes('DESKRIPSI')) {
-                                    return c.toUpperCase();
-                                }
-                                return c;
-                            });
-                        }
-                        const isHeader = safeCells.every(c => {
-                            if (!c || c.length === 0) return false;
-                            const words = c.split(' ');
-                            return words.every(w => w.length > 0 && w[0] === w[0].toUpperCase());
-                        }) || cells.length >= 2;
-
-                        tableRows.push({ cells: processedCells, isHeader: isHeader || tableRows.length === 0 });
-                        inTable = true;
-                        continue;
-                    }
-                }
-
-                if (inTable && trimmed === '') {
-                    html += buildTable(tableRows);
-                    tableRows = [];
-                    inTable = false;
-                    continue;
-                }
-
-                if (inTable) {
-                    const lastRow = tableRows[tableRows.length - 1];
-                    if (lastRow && !trimmed.includes('|')) {
-                        const lastCell = lastRow.cells[lastRow.cells.length - 1];
-                        lastRow.cells[lastRow.cells.length - 1] = lastCell + ' ' + trimmed;
-                        continue;
-                    } else {
-                        html += buildTable(tableRows);
-                        tableRows = [];
-                        inTable = false;
-                    }
-                }
-
-                // Teks biasa
-                if (trimmed !== '') {
-                    if (trimmed.match(/^\d+\./) || trimmed.match(/^-/)) {
-                        html += `<p style="margin:2px 0 2px 20px;">${trimmed}</p>`;
-                    } else if (trimmed.includes(':') && !trimmed.startsWith('(')) {
-                        const parts = trimmed.split(':');
-                        if (parts.length >= 2) {
-                            const label = parts[0].trim();
-                            const value = parts.slice(1).join(':').trim();
-                            if (label.match(/^Soal\s+\d+/) || trimmed.includes('Kunci Jawaban')) {
-                                html += `<div class="soal-item">${trimmed}</div>`;
-                            } else if (trimmed.includes('Salam') || trimmed.includes('absensi') || 
-                                       trimmed.includes('apersepsi') || trimmed.includes('pemantik')) {
-                                // Ini adalah detail kegiatan yang lebih panjang, bisa dibiarkan sebagai paragraf
-                                html += `<div class="activity-detail">${trimmed}</div>`;
-                            } else {
-                                html += `<p><strong>${label}</strong>: ${value}</p>`;
-                            }
-                        } else {
-                            html += `<p>${trimmed}</p>`;
-                        }
-                    } else {
-                        html += `<p>${trimmed}</p>`;
-                    }
-                }
-            }
-
-            if (inTable && tableRows.length > 0) {
-                html += buildTable(tableRows);
-            }
-
-            return html;
-        }
-
-        function buildTable(rows) {
-            if (rows.length === 0) return '';
-            let html = '<table>';
-            rows.forEach((row, idx) => {
-                const tag = (row.isHeader || idx === 0) ? 'th' : 'td';
-                html += '<tr>';
-                row.cells.forEach(cell => {
-                    const cellText = String(cell || '').trim();
-                    html += `<${tag}>${cellText}</${tag}>`;
-                });
-                html += '</tr>';
-            });
-            html += '</table>';
-            return html;
-        }
-
-        // ===== GET SELECTED TP =====
-        function getSelectedTP() {
-            const select = document.getElementById('rpmTujuanSelect');
-            if (!select) return null;
-            const idx = select.value;
-            if (!idx) return null;
-            const tp = atpRows[parseInt(idx)];
-            return tp ? tp.tujuan : null;
-        }
-
-        // ================================================================
-        // ===== VIEW RPM =====
-        // ================================================================
-        function viewRPM(index) {
-            const rpm = rpmList[index];
-            if (!rpm) { toast('RPM tidak ditemukan.', 'error'); return; }
-            document.getElementById('detailTitle').textContent = rpm.judul || 'Rencana Pembelajaran Mendalam';
-            const cpContent = moduleData ? moduleData.atp || '' : '';
-            document.getElementById('detailContent').innerHTML = formatRPMContent(rpm.content || 'Konten kosong.', cpContent);
-            document.getElementById('detailModal').classList.add('open');
-        }
-
-        function closeDetailModal() {
-            document.getElementById('detailModal').classList.remove('open');
-        }
-
-        function printDetailRPM() {
-            const content = document.getElementById('detailContent').innerHTML;
-            const title = document.getElementById('detailTitle').textContent;
-            const win = window.open('', '_blank', 'width=800,height=600');
-            win.document.write(`
-                <html><head><title>${title}</title>
-                <style>
-                    body { font-family:'Times New Roman',serif; padding:30px; line-height:1.6; max-width:1000px; margin:0 auto; }
-                    .print-title { font-size:20pt; font-weight:700; text-align:center; margin-bottom:16px; text-transform:uppercase; }
-                    .print-content { font-size:11pt; }
-                    .print-content table { width:100%; border-collapse:collapse; margin:8px 0; font-size:10pt; }
-                    .print-content table th,
-                    .print-content table td { border:1px solid #000; padding:4px 6px; text-align:left; }
-                    .print-content table th { background:#f0f0f0; font-weight:600; }
-                    .print-content .section-title { font-weight:700; font-size:16pt; margin:16px 0 8px; border-bottom:2px solid #000; padding-bottom:4px; }
-                    .print-content .pertemuan-title { font-weight:700; font-size:13pt; margin:12px 0 6px; background:#f0f0f0; padding:4px 10px; border-left:4px solid #000; }
-                    .print-content .sub-title { font-weight:600; font-size:12pt; margin:10px 0 4px; }
-                    .print-content .kegiatan-label { font-weight:600; font-size:11pt; margin:6px 0 2px; }
-                    .print-content .praktek-item { font-weight:600; margin:4px 0; }
-                    .print-content p { margin:4px 0; }
-                    .print-content .cp-content { background:#f9f9f9; padding:10px; border-left:4px solid #333; margin:6px 0; white-space:pre-wrap; }
-                    .print-content .text-block { background:#f9f9f9; padding:8px 12px; border-left:4px solid #333; margin:6px 0; }
-                    .print-content .soal-item { background:#f9f9f9; padding:4px 10px; margin:3px 0; border-left:3px solid #999; }
-                    .print-content .activity-detail { padding:2px 8px 2px 16px; border-left:2px solid #ccc; margin:2px 0; }
-                </style>
-                </head><body>
-                <div class="print-title">${title}</div>
-                <div class="print-content">${content}</div>
-                <script>
-                    window.onload = function() { window.print(); window.close(); }
-                <\/script>
-                </body></html>
-            `);
-            win.document.close();
-        }
-
-        // ===== DELETE RPM =====
-        async function deleteRPM(index) {
-            if (!confirm('Hapus RPM ini?')) return;
-            rpmList.splice(index, 1);
+                const g = JSON.parse(guruStr);
+                user = g;
+                role = 'guru';
+            } catch(e) {}
+        } else if (userStr) {
             try {
-                await db.collection('modules').doc(moduleId).update({
-                    rpmList: rpmList,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                toast('RPM dihapus.', 'info');
-                renderRPMCards();
-            } catch (e) {
-                toast('Gagal hapus: ' + e.message, 'error');
-            }
+                const u = JSON.parse(userStr);
+                user = u;
+                role = u.role || 'admin';
+            } catch(e) {}
         }
 
-        // ===== MODAL =====
-        function openModal() {
-            if (!moduleData) { toast('Modul belum dimuat.', 'error'); return; }
-            const hasTP = atpRows.some(r => r.tujuan && r.tujuan.trim() !== '');
-            if (!hasTP) {
-                toast('Belum ada Tujuan Pembelajaran. Isi ATP terlebih dahulu.', 'error');
+        currentUser = user;
+        // Hak edit: admin atau guru yang namanya sama dengan moduleData.guru
+        if (role === 'admin') {
+            canEdit = true;
+        } else if (role === 'guru' && moduleData && moduleData.guru === user.name) {
+            canEdit = true;
+        } else {
+            canEdit = false;
+        }
+    }
+
+    // ===== LOAD MODULE =====
+    async function loadModule() {
+        const params = new URLSearchParams(window.location.search);
+        moduleId = params.get('module');
+        if (!moduleId) {
+            document.getElementById('moduleInfo').innerHTML = '<div style="color:var(--text-light);">Modul tidak ditemukan. Silakan pilih modul dari dashboard guru.</div>';
+            return;
+        }
+        try {
+            const doc = await db.collection('modules').doc(moduleId).get();
+            if (!doc.exists) {
+                toast('Modul tidak ditemukan.', 'error');
                 return;
             }
-            document.getElementById('modalOverlay').classList.add('open');
-            document.getElementById('rpmDeskripsi').value = '';
+            moduleData = { id: doc.id, ...doc.data() };
+            atpRows = moduleData.atpTable || [];
+            rpmList = moduleData.rpmList || [];
+            displayModuleInfo();
+            checkAccess();
+            renderATPTable();
+            renderRPMCards();
+        } catch (e) {
+            toast('Gagal memuat modul: ' + e.message, 'error');
+        }
+    }
+
+    function displayModuleInfo() {
+        if (!moduleData) return;
+        document.getElementById('modulMapel').textContent = moduleData.mapel || '-';
+        document.getElementById('modulKelas').textContent = moduleData.kelas || '-';
+        document.getElementById('modulGuru').textContent = moduleData.guru || '-';
+        document.getElementById('modulJenjang').textContent = moduleData.jenjang || '-';
+        document.getElementById('modulFase').textContent = moduleData.fase || '-';
+        document.getElementById('modulTahun').textContent = moduleData.tahunPenyusunan || '-';
+    }
+
+    // ===== RENDER ATP TABLE (readonly) =====
+    function renderATPTable() {
+        const container = document.getElementById('atpTableContainer');
+        const empty = document.getElementById('atpEmpty');
+
+        if (!atpRows || atpRows.length === 0) {
+            container.innerHTML = '';
+            empty.style.display = 'block';
+            return;
+        }
+        empty.style.display = 'none';
+
+        let html = `
+            <div class="atp-table-wrap">
+                <table class="atp-table">
+                    <thead>
+                        <tr>
+                            <th style="width:40px;">#</th>
+                            <th style="width:90px;">Minggu ke-</th>
+                            <th style="width:90px;">Semester</th>
+                            <th>Tujuan Pembelajaran</th>
+                            <th>Materi Pokok</th>
+                            <th style="width:110px;">Alokasi Waktu (JP)</th>
+                            <th style="width:120px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        atpRows.forEach((row, index) => {
+            const minggu = row.minggu || '';
+            const semester = row.semester || 'Ganjil';
+            const tujuan = row.tujuan || '';
+            const materi = row.materi || '';
+            const alokasi = row.alokasiJp || '';
+
+            html += `
+                <tr>
+                    <td>${index+1}</td>
+                    <td><input type="text" value="${minggu}" readonly style="text-align:center;" /></td>
+                    <td><select disabled><option value="Ganjil" ${semester==='Ganjil'?'selected':''}>Ganjil</option><option value="Genap" ${semester==='Genap'?'selected':''}>Genap</option></select></td>
+                    <td><textarea rows="2" readonly>${tujuan}</textarea></td>
+                    <td><textarea rows="2" readonly>${materi}</textarea></td>
+                    <td><input type="text" value="${alokasi}" readonly style="text-align:center;" /></td>
+                    <td>
+                        <button class="btn-buat-rpm" data-index="${index}" onclick="openModalFromATP(${index})" ${canEdit ? '' : 'disabled'}>
+                            <i class="fas fa-plus-circle"></i> Buat RPM
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table></div>`;
+        container.innerHTML = html;
+    }
+
+    // ===== RENDER RPM CARDS =====
+    function renderRPMCards() {
+        const container = document.getElementById('rpmCards');
+        if (!rpmList || rpmList.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column:1/-1;">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>Belum ada RPM</h3>
+                    <p>Buat RPM dari tab ATP dengan mengklik tombol "Buat RPM" pada baris tujuan pembelajaran yang diinginkan.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        rpmList.forEach((rpm, index) => {
+            const preview = rpm.content ? rpm.content.substring(0, 200) + '...' : 'Kosong';
+            const tpLabel = rpm.tujuanLabel || 'TP #' + (index+1);
+            html += `
+                <div class="rpm-card">
+                    <div class="card-cover">
+                        <div class="card-title">RPM ${moduleData.mapel || 'Pembelajaran'}</div>
+                        <div class="card-sub">${tpLabel}</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="rpm-preview">${preview}</div>
+                        <div class="rpm-meta">
+                            <span><i class="fas fa-calendar"></i> ${rpm.createdAt || '-'}</span>
+                            <span><i class="fas fa-clock"></i> ${rpm.alokasiWaktu || '-'} JP</span>
+                        </div>
+                        <div class="card-actions">
+                            <button onclick="viewRPM(${index})"><i class="fas fa-eye"></i> Lihat</button>
+                            ${canEdit ? `<button class="btn-delete" onclick="deleteRPM(${index})"><i class="fas fa-trash"></i></button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // ===== MODAL DARI ATP =====
+    let selectedATPIndex = null;
+
+    function openModalFromATP(index) {
+        if (!canEdit) {
+            toast('Anda tidak memiliki izin untuk membuat RPM.', 'error');
+            return;
+        }
+        const row = atpRows[index];
+        if (!row) { toast('Data ATP tidak ditemukan.', 'error'); return; }
+
+        selectedATPIndex = index;
+        document.getElementById('modalTpFull').textContent = row.tujuan || '(Tujuan tidak tersedia)';
+        document.getElementById('modalMateriFull').textContent = row.materi || '(Materi tidak tersedia)';
+        document.getElementById('rpmDeskripsi').value = '';
+        document.getElementById('rpmLoading').style.display = 'none';
+        document.getElementById('btnGenerate').disabled = false;
+        document.getElementById('btnGenerate').innerHTML = '<i class="fas fa-magic"></i> Generate RPM';
+        document.getElementById('modalOverlay').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('open');
+        document.getElementById('rpmLoading').style.display = 'none';
+        document.getElementById('btnGenerate').disabled = false;
+    }
+
+    // ================================================================
+    // ===== GENERATE RPM =====
+    // ================================================================
+    async function generateRPM(e) {
+        e.preventDefault();
+        if (selectedATPIndex === null) {
+            toast('Pilih tujuan pembelajaran terlebih dahulu.', 'error');
+            return;
+        }
+        const tp = atpRows[selectedATPIndex];
+        if (!tp) { toast('Data TP tidak ditemukan.', 'error'); return; }
+
+        const deskripsi = document.getElementById('rpmDeskripsi').value.trim();
+
+        document.getElementById('rpmLoading').style.display = 'block';
+        document.getElementById('btnGenerate').disabled = true;
+        document.getElementById('btnGenerate').innerHTML = '<span class="spinner"></span> Memproses...';
+
+        try {
+            const rpmContent = await callGroq(tp, deskripsi);
+            const newRPM = {
+                judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
+                tujuanLabel: tp.tujuan.substring(0, 80) + (tp.tujuan.length > 80 ? '...' : ''),
+                tujuan: tp.tujuan,
+                alokasiWaktu: tp.alokasiJp || moduleData.jpPerMinggu || 4,
+                content: rpmContent,
+                createdAt: new Date().toLocaleDateString('id-ID'),
+                deskripsi: deskripsi || '-'
+            };
+            rpmList.push(newRPM);
+            await db.collection('modules').doc(moduleId).update({
+                rpmList: rpmList,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            toast('RPM berhasil dibuat!', 'success');
+            closeModal();
+            renderRPMCards();
+            // Beralih ke tab RPM
+            switchTab('tab-rpm');
+            // Tampilkan detail RPM yang baru dibuat
+            setTimeout(() => {
+                viewRPM(rpmList.length - 1);
+            }, 500);
+        } catch (err) {
+            console.error(err);
+            let errorMsg = err.message;
+            if (err.message.includes('401') || err.message.includes('key') || err.message.includes('auth')) {
+                errorMsg = 'API Key Groq tidak valid. Periksa kembali API Key Anda.';
+            } else if (err.message.includes('429')) {
+                errorMsg = 'Kuota gratis Groq habis. Tunggu reset besok atau top up.';
+            } else if (err.message.includes('timeout')) {
+                errorMsg = 'Waktu respons habis. Coba lagi nanti.';
+            }
+            toast('Gagal generate RPM: ' + errorMsg, 'error');
+        } finally {
             document.getElementById('rpmLoading').style.display = 'none';
             document.getElementById('btnGenerate').disabled = false;
             document.getElementById('btnGenerate').innerHTML = '<i class="fas fa-magic"></i> Generate RPM';
-            populateTujuanSelect();
         }
+    }
 
-        function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('open');
-            document.getElementById('rpmLoading').style.display = 'none';
-            document.getElementById('btnGenerate').disabled = false;
+    // ===== CALL GROQ API (tidak berubah) =====
+    async function callGroq(tp, deskripsi) {
+        const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
+        const profilLulusan = [
+            'Beriman & Bertakwa (Iman)',
+            'Berakhlak Mulia (Adab)',
+            'Cerdas & Ilmiah (Kognitif)',
+            'Terampil & Mandiri (Skill)',
+            'Berjiwa Pemimpin (Leadership)',
+            'Adaptif & Kolaboratif (Kerja Sama)',
+            'Sehat Jasmani & Rohani (Fisik)',
+            'Peduli Lingkungan (Kepedulian)'
+        ];
+
+        const jpPerMinggu = moduleData.jpPerMinggu || 2;
+        const alokasiJP = parseInt(tp.alokasiJp) || 4;
+        const jumlahPertemuan = Math.ceil(alokasiJP / jpPerMinggu);
+        const waktuInti = jpPerMinggu * 45 - 30;
+
+        const angka = ['PERTAMA', 'KEDUA', 'KETIGA', 'KEEMPAT', 'KELIMA', 'KEENAM', 'KETUJUH', 'KEDELAPAN'];
+        const pertemuanList = [];
+        for (let i = 1; i <= jumlahPertemuan; i++) {
+            const label = i <= angka.length ? angka[i-1] : `KE-${i}`;
+            pertemuanList.push(`PERTEMUAN ${label}`);
         }
+        const pertemuanStr = pertemuanList.map(p => `  ${p}\n`).join('');
 
-        // ================================================================
-        // ===== GENERATE RPM =====
-        // ================================================================
-        async function generateRPM(e) {
-            e.preventDefault();
-            const tpIndex = document.getElementById('rpmTujuanSelect').value;
-            if (tpIndex === '') {
-                toast('Pilih Tujuan Pembelajaran terlebih dahulu.', 'error');
-                return;
-            }
-            const deskripsi = document.getElementById('rpmDeskripsi').value.trim();
-
-            const tp = atpRows[parseInt(tpIndex)];
-            if (!tp) { toast('TP tidak ditemukan.', 'error'); return; }
-
-            document.getElementById('rpmLoading').style.display = 'block';
-            document.getElementById('btnGenerate').disabled = true;
-            document.getElementById('btnGenerate').innerHTML = '<span class="spinner"></span> Memproses...';
-
-            try {
-                const rpmContent = await callGroq(tp, deskripsi);
-                const newRPM = {
-                    judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
-                    tujuanLabel: tp.tujuan.substring(0, 80) + (tp.tujuan.length > 80 ? '...' : ''),
-                    tujuan: tp.tujuan,
-                    alokasiWaktu: tp.alokasiJp || moduleData.jpPerMinggu || 4,
-                    content: rpmContent,
-                    createdAt: new Date().toLocaleDateString('id-ID'),
-                    deskripsi: deskripsi || '-'
-                };
-                rpmList.push(newRPM);
-                await db.collection('modules').doc(moduleId).update({
-                    rpmList: rpmList,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                toast('RPM berhasil dibuat!', 'success');
-                closeModal();
-                renderRPMCards();
-                setTimeout(() => {
-                    viewRPM(rpmList.length - 1);
-                }, 400);
-            } catch (err) {
-                console.error(err);
-                let errorMsg = err.message;
-                if (err.message.includes('401') || err.message.includes('key') || err.message.includes('auth')) {
-                    errorMsg = 'API Key Groq tidak valid. Periksa kembali API Key Anda.';
-                } else if (err.message.includes('429')) {
-                    errorMsg = 'Kuota gratis Groq habis. Tunggu reset besok atau top up.';
-                } else if (err.message.includes('timeout')) {
-                    errorMsg = 'Waktu respons habis. Coba lagi nanti.';
-                }
-                toast('Gagal generate RPM: ' + errorMsg, 'error');
-            } finally {
-                document.getElementById('rpmLoading').style.display = 'none';
-                document.getElementById('btnGenerate').disabled = false;
-                document.getElementById('btnGenerate').innerHTML = '<i class="fas fa-magic"></i> Generate RPM';
-            }
-        }
-
-        // ===== CALL GROQ API =====
-        async function callGroq(tp, deskripsi) {
-            const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
-
-            const profilLulusan = [
-                'Beriman & Bertakwa (Iman)',
-                'Berakhlak Mulia (Adab)',
-                'Cerdas & Ilmiah (Kognitif)',
-                'Terampil & Mandiri (Skill)',
-                'Berjiwa Pemimpin (Leadership)',
-                'Adaptif & Kolaboratif (Kerja Sama)',
-                'Sehat Jasmani & Rohani (Fisik)',
-                'Peduli Lingkungan (Kepedulian)'
-            ];
-
-            const jpPerMinggu = moduleData.jpPerMinggu || 2;
-            const alokasiJP = parseInt(tp.alokasiJp) || 4;
-            const jumlahPertemuan = Math.ceil(alokasiJP / jpPerMinggu);
-            const waktuInti = jpPerMinggu * 45 - 30;
-
-            // Daftar pertemuan
-            const angka = ['PERTAMA', 'KEDUA', 'KETIGA', 'KEEMPAT', 'KELIMA', 'KEENAM', 'KETUJUH', 'KEDELAPAN'];
-            const pertemuanList = [];
-            for (let i = 1; i <= jumlahPertemuan; i++) {
-                const label = i <= angka.length ? angka[i-1] : `KE-${i}`;
-                pertemuanList.push(`PERTEMUAN ${label}`);
-            }
-            const pertemuanStr = pertemuanList.map(p => `  ${p}\n`).join('');
-
-            const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail, aplikatif, dan berbasis deep learning. Berikan jawaban dalam bahasa Indonesia yang baik dan benar.
+        const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail, aplikatif, dan berbasis deep learning. Berikan jawaban dalam bahasa Indonesia yang baik dan benar.
 
 FORMAT OUTPUT YANG DIWAJIBKAN:
 1. Setiap bagian (A, B, C, dst) diawali dengan huruf kapital dan titik (contoh: "A. IDENTITAS")
@@ -822,7 +902,7 @@ Soal 1: ...
 Soal 2: ...
 Kunci Jawaban: ...`;
 
-            const userPrompt = `
+        const userPrompt = `
 Buat Rencana Pembelajaran Mendalam (RPM) dengan format berikut:
 
 A. IDENTITAS
@@ -882,62 +962,378 @@ ${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
 Gunakan bahasa Indonesia formal. JANGAN gunakan simbol **, __, atau garis "=================".
 BUAT PENGALAMAN BELAJAR SANGAT DETAIL dengan langkah-langkah yang jelas dan aplikatif.`;
 
-            const response = await fetch(GROQ_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + GROQ_API_KEY
-                },
-                body: JSON.stringify({
-                    model: GROQ_MODEL,
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: userPrompt }
-                    ],
-                    temperature: 0.6,
-                    max_tokens: 4096
-                })
-            });
+        const response = await fetch(GROQ_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + GROQ_API_KEY
+            },
+            body: JSON.stringify({
+                model: GROQ_MODEL,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                temperature: 0.6,
+                max_tokens: 4096
+            })
+        });
 
-            if (!response.ok) {
-                let errorMsg = `HTTP ${response.status}`;
-                try {
-                    const errorData = await response.json();
-                    if (errorData.error && errorData.error.message) {
-                        errorMsg = errorData.error.message;
-                    }
-                } catch (e) {}
-                throw new Error(errorMsg);
+        if (!response.ok) {
+            let errorMsg = `HTTP ${response.status}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.error && errorData.error.message) {
+                    errorMsg = errorData.error.message;
+                }
+            } catch (e) {}
+            throw new Error(errorMsg);
+        }
+
+        const data = await response.json();
+        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+            return data.choices[0].message.content;
+        } else {
+            throw new Error('Respons dari Groq tidak valid.');
+        }
+    }
+
+    // ================================================================
+    // ===== VIEW & DELETE RPM =====
+    // ================================================================
+    function viewRPM(index) {
+        const rpm = rpmList[index];
+        if (!rpm) { toast('RPM tidak ditemukan.', 'error'); return; }
+        document.getElementById('detailTitle').textContent = rpm.judul || 'Rencana Pembelajaran Mendalam';
+        const cpContent = moduleData ? moduleData.atp || '' : '';
+        document.getElementById('detailContent').innerHTML = formatRPMContent(rpm.content || 'Konten kosong.', cpContent);
+        document.getElementById('detailModal').classList.add('open');
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').classList.remove('open');
+    }
+
+    function printDetailRPM() {
+        const content = document.getElementById('detailContent').innerHTML;
+        const title = document.getElementById('detailTitle').textContent;
+        const win = window.open('', '_blank', 'width=800,height=600');
+        win.document.write(`
+            <html><head><title>${title}</title>
+            <style>
+                body { font-family:'Times New Roman',serif; padding:30px; line-height:1.6; max-width:1000px; margin:0 auto; }
+                .print-title { font-size:20pt; font-weight:700; text-align:center; margin-bottom:16px; text-transform:uppercase; }
+                .print-content { font-size:11pt; }
+                .print-content table { width:100%; border-collapse:collapse; margin:8px 0; font-size:10pt; }
+                .print-content table th,
+                .print-content table td { border:1px solid #000; padding:4px 6px; text-align:left; }
+                .print-content table th { background:#f0f0f0; font-weight:600; }
+                .print-content .section-title { font-weight:700; font-size:16pt; margin:16px 0 8px; border-bottom:2px solid #000; padding-bottom:4px; }
+                .print-content .pertemuan-title { font-weight:700; font-size:13pt; margin:12px 0 6px; background:#f0f0f0; padding:4px 10px; border-left:4px solid #000; }
+                .print-content .sub-title { font-weight:600; font-size:12pt; margin:10px 0 4px; }
+                .print-content .kegiatan-label { font-weight:600; font-size:11pt; margin:6px 0 2px; }
+                .print-content .praktek-item { font-weight:600; margin:4px 0; }
+                .print-content p { margin:4px 0; }
+                .print-content .cp-content { background:#f9f9f9; padding:10px; border-left:4px solid #333; margin:6px 0; white-space:pre-wrap; }
+                .print-content .text-block { background:#f9f9f9; padding:8px 12px; border-left:4px solid #333; margin:6px 0; }
+                .print-content .soal-item { background:#f9f9f9; padding:4px 10px; margin:3px 0; border-left:3px solid #999; }
+                .print-content .activity-detail { padding:2px 8px 2px 16px; border-left:2px solid #ccc; margin:2px 0; }
+            </style>
+            </head><body>
+            <div class="print-title">${title}</div>
+            <div class="print-content">${content}</div>
+            <script>
+                window.onload = function() { window.print(); window.close(); }
+            <\/script>
+            </body></html>
+        `);
+        win.document.close();
+    }
+
+    async function deleteRPM(index) {
+        if (!confirm('Hapus RPM ini?')) return;
+        rpmList.splice(index, 1);
+        try {
+            await db.collection('modules').doc(moduleId).update({
+                rpmList: rpmList,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            toast('RPM dihapus.', 'info');
+            renderRPMCards();
+        } catch (e) {
+            toast('Gagal hapus: ' + e.message, 'error');
+        }
+    }
+
+    // ================================================================
+    // ===== FORMAT KONTEN RPM (sama seperti sebelumnya) =====
+    // ================================================================
+    function cleanText(text) {
+        if (!text) return '';
+        text = text.replace(/^[=\-]{5,}\s*$/gm, '');
+        text = text.replace(/\*\*/g, '');
+        text = text.replace(/__/g, '');
+        text = text.replace(/_(?! )/g, '');
+        text = text.replace(/\n{3,}/g, '\n\n');
+        return text.trim();
+    }
+
+    function formatRPMContent(text, cpFromFirebase) {
+        if (!text) return '<p>Konten kosong.</p>';
+        let cleaned = cleanText(text);
+        const lines = cleaned.split('\n');
+        let html = '';
+        let inTable = false;
+        let tableRows = [];
+        let inSectionC = false;
+        let inPraktekPedagogis = false;
+        let inPertemuan = false;
+
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            const trimmed = line.trim();
+
+            if (trimmed.toUpperCase().includes('RENCANA PEMBELAJARAN MENDALAM') ||
+                trimmed.toUpperCase().includes('RENCANA PEMBELAJARAN MENDALAM (RPM)')) {
+                html += `<div class="section-title" style="text-align:center;font-size:20px;border-bottom:3px double var(--primary);">RENCANA PEMBELAJARAN MENDALAM (RPM)</div>`;
+                continue;
             }
 
-            const data = await response.json();
-            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-                return data.choices[0].message.content;
-            } else {
-                throw new Error('Respons dari Groq tidak valid.');
+            const sectionMatch = trimmed.match(/^([A-Z])\.\s*(.*)/);
+            if (sectionMatch) {
+                const sectionLetter = sectionMatch[1];
+                const sectionTitle = sectionMatch[2].trim();
+                inSectionC = false;
+                inPraktekPedagogis = false;
+                inPertemuan = false;
+
+                if (sectionLetter === 'C' && sectionTitle.toUpperCase().includes('CAPAIAN PEMBELAJARAN')) {
+                    inSectionC = true;
+                    html += `<div class="section-title">C. CAPAIAN PEMBELAJARAN</div>`;
+                    if (cpFromFirebase) {
+                        html += `<div class="cp-content">${cpFromFirebase}</div>`;
+                    } else {
+                        html += `<div class="cp-content">(Belum ada Capaian Pembelajaran yang diisi)</div>`;
+                    }
+                    continue;
+                }
+
+                if (sectionLetter === 'D' && sectionTitle.toUpperCase().includes('DESAIN PEMBELAJARAN')) {
+                    html += `<div class="section-title">D. DESAIN PEMBELAJARAN</div>`;
+                    const tp = getSelectedTP();
+                    if (tp) {
+                        html += `<div class="sub-title">1. Tujuan Pembelajaran</div>`;
+                        html += `<div class="text-block">${tp}</div>`;
+                    }
+                    inPraktekPedagogis = true;
+                    html += `<div class="sub-title">2. Praktik Pedagogis</div>`;
+                    continue;
+                }
+
+                if (inPraktekPedagogis && trimmed.includes('(') && trimmed.includes(')')) {
+                    html += `<div class="praktek-item">${trimmed}</div>`;
+                    continue;
+                }
+
+                if (sectionLetter === 'E' && sectionTitle.toUpperCase().includes('PENGALAMAN BELAJAR')) {
+                    html += `<div class="section-title">E. PENGALAMAN BELAJAR</div>`;
+                    inPertemuan = true;
+                    continue;
+                }
+
+                if (sectionLetter === 'F' && sectionTitle.toUpperCase().includes('ASESMEN')) {
+                    html += `<div class="section-title">F. ASESMEN</div>`;
+                    continue;
+                }
+
+                if (sectionLetter === 'G' && sectionTitle.toUpperCase().includes('BAHAN BACAAN')) {
+                    html += `<div class="section-title">G. BAHAN BACAAN &amp; DAFTAR PUSTAKA</div>`;
+                    continue;
+                }
+
+                const isSubSection = sectionTitle.includes(':') || sectionTitle.includes('-');
+                if (!isSubSection) {
+                    html += `<div class="section-title">${sectionLetter}. ${sectionTitle}</div>`;
+                } else {
+                    html += `<div class="sub-title">${trimmed}</div>`;
+                }
+                continue;
+            }
+
+            if (inSectionC) {
+                if (trimmed.match(/^D\.\s*/)) {
+                    inSectionC = false;
+                    const dMatch = trimmed.match(/^D\.\s*(.*)/);
+                    if (dMatch) {
+                        html += `<div class="section-title">D. ${dMatch[1].trim()}</div>`;
+                        const tp = getSelectedTP();
+                        if (tp) {
+                            html += `<div class="sub-title">1. Tujuan Pembelajaran</div>`;
+                            html += `<div class="text-block">${tp}</div>`;
+                        }
+                        inPraktekPedagogis = true;
+                        html += `<div class="sub-title">2. Praktik Pedagogis</div>`;
+                    }
+                }
+                continue;
+            }
+
+            const pertemuanMatch = trimmed.match(/^PERTEMUAN\s+(KE-?\s*)?([A-Za-z]+)/i);
+            if (pertemuanMatch || trimmed.toUpperCase().includes('PERTEMUAN PERTAMA') ||
+                trimmed.toUpperCase().includes('PERTEMUAN KEDUA') ||
+                trimmed.toUpperCase().includes('PERTEMUAN KETIGA') ||
+                trimmed.toUpperCase().includes('PERTEMUAN KEEMPAT') ||
+                trimmed.toUpperCase().includes('PERTEMUAN KELIMA')) {
+                html += `<div class="pertemuan-title">${trimmed}</div>`;
+                inPertemuan = true;
+                continue;
+            }
+
+            if (inPertemuan && trimmed.match(/^Kegiatan\s+(Awal|Inti|Penutup)/i)) {
+                html += `<div class="kegiatan-label">${trimmed}</div>`;
+                continue;
+            }
+
+            if (inPertemuan && trimmed.match(/^[A-Z]\.\s+/)) {
+                html += `<div style="font-weight:600;margin:4px 0 2px 12px;">${trimmed}</div>`;
+                continue;
+            }
+
+            if (trimmed.includes('|')) {
+                if (trimmed.replace(/[^|\-]/g, '').length > 3 && trimmed.includes('-')) {
+                    continue;
+                }
+                const cells = trimmed.split('|').map(c => c.trim()).filter(c => c !== '');
+                if (cells.length >= 2) {
+                    const safeCells = cells.map(c => String(c).trim());
+                    const isProfilTable = safeCells.some(c => c.toUpperCase().includes('PROFIL')) ||
+                                          safeCells.some(c => c.toUpperCase().includes('DESKRIPSI'));
+                    let processedCells = safeCells;
+                    if (isProfilTable) {
+                        processedCells = safeCells.map(c => {
+                            if (c.toUpperCase().includes('PROFIL') || c.toUpperCase().includes('DESKRIPSI')) {
+                                return c.toUpperCase();
+                            }
+                            return c;
+                        });
+                    }
+                    const isHeader = safeCells.every(c => {
+                        if (!c || c.length === 0) return false;
+                        const words = c.split(' ');
+                        return words.every(w => w.length > 0 && w[0] === w[0].toUpperCase());
+                    }) || cells.length >= 2;
+
+                    tableRows.push({ cells: processedCells, isHeader: isHeader || tableRows.length === 0 });
+                    inTable = true;
+                    continue;
+                }
+            }
+
+            if (inTable && trimmed === '') {
+                html += buildTable(tableRows);
+                tableRows = [];
+                inTable = false;
+                continue;
+            }
+
+            if (inTable) {
+                const lastRow = tableRows[tableRows.length - 1];
+                if (lastRow && !trimmed.includes('|')) {
+                    const lastCell = lastRow.cells[lastRow.cells.length - 1];
+                    lastRow.cells[lastRow.cells.length - 1] = lastCell + ' ' + trimmed;
+                    continue;
+                } else {
+                    html += buildTable(tableRows);
+                    tableRows = [];
+                    inTable = false;
+                }
+            }
+
+            if (trimmed !== '') {
+                if (trimmed.match(/^\d+\./) || trimmed.match(/^-/)) {
+                    html += `<p style="margin:2px 0 2px 20px;">${trimmed}</p>`;
+                } else if (trimmed.includes(':') && !trimmed.startsWith('(')) {
+                    const parts = trimmed.split(':');
+                    if (parts.length >= 2) {
+                        const label = parts[0].trim();
+                        const value = parts.slice(1).join(':').trim();
+                        if (label.match(/^Soal\s+\d+/) || trimmed.includes('Kunci Jawaban')) {
+                            html += `<div class="soal-item">${trimmed}</div>`;
+                        } else if (trimmed.includes('Salam') || trimmed.includes('absensi') || 
+                                   trimmed.includes('apersepsi') || trimmed.includes('pemantik')) {
+                            html += `<div class="activity-detail">${trimmed}</div>`;
+                        } else {
+                            html += `<p><strong>${label}</strong>: ${value}</p>`;
+                        }
+                    } else {
+                        html += `<p>${trimmed}</p>`;
+                    }
+                } else {
+                    html += `<p>${trimmed}</p>`;
+                }
             }
         }
 
-        // ===== INIT =====
-        document.addEventListener('DOMContentLoaded', function() {
-            loadModule();
+        if (inTable && tableRows.length > 0) {
+            html += buildTable(tableRows);
+        }
+        return html;
+    }
 
-            document.getElementById('modalOverlay').addEventListener('click', function(e) {
-                if (e.target === this) closeModal();
+    function buildTable(rows) {
+        if (rows.length === 0) return '';
+        let html = '<table>';
+        rows.forEach((row, idx) => {
+            const tag = (row.isHeader || idx === 0) ? 'th' : 'td';
+            html += '<tr>';
+            row.cells.forEach(cell => {
+                const cellText = String(cell || '').trim();
+                html += `<${tag}>${cellText}</${tag}>`;
             });
-            document.getElementById('detailModal').addEventListener('click', function(e) {
-                if (e.target === this) closeDetailModal();
-            });
+            html += '</tr>';
         });
+        html += '</table>';
+        return html;
+    }
 
-        window.openModal = openModal;
-        window.closeModal = closeModal;
-        window.generateRPM = generateRPM;
-        window.viewRPM = viewRPM;
-        window.closeDetailModal = closeDetailModal;
-        window.printDetailRPM = printDetailRPM;
-        window.deleteRPM = deleteRPM;
-        window.toast = toast;
-    </script>
+    function getSelectedTP() {
+        // Untuk keperluan format konten, kita ambil dari selectedATPIndex jika ada
+        if (selectedATPIndex !== null && atpRows[selectedATPIndex]) {
+            return atpRows[selectedATPIndex].tujuan || null;
+        }
+        return null;
+    }
+
+    // ===== SWITCH TAB =====
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.rpm-tabs button').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.querySelector(`.rpm-tabs button[data-tab="${tabId}"]`).classList.add('active');
+    }
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', function() {
+        loadModule();
+
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDetailModal();
+        });
+    });
+
+    // Ekspos global
+    window.switchTab = switchTab;
+    window.openModalFromATP = openModalFromATP;
+    window.closeModal = closeModal;
+    window.generateRPM = generateRPM;
+    window.viewRPM = viewRPM;
+    window.closeDetailModal = closeDetailModal;
+    window.printDetailRPM = printDetailRPM;
+    window.deleteRPM = deleteRPM;
+    window.toast = toast;
+</script>
 </body>
 </html>
