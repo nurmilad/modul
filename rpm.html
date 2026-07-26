@@ -824,14 +824,14 @@
     async function callGroq(tp, deskripsi) {
         const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
         const profilLulusan = [
-            'Beriman & Bertakwa (Iman)',
-            'Berakhlak Mulia (Adab)',
-            'Cerdas & Ilmiah (Kognitif)',
-            'Terampil & Mandiri (Skill)',
-            'Berjiwa Pemimpin (Leadership)',
-            'Adaptif & Kolaboratif (Kerja Sama)',
-            'Sehat Jasmani & Rohani (Fisik)',
-            'Peduli Lingkungan (Kepedulian)'
+       'Keimanan & Ketakwaan',
+            'Kewargaan',
+            'Penalaran Kritis',
+            'Kreativitas',
+            'Kolaborasi',
+            'Kemandirian',
+            'Kesehatan',
+            'Komunikasi'
         ];
 
         const jpPerMinggu = moduleData.jpPerMinggu || 2;
@@ -914,8 +914,8 @@ Buat tabel 2 kolom dengan data:
 - Materi Pokok  : ${tp.materi || '-'}
 - Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
 
-B. PROFIL PELAJAR PANCASILA
-Pilih 3-4 profil yang relevan dari daftar:
+B. PROFIL LULUSAN
+Pilih lebih dari 3-4 profil yang relevan dari daftar:
 ${profilLulusan.join('\n')}
 Buat tabel 2 kolom dengan header: "PROFIL" dan "DESKRIPSI INTEGRASI"
 
@@ -959,7 +959,7 @@ Minimal 3 referensi buku/jurnal/sumber belajar.
 
 ${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
 
-Gunakan bahasa Indonesia formal. JANGAN gunakan simbol **, __, atau garis "=================".
+Gunakan bahasa Indonesia formal. JANGAN gunakan simbol #, *, **, __, atau garis "=================".
 BUAT PENGALAMAN BELAJAR SANGAT DETAIL dengan langkah-langkah yang jelas dan aplikatif.`;
 
         const response = await fetch(GROQ_URL, {
