@@ -141,12 +141,6 @@
             gap:8px;
         }
 
-        .add-row-bottom-wrapper {
-            margin-top:12px;
-            display:flex;
-            justify-content:flex-start;
-        }
-
         @media (max-width:768px) {
             .sidebar { transform:translateX(-100%); }
             .sidebar.open { transform:translateX(0); }
@@ -444,10 +438,6 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- Tombol tambah baris di bawah tabel -->
-                    <div class="add-row-bottom-wrapper">
-                        <button id="btnAddRowBottom" class="btn-primary" onclick="addRowATP()"><i class="fas fa-plus"></i> Tambah Baris di Akhir</button>
-                    </div>
                     <div id="atpEmpty" class="empty-state">
                         <i class="fas fa-table"></i>
                         <p>Belum ada data ATP. Klik "Tambah Baris" untuk mulai.</p>
@@ -667,20 +657,17 @@
         function applyAccessUI() {
             const btnSave = document.getElementById('btnSaveATP');
             const btnAddRow = document.getElementById('btnAddRowATP');
-            const btnAddRowBottom = document.getElementById('btnAddRowBottom');
             const readonlyMsg = document.getElementById('readonlyMsg');
 
             if (!canEdit) {
                 btnSave.style.display = 'none';
                 btnAddRow.style.display = 'none';
-                btnAddRowBottom.style.display = 'none';
                 readonlyMsg.style.display = 'flex';
                 document.getElementById('cpText').readOnly = true;
                 document.getElementById('cpText').style.background = '#f9f9f9';
             } else {
                 btnSave.style.display = '';
                 btnAddRow.style.display = '';
-                btnAddRowBottom.style.display = '';
                 readonlyMsg.style.display = 'none';
                 document.getElementById('cpText').readOnly = false;
                 document.getElementById('cpText').style.background = '#fff';
