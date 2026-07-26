@@ -90,6 +90,11 @@
         table.atp-table td .btn-delete-row { background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px; padding:2px 4px; }
         table.atp-table td .btn-delete-row:hover { color:#dc2626; }
 
+        table.atp-table td .btn-add-row-after {
+            background:none; border:none; color:#10b981; cursor:pointer; font-size:14px; padding:2px 4px;
+        }
+        table.atp-table td .btn-add-row-after:hover { color:#059669; }
+
         .drag-handle { cursor:grab; color:var(--text-light); font-size:14px; padding:2px 4px; user-select:none; }
         .drag-handle:hover { color:var(--text); }
         .drag-handle:active { cursor:grabbing; }
@@ -134,6 +139,12 @@
             display:flex;
             align-items:center;
             gap:8px;
+        }
+
+        .add-row-bottom-wrapper {
+            margin-top:12px;
+            display:flex;
+            justify-content:flex-start;
         }
 
         @media (max-width:768px) {
@@ -425,13 +436,17 @@
                                     <th>Tujuan Pembelajaran</th>
                                     <th>Materi Pokok</th>
                                     <th style="width:110px;">Alokasi Waktu (JP)</th>
-                                    <th style="width:70px;">Aksi</th>
+                                    <th style="width:100px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="atpTableBody">
                                 <!-- rows will be inserted by JS -->
                             </tbody>
                         </table>
+                    </div>
+                    <!-- Tombol tambah baris di bawah tabel -->
+                    <div class="add-row-bottom-wrapper">
+                        <button id="btnAddRowBottom" class="btn-primary" onclick="addRowATP()"><i class="fas fa-plus"></i> Tambah Baris di Akhir</button>
                     </div>
                     <div id="atpEmpty" class="empty-state">
                         <i class="fas fa-table"></i>
@@ -652,23 +667,24 @@
         function applyAccessUI() {
             const btnSave = document.getElementById('btnSaveATP');
             const btnAddRow = document.getElementById('btnAddRowATP');
+            const btnAddRowBottom = document.getElementById('btnAddRowBottom');
             const readonlyMsg = document.getElementById('readonlyMsg');
 
             if (!canEdit) {
                 btnSave.style.display = 'none';
                 btnAddRow.style.display = 'none';
+                btnAddRowBottom.style.display = 'none';
                 readonlyMsg.style.display = 'flex';
-                // Nonaktifkan input CP
                 document.getElementById('cpText').readOnly = true;
                 document.getElementById('cpText').style.background = '#f9f9f9';
             } else {
                 btnSave.style.display = '';
                 btnAddRow.style.display = '';
+                btnAddRowBottom.style.display = '';
                 readonlyMsg.style.display = 'none';
                 document.getElementById('cpText').readOnly = false;
                 document.getElementById('cpText').style.background = '#fff';
             }
-            // Perbarui tampilan tombol simpan
             updateSaveButton();
         }
 
@@ -688,10 +704,8 @@
                 }
                 moduleData = { id: doc.id, ...doc.data() };
                 displayModuleInfo();
-                // Cek akses setelah moduleData tersedia
                 checkAccess();
                 loadATPData();
-                // Jika tab RPM diminta, buka otomatis
                 const tabParam = params.get('tab');
                 if (tabParam === 'rpm') {
                     switchTab('tab-rpm');
@@ -856,11 +870,11 @@
                     `<option value="${s}" ${row.semester === s ? 'selected' : ''}>${s}</option>`
                 ).join('');
 
-                // Tentukan atribut readonly/disabled
                 const readonlyAttr = canEdit ? '' : 'readonly';
                 const disabledAttr = canEdit ? '' : 'disabled';
                 const bgColor = canEdit ? '#fff' : '#f9f9f9';
                 const showDelete = canEdit ? '' : 'style="display:none;"';
+                const showAdd = canEdit ? '' : 'style="display:none;"';
                 const showDrag = canEdit ? '' : 'style="display:none;"';
 
                 html += `
@@ -880,13 +894,15 @@
                         <td><textarea class="tujuan-input" data-index="${index}" rows="2" style="font-size:11px;resize:vertical;width:100%;background:${bgColor};" ${readonlyAttr}>${row.tujuan || ''}</textarea></td>
                         <td><textarea class="materi-input" data-index="${index}" rows="2" style="font-size:11px;resize:vertical;width:100%;background:${bgColor};" ${readonlyAttr}>${row.materi || ''}</textarea></td>
                         <td><input type="text" class="alokasi-input" data-index="${index}" value="${row.alokasiJp || ''}" placeholder="Jumlah JP" style="font-size:11px;text-align:center;background:${bgColor};" ${readonlyAttr} /></td>
-                        <td><button class="btn-delete-row" onclick="deleteRowATP(${index})" ${showDelete}><i class="fas fa-trash"></i></button></td>
+                        <td>
+                            <button class="btn-add-row-after" onclick="addRowAfter(${index})" title="Tambah baris setelah ini" ${showAdd}><i class="fas fa-plus-circle"></i></button>
+                            <button class="btn-delete-row" onclick="deleteRowATP(${index})" ${showDelete}><i class="fas fa-trash"></i></button>
+                        </td>
                     </tr>
                 `;
             });
             tbody.innerHTML = html;
 
-            // Event listener hanya jika canEdit
             if (canEdit) {
                 document.querySelectorAll('.semester-select').forEach(el => {
                     el.addEventListener('change', function() {
@@ -927,9 +943,6 @@
                     });
                 });
                 document.getElementById('cpText').addEventListener('input', checkChanges);
-            } else {
-                // Nonaktifkan event listener jika tidak bisa edit (sudah readonly)
-                // Tidak perlu tambahan
             }
             updateTotals();
         }
@@ -945,6 +958,27 @@
             document.getElementById('totalGanjil').textContent = totalGanjil;
             document.getElementById('totalGenap').textContent = totalGenap;
             document.getElementById('totalKeseluruhan').textContent = totalGanjil + totalGenap;
+        }
+
+        // ===== ADD ROW AFTER SPECIFIC INDEX =====
+        function addRowAfter(index) {
+            if (!canEdit) {
+                toast('Anda tidak memiliki izin untuk menambah baris.', 'error');
+                return;
+            }
+            const newRow = { minggu: '', semester: 'Ganjil', tujuan: '', materi: '', alokasiJp: '' };
+            atpRows.splice(index + 1, 0, newRow);
+            updateMinggu();
+            renderATPTable();
+            // scroll ke baris baru
+            setTimeout(() => {
+                const rows = document.querySelectorAll('#atpTableBody tr');
+                if (rows[index + 1]) {
+                    rows[index + 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+            checkChanges();
+            toast('Baris baru ditambahkan.', 'info');
         }
 
         // ===== ADD/DELETE ROW (ATP) =====
@@ -1007,7 +1041,6 @@
                 moduleData.atpTable = rows;
                 atpRows = rows;
                 saveInitialState();
-                // Jika tab Prota atau Prosem aktif, perbarui tampilan
                 const protaTab = document.getElementById('tab-prota');
                 if (protaTab.classList.contains('active')) {
                     renderProta();
@@ -1029,7 +1062,6 @@
             const cp = document.getElementById('cpText').value.trim() || '(Belum diisi)';
             const rows = atpRows.filter(r => r.materi || r.alokasiJp);
 
-            // Kelompokkan per semester dan per materi (gabung JP jika materi sama)
             const semesterMap = {};
             rows.forEach(row => {
                 const sem = row.semester || 'Ganjil';
@@ -1066,7 +1098,7 @@
             let grandTotal = 0;
             semesterOrder.forEach(sem => {
                 const materiMap = semesterMap[sem] || {};
-                const entries = Object.entries(materiMap); // [[materi, totalJP], ...]
+                const entries = Object.entries(materiMap);
                 if (entries.length === 0) {
                     html += `<tr><td colspan="5" style="border:1px solid #999; padding:10px; text-align:center; font-style:italic;">Belum ada data untuk semester ${sem}</td></tr>`;
                 } else {
@@ -1196,7 +1228,7 @@
                         firstRow = false;
                         mingguSaatIni = mingguAkhir + 1;
                         if (mingguSaatIni > totalMinggu) {
-                            // tidak perlu break, loop akan berhenti alami
+                            // tidak perlu break
                         }
                     });
                 }
@@ -1213,7 +1245,7 @@
         }
 
         // ================================================================
-        // ===== CETAK PROTA (DIPERBAIKI: per materi per baris) =====
+        // ===== CETAK PROTA (DIPERBAIKI) =====
         // ================================================================
         function printProta() {
             const cp = document.getElementById('cpText').value.trim() || '(Belum diisi)';
@@ -1222,7 +1254,6 @@
             const schoolName = jenjang === 'SMA' ? 'SMA Nurmilad Boarding School' : 'SMP Nurmilad Boarding School';
             const kepalaSekolah = moduleData.kepalaSekolah || '____________________';
 
-            // Kelompokkan per semester dan per materi
             const semesterMap = {};
             rows.forEach(row => {
                 const sem = row.semester || 'Ganjil';
@@ -1382,7 +1413,6 @@
                     </div>
             `;
 
-            // Tabel per semester
             semesterOrder.forEach(sem => {
                 const items = semesterData[sem] || [];
                 html += `
@@ -1439,9 +1469,7 @@
                         `;
                         firstRow = false;
                         mingguSaatIni = mingguAkhir + 1;
-                        if (mingguSaatIni > totalMinggu) {
-                            // tidak perlu break, loop akan berhenti alami
-                        }
+                        if (mingguSaatIni > totalMinggu) {}
                     });
                 }
 
@@ -1606,7 +1634,6 @@
 
         // ===== SWITCH TAB =====
         function switchTab(tabId) {
-            // Jika tab yang dipilih adalah RPM, langsung redirect
             if (tabId === 'tab-rpm') {
                 openRPMDirect();
                 return;
@@ -1652,6 +1679,7 @@
         window.logout = logout;
         window.switchTab = switchTab;
         window.addRowATP = addRowATP;
+        window.addRowAfter = addRowAfter;
         window.deleteRowATP = deleteRowATP;
         window.saveATP = saveATP;
         window.printATP = printATP;
