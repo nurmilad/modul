@@ -646,7 +646,8 @@
             document.getElementById('statMapel').textContent = mapelSet.size;
             const guruSet = new Set(allModules.map(m => m.guru).filter(Boolean));
             document.getElementById('statGuru').textContent = guruSet.size;
-            const rpmCount = allModules.filter(m => m.rpm && m.rpm.length > 20).length;
+            // PERBAIKAN: gunakan field rpmList (bukan rpm)
+            const rpmCount = allModules.filter(m => m.rpmList && m.rpmList.length > 0).length;
             document.getElementById('statRPM').textContent = rpmCount;
 
             // ===== CARDS =====
