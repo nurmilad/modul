@@ -221,7 +221,6 @@
         const db = firebase.firestore();
 
         let allModules = [];
-        let allMapel = [];
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -237,17 +236,11 @@
             document.getElementById('sidebar').classList.toggle('open');
         }
 
-        // ===== LOAD MODULES & MAPEL =====
+        // ===== LOAD MODULES =====
         async function loadModules() {
             try {
-                // Load modules
                 const snap = await db.collection('modules').orderBy('createdAt', 'desc').get();
                 allModules = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-                // Load mapel from collection
-                const mapelSnap = await db.collection('mapel').get();
-                allMapel = mapelSnap.docs.map(d => d.data().name).filter(Boolean);
-
                 populateMapelFilter();
                 renderDashboard();
             } catch (e) {
@@ -284,14 +277,15 @@
             // ===== STATS =====
             document.getElementById('statTotal').textContent = allModules.length;
 
-            // Jumlah mapel dari koleksi mapel (bukan dari modul)
-            document.getElementById('statMapel').textContent = allMapel.length;
+            // Jumlah mapel unik dari modul yang tampil (filtered), bukan dari koleksi mapel
+            const mapelSetFiltered = new Set(filtered.map(m => m.mapel).filter(Boolean));
+            document.getElementById('statMapel').textContent = mapelSetFiltered.size;
 
-            // Jumlah guru unik dari modul
+            // Jumlah guru unik dari semua modul (tidak difilter)
             const guruSet = new Set(allModules.map(m => m.guru).filter(Boolean));
             document.getElementById('statGuru').textContent = guruSet.size;
 
-            // Total seluruh RPM (jumlah semua item di semua rpmList)
+            // Total seluruh RPM dari semua modul
             let totalRPM = 0;
             allModules.forEach(m => {
                 if (m.rpmList && Array.isArray(m.rpmList)) {
