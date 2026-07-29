@@ -926,7 +926,7 @@ Kunci Jawaban: ...`;
         const userPrompt = `
 Buat Rencana Pembelajaran Mendalam (RPM) dengan format berikut:
 
-A. IDENTITAS
+I. IDENTITAS
 Buat tabel 2 kolom dengan data:
 - Unit Kerja    : ${moduleData.jenjang || 'SMA'} Nurmilad Boarding School
 - Nama Guru     : ${moduleData.guru || '-'}
@@ -935,26 +935,26 @@ Buat tabel 2 kolom dengan data:
 - Materi Pokok  : ${tp.materi || '-'}
 - Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
 
-B. PROFIL LULUSAN
+II. PROFIL LULUSAN
 Pilih 3 atau 4 profil yang relevan dari daftar:
 ${profilLulusan.join('\n')}
 Buat tabel 2 kolom dengan header: "PROFIL" dan "DESKRIPSI INTEGRASI"
 
-D. DESAIN PEMBELAJARAN
--Tujuan Pembelajaran: ${tp.tujuan || '-'}
+III. DESAIN PEMBELAJARAN
+A. Tujuan Pembelajaran: ${tp.tujuan || '-'}
 
--Praktik Pedagogis:
-Buat 2 kolom tanpa header (bukan 2 baris)
-Berkesadaran (Mindful) : [jelaskan dengan contoh konkret dari pembelajaran]
-Bermakna (Meaningful) : [jelaskan dengan contoh konkret]
-Menggembirakan (Joyful) : [jelaskan dengan contoh konkret]
-Kemitraan Pembelajaran : [jelaskan dengan contoh konkret]
-Lintas Mata Pelajaran : [jelaskan dengan contoh konkret]
-Lingkungan Belajar : [jelaskan dengan contoh konkret]
-Dimensi Keterampilan : [jelaskan dengan contoh konkret]
-Pemanfaatan Digital : [jelaskan dengan contoh konkret]
+B. Praktik Pedagogis:
+Buat 2 kolom tanpa header
+- Berkesadaran (Mindful) : [jelaskan dengan contoh konkret dari pembelajaran]
+- Bermakna (Meaningful) : [jelaskan dengan contoh konkret]
+- Menggembirakan (Joyful) : [jelaskan dengan contoh konkret]
+- Kemitraan Pembelajaran : [jelaskan dengan contoh konkret]
+- Lintas Mata Pelajaran : [jelaskan dengan contoh konkret]
+- Lingkungan Belajar : [jelaskan dengan contoh konkret]
+- Dimensi Keterampilan : [jelaskan dengan contoh konkret]
+- Pemanfaatan Digital : [jelaskan dengan contoh konkret]
 
-E. PENGALAMAN BELAJAR
+IV. PENGALAMAN BELAJAR
 Buat rincian kegiatan yang SANGAT DETAIL untuk ${jumlahPertemuan} pertemuan:
 ${pertemuanStr}
 Setiap pertemuan wajib memiliki:
@@ -965,7 +965,7 @@ B. Mengaplikasikan: [aktivitas praktik, eksperimen, diskusi kelompok]
 C. Merefleksi: [presentasi, refleksi kritis, diskusi kelas]
 Kegiatan Penutup (15 menit): refleksi bersama, tanya jawab, penguatan konsep, pemberian tugas (pengayaan/remedial), doa dan salam
 
-F. ASESMEN
+V. ASESMEN
 Asesmen Awal/Diagnostik: [deskripsi detail]
 Asesmen Proses/Formatif: [deskripsi detail dengan 3-5 indikator]
 Asesmen Sumatif: [deskripsi detail]
@@ -975,7 +975,7 @@ Soal 3: [esai]
 Soal 4: [esai]
 Soal 5: [esai]
 
-G. BAHAN BACAAN & DAFTAR PUSTAKA
+VI. BAHAN BACAAN & DAFTAR PUSTAKA
 Minimal 3 referensi buku/jurnal/sumber belajar yang valid.
 
 ${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
