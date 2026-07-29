@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== GAYA UTAMA (tidak berubah) ===== */
+        /* ===== GAYA UTAMA ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -63,11 +63,7 @@
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
         /* ===== TABEL ATP (readonly) ===== */
-        .atp-table-wrap { 
-            overflow-x: auto; 
-            margin-top: 8px; 
-            position: relative; /* untuk posisi absolute info kuota */
-        }
+        .atp-table-wrap { overflow-x: auto; margin-top: 8px; }
         .atp-table {
             width: 100%;
             border-collapse: collapse;
@@ -130,28 +126,6 @@
             transform: none;
         }
         .atp-table .drag-handle { display: none; }
-
-        /* ===== INFO KUOTA AI (berkedip merah, pojok kanan atas tabel) ===== */
-        .kuota-info {
-            position: absolute;
-            top: -8px;
-            right: 4px;
-            font-size: 11px;
-            color: #dc2626;
-            font-weight: 600;
-            animation: blink-red 1s step-end infinite;
-            background: rgba(255,255,255,0.9);
-            padding: 2px 10px;
-            border-radius: 20px;
-            border: 1px solid #fca5a5;
-            box-shadow: 0 2px 8px rgba(220,38,38,0.15);
-            z-index: 5;
-            white-space: nowrap;
-        }
-        @keyframes blink-red {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.2; }
-        }
 
         .empty-state {
             text-align: center;
@@ -281,6 +255,26 @@
         }
         .modal-box h2 { font-size:22px; font-weight:700; margin-bottom:6px; }
         .modal-box .modal-sub { color:var(--text-light); font-size:14px; margin-bottom:20px; }
+
+        /* ===== NOTIFIKASI KUOTA DI DALAM MODAL ===== */
+        .kuota-info-modal {
+            font-size: 12px;
+            color: #dc2626;
+            font-weight: 600;
+            animation: blink-red 1s step-end infinite;
+            background: #fef2f2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #fca5a5;
+            margin-bottom: 16px;
+            display: inline-block;
+            width: auto;
+        }
+        @keyframes blink-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
         .modal-box .form-group { margin-bottom:16px; }
         .modal-box .form-group label {
             font-size:13px; font-weight:500; color:var(--text-light);
@@ -460,11 +454,9 @@
             .rpm-card .rpm-info .info-item .label {
                 width: 90px;
             }
-            .kuota-info {
-                font-size: 9px;
-                top: -4px;
-                right: 2px;
-                padding: 1px 6px;
+            .kuota-info-modal {
+                font-size: 10px;
+                padding: 2px 8px;
             }
         }
     </style>
@@ -517,6 +509,12 @@
     <div class="modal-box">
         <h2>Buat Rencana Pembelajaran Mendalam (RPM)</h2>
         <p class="modal-sub">Informasi tujuan pembelajaran dan materi pokok ditampilkan lengkap di bawah ini.</p>
+
+        <!-- NOTIFIKASI KUOTA AI DI DALAM MODAL (hanya tampil jika canEdit) -->
+        <div id="kuotaInfoModal" class="kuota-info-modal" style="display:none;">
+            ⚠️ Maksimal 2 RPM per menit (kuota AI terbatas)
+        </div>
+
         <form id="modalForm" onsubmit="generateRPM(event)">
             <div class="form-group">
                 <label>Tujuan Pembelajaran (TP)</label>
@@ -674,9 +672,6 @@
         if (!atpRows || atpRows.length === 0) {
             container.innerHTML = '';
             empty.style.display = 'block';
-            // Sembunyikan info kuota jika tidak ada data
-            const kuotaEl = document.getElementById('kuotaInfo');
-            if (kuotaEl) kuotaEl.style.display = 'none';
             return;
         }
         empty.style.display = 'none';
@@ -725,22 +720,17 @@
             `;
         });
 
-        html += `</tbody></table>`;
-
-        // Tambahkan info kuota AI di pojok kanan atas (hanya jika canEdit)
-        if (canEdit) {
-            html += `
-                <div class="kuota-info" id="kuotaInfo">
-                    ⚠️ Maksimal 2 RPM per menit (kuota AI terbatas)
-                </div>
-            `;
-        }
-
-        html += `</div>`;
+        html += `</tbody></table></div>`;
         container.innerHTML = html;
+
+        // Kontrol tampilan notifikasi kuota di modal berdasarkan canEdit
+        const kuotaModal = document.getElementById('kuotaInfoModal');
+        if (kuotaModal) {
+            kuotaModal.style.display = canEdit ? 'block' : 'none';
+        }
     }
 
-    // ===== RENDER RPM CARDS (dengan Semester) =====
+    // ===== RENDER RPM CARDS =====
     function renderRPMCards() {
         const container = document.getElementById('rpmCards');
         if (!rpmList || rpmList.length === 0) {
@@ -759,7 +749,6 @@
             const mapel = moduleData.mapel || 'Pembelajaran';
             const kelas = moduleData.kelas || '-';
             const fase = moduleData.fase || '-';
-            // Ambil data dari rpm, fallback ke default
             const semester = rpm.semester || 'Ganjil';
             const materi = rpm.materi || '-';
             const minggu = rpm.minggu || '-';
@@ -846,12 +835,11 @@
 
         try {
             const rpmContent = await callGroq(tp, deskripsi);
-            // --- TAMBAHKAN semester ke object RPM ---
             const newRPM = {
                 judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
                 tujuanLabel: tp.tujuan.substring(0, 80) + (tp.tujuan.length > 80 ? '...' : ''),
                 tujuan: tp.tujuan,
-                semester: tp.semester || 'Ganjil',  // <-- semester dari ATP
+                semester: tp.semester || 'Ganjil',
                 materi: tp.materi || '-',
                 minggu: tp.minggu || '-',
                 alokasiWaktu: tp.alokasiJp || moduleData.jpPerMinggu || 4,
