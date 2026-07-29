@@ -100,7 +100,7 @@
             background: #f9f9f9;
             color: var(--text);
             font-family: inherit;
-            pointer-events: none; /* nonaktif interaksi */
+            pointer-events: none;
             cursor: default;
             resize: none;
         }
@@ -129,7 +129,7 @@
             cursor: not-allowed;
             transform: none;
         }
-        .atp-table .drag-handle { display: none; } /* tidak perlu drag */
+        .atp-table .drag-handle { display: none; }
 
         .empty-state {
             text-align: center;
@@ -141,7 +141,7 @@
         /* ===== CARD RPM ===== */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px,1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
             gap: 20px;
         }
         .rpm-card {
@@ -160,17 +160,12 @@
         }
         .rpm-card .card-cover {
             padding: 14px 20px;
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
             color: #fff;
         }
         .rpm-card .card-cover .card-title {
-            font-size: 16px;
-            font-weight: 600;
-        }
-        .rpm-card .card-cover .card-sub {
-            font-size: 12px;
-            opacity: 0.85;
-            margin-top: 2px;
+            font-size: 18px;
+            font-weight: 700;
         }
         .rpm-card .card-body {
             padding: 16px 20px 20px;
@@ -178,39 +173,49 @@
             display: flex;
             flex-direction: column;
         }
-        .rpm-card .card-body .rpm-preview {
-            font-size: 13px;
-            color: var(--text-light);
-            line-height: 1.5;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-            flex: 1;
+        /* Info RPM di dalam card */
+        .rpm-card .rpm-info {
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 12px;
+            color: var(--text);
         }
-        .rpm-card .card-body .rpm-meta {
+        .rpm-card .rpm-info .info-item {
             display: flex;
-            flex-wrap: wrap;
-            gap: 6px 12px;
-            font-size: 12px;
-            color: var(--text-light);
-            margin: 8px 0 12px;
+            padding: 2px 0;
+            border-bottom: 1px dashed var(--border);
         }
+        .rpm-card .rpm-info .info-item .label {
+            font-weight: 600;
+            width: 120px;
+            flex-shrink: 0;
+            color: var(--text-light);
+        }
+        .rpm-card .rpm-info .info-item .value {
+            font-weight: 500;
+            color: var(--text);
+        }
+        /* Aksi card */
         .rpm-card .card-actions {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             flex-wrap: wrap;
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
         }
         .rpm-card .card-actions button {
-            padding: 4px 14px;
+            padding: 6px 18px;
             border: 1px solid var(--border);
             background: #fff;
             border-radius: 40px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: var(--transition);
             color: var(--text);
+            flex: 1;
+            min-width: 80px;
         }
         .rpm-card .card-actions button:hover {
             background: var(--primary);
@@ -324,7 +329,7 @@
             cursor: not-allowed;
         }
 
-        /* Detail RPM modal (sama seperti sebelumnya) */
+        /* Detail RPM modal */
         .detail-modal-box { max-width:1000px !important; }
         .detail-content {
             font-size: 14px;
@@ -433,6 +438,9 @@
             .atp-table { font-size:12px; }
             .atp-table th, .atp-table td { padding:6px 6px; }
             .atp-table td textarea { min-height:24px; }
+            .rpm-card .rpm-info .info-item .label {
+                width: 90px;
+            }
         }
     </style>
 </head>
@@ -543,7 +551,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // ===== GROQ API (API KEY BARU) =====
+    // ===== GROQ API =====
     const GROQ_API_KEY = "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";
     const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
     const GROQ_MODEL = "llama-3.1-8b-instant";
@@ -588,7 +596,6 @@
         }
 
         currentUser = user;
-        // Hak edit: admin atau guru yang namanya sama dengan moduleData.guru
         if (role === 'admin') {
             canEdit = true;
         } else if (role === 'guru' && moduleData && moduleData.guru === user.name) {
@@ -691,7 +698,7 @@
         container.innerHTML = html;
     }
 
-    // ===== RENDER RPM CARDS =====
+    // ===== RENDER RPM CARDS (FORMAT BARU) =====
     function renderRPMCards() {
         const container = document.getElementById('rpmCards');
         if (!rpmList || rpmList.length === 0) {
@@ -707,23 +714,41 @@
 
         let html = '';
         rpmList.forEach((rpm, index) => {
-            const preview = rpm.content ? rpm.content.substring(0, 200) + '...' : 'Kosong';
-            const tpLabel = rpm.tujuanLabel || 'TP #' + (index+1);
+            // Ambil data untuk ditampilkan di card
+            const mapel = moduleData.mapel || 'Pembelajaran';
+            const kelas = moduleData.kelas || '-';
+            const fase = moduleData.fase || '-';
+            const materi = rpm.materi || '-';
+            const minggu = rpm.minggu || '-';
+            const alokasi = rpm.alokasiWaktu || '-';
+
             html += `
                 <div class="rpm-card">
                     <div class="card-cover">
-                        <div class="card-title">RPM ${moduleData.mapel || 'Pembelajaran'}</div>
-                        <div class="card-sub">${tpLabel}</div>
+                        <div class="card-title">RPM ${mapel}</div>
                     </div>
                     <div class="card-body">
-                        <div class="rpm-preview">${preview}</div>
-                        <div class="rpm-meta">
-                            <span><i class="fas fa-calendar"></i> ${rpm.createdAt || '-'}</span>
-                            <span><i class="fas fa-clock"></i> ${rpm.alokasiWaktu || '-'} JP</span>
+                        <div class="rpm-info">
+                            <div class="info-item">
+                                <span class="label">Kelas / Fase</span>
+                                <span class="value">${kelas} / Fase ${fase}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Materi Pokok</span>
+                                <span class="value">${materi}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Minggu ke-</span>
+                                <span class="value">${minggu}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Alokasi Waktu</span>
+                                <span class="value">${alokasi} JP</span>
+                            </div>
                         </div>
                         <div class="card-actions">
                             <button onclick="viewRPM(${index})"><i class="fas fa-eye"></i> Lihat</button>
-                            ${canEdit ? `<button class="btn-delete" onclick="deleteRPM(${index})"><i class="fas fa-trash"></i></button>` : ''}
+                            ${canEdit ? `<button class="btn-delete" onclick="deleteRPM(${index})"><i class="fas fa-trash"></i> Hapus</button>` : ''}
                         </div>
                     </div>
                 </div>
@@ -783,6 +808,8 @@
                 judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
                 tujuanLabel: tp.tujuan.substring(0, 80) + (tp.tujuan.length > 80 ? '...' : ''),
                 tujuan: tp.tujuan,
+                materi: tp.materi || '-',
+                minggu: tp.minggu || '-',
                 alokasiWaktu: tp.alokasiJp || moduleData.jpPerMinggu || 4,
                 content: rpmContent,
                 createdAt: new Date().toLocaleDateString('id-ID'),
@@ -796,9 +823,7 @@
             toast('RPM berhasil dibuat!', 'success');
             closeModal();
             renderRPMCards();
-            // Beralih ke tab RPM
             switchTab('tab-rpm');
-            // Tampilkan detail RPM yang baru dibuat
             setTimeout(() => {
                 viewRPM(rpmList.length - 1);
             }, 500);
@@ -820,11 +845,11 @@
         }
     }
 
-    // ===== CALL GROQ API (tidak berubah) =====
+    // ===== CALL GROQ API =====
     async function callGroq(tp, deskripsi) {
         const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
         const profilLulusan = [
-       'Keimanan & Ketakwaan',
+            'Keimanan & Ketakwaan',
             'Kewargaan',
             'Penalaran Kritis',
             'Kreativitas',
@@ -1066,7 +1091,7 @@ BUAT PENGALAMAN BELAJAR SANGAT DETAIL dengan langkah-langkah yang jelas dan apli
     }
 
     // ================================================================
-    // ===== FORMAT KONTEN RPM (sama seperti sebelumnya) =====
+    // ===== FORMAT KONTEN RPM =====
     // ================================================================
     function cleanText(text) {
         if (!text) return '';
@@ -1297,7 +1322,6 @@ BUAT PENGALAMAN BELAJAR SANGAT DETAIL dengan langkah-langkah yang jelas dan apli
     }
 
     function getSelectedTP() {
-        // Untuk keperluan format konten, kita ambil dari selectedATPIndex jika ada
         if (selectedATPIndex !== null && atpRows[selectedATPIndex]) {
             return atpRows[selectedATPIndex].tujuan || null;
         }
