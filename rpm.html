@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== GAYA UTAMA ===== */
+        /* ===== GAYA UTAMA (tidak berubah) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -27,7 +27,6 @@
             --transition: 0.25s ease;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; }
-
         .container { max-width:1200px; margin:0 auto; }
 
         /* ===== TAB ===== */
@@ -104,10 +103,7 @@
             cursor: default;
             resize: none;
         }
-        .atp-table td textarea {
-            min-height: 32px;
-            resize: vertical;
-        }
+        .atp-table td textarea { min-height: 32px; resize: vertical; }
         .atp-table td .btn-buat-rpm {
             background: var(--primary);
             color: #fff;
@@ -173,7 +169,6 @@
             display: flex;
             flex-direction: column;
         }
-        /* Info RPM di dalam card */
         .rpm-card .rpm-info {
             font-size: 14px;
             line-height: 1.7;
@@ -195,7 +190,6 @@
             font-weight: 500;
             color: var(--text);
         }
-        /* Aksi card */
         .rpm-card .card-actions {
             display: flex;
             gap: 8px;
@@ -418,7 +412,6 @@
         }
         @keyframes spin { to { transform:rotate(360deg); } }
 
-        /* ===== PRINT ===== */
         @media print {
             .no-print { display:none !important; }
             .modal-overlay { position:relative !important; background:none !important; backdrop-filter:none !important; display:block !important; }
@@ -698,7 +691,7 @@
         container.innerHTML = html;
     }
 
-    // ===== RENDER RPM CARDS (FORMAT BARU) =====
+    // ===== RENDER RPM CARDS (dengan Semester) =====
     function renderRPMCards() {
         const container = document.getElementById('rpmCards');
         if (!rpmList || rpmList.length === 0) {
@@ -714,13 +707,14 @@
 
         let html = '';
         rpmList.forEach((rpm, index) => {
-            // Ambil data untuk ditampilkan di card
             const mapel = moduleData.mapel || 'Pembelajaran';
             const kelas = moduleData.kelas || '-';
             const fase = moduleData.fase || '-';
+            // Ambil data dari rpm, fallback ke default
+            const semester = rpm.semester || 'Ganjil';
             const materi = rpm.materi || '-';
             const minggu = rpm.minggu || '-';
-            const alokasi = rpm.alokasiWaktu || '-';
+            // Alokasi waktu tidak ditampilkan sesuai permintaan (tapi bisa ditambahkan jika perlu)
 
             html += `
                 <div class="rpm-card">
@@ -729,6 +723,10 @@
                     </div>
                     <div class="card-body">
                         <div class="rpm-info">
+                            <div class="info-item">
+                                <span class="label">Semester</span>
+                                <span class="value">${semester}</span>
+                            </div>
                             <div class="info-item">
                                 <span class="label">Kelas / Fase</span>
                                 <span class="value">${kelas} / Fase ${fase}</span>
@@ -740,10 +738,6 @@
                             <div class="info-item">
                                 <span class="label">Minggu ke-</span>
                                 <span class="value">${minggu}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="label">Alokasi Waktu</span>
-                                <span class="value">${alokasi} JP</span>
                             </div>
                         </div>
                         <div class="card-actions">
@@ -804,10 +798,12 @@
 
         try {
             const rpmContent = await callGroq(tp, deskripsi);
+            // --- TAMBAHKAN semester ke object RPM ---
             const newRPM = {
                 judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
                 tujuanLabel: tp.tujuan.substring(0, 80) + (tp.tujuan.length > 80 ? '...' : ''),
                 tujuan: tp.tujuan,
+                semester: tp.semester || 'Ganjil',  // <-- semester dari ATP
                 materi: tp.materi || '-',
                 minggu: tp.minggu || '-',
                 alokasiWaktu: tp.alokasiJp || moduleData.jpPerMinggu || 4,
@@ -845,7 +841,7 @@
         }
     }
 
-    // ===== CALL GROQ API =====
+    // ===== CALL GROQ API (tidak berubah) =====
     async function callGroq(tp, deskripsi) {
         const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
         const profilLulusan = [
@@ -940,9 +936,9 @@ Buat tabel 2 kolom dengan data:
 - Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
 
 B. PROFIL LULUSAN
-Pilih 3 atau 4 profil yang relevan dari daftar:
+Pilih lebih dari 3-4 profil yang relevan dari daftar:
 ${profilLulusan.join('\n')}
-Buat tabel 2 kolom dengan header: "PROFIL" dan "DESKRIPSI INTEGRASI" header bold, row tidak bold
+Buat tabel 2 kolom dengan header: "PROFIL" dan "DESKRIPSI INTEGRASI"
 
 D. DESAIN PEMBELAJARAN
 Tujuan Pembelajaran: ${tp.tujuan || '-'}
@@ -972,14 +968,15 @@ F. ASESMEN
 Asesmen Awal/Diagnostik: [deskripsi detail]
 Asesmen Proses/Formatif: [deskripsi detail dengan 3-5 indikator]
 Asesmen Sumatif: [deskripsi detail]
-Soal 1: [esai]
-Soal 2: [esai]
-Soal 3: [esai]
-Soal 4: [esai]
-Soal 5: [esai]
+Soal 1: [soal pilihan ganda dengan a-e]
+Soal 2: [soal pilihan ganda]
+Soal 3: [soal pilihan ganda]
+Soal 4: [soal pilihan ganda]
+Soal 5: [soal pilihan ganda]
+Kunci Jawaban: [kunci jawaban a-e]
 
 G. BAHAN BACAAN & DAFTAR PUSTAKA
-Minimal 3 referensi buku/jurnal/sumber belajar yang valid.
+Minimal 3 referensi buku/jurnal/sumber belajar.
 
 ${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
 
