@@ -412,6 +412,24 @@
         }
         @keyframes spin { to { transform:rotate(360deg); } }
 
+        /* ===== PERINGATAN KEDIP ===== */
+        .rpm-warning {
+            color: #ef4444;
+            font-weight: 600;
+            margin-top: 12px;
+            padding: 8px 14px;
+            background: #fee2e2;
+            border-radius: var(--radius-sm);
+            border: 1px solid #ef4444;
+            text-align: center;
+            animation: blink 1.2s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
         @media print {
             .no-print { display:none !important; }
             .modal-overlay { position:relative !important; background:none !important; backdrop-filter:none !important; display:block !important; }
@@ -420,6 +438,7 @@
             .detail-content table { font-size:10pt; }
             .detail-content table th,
             .detail-content table td { padding:4px 6px; }
+            .rpm-warning { display:none !important; }
         }
 
         @media (max-width:768px) {
@@ -466,6 +485,11 @@
         <div id="atpEmpty" class="empty-state" style="display:none;">
             <i class="fas fa-table"></i>
             <p>Belum ada data ATP untuk modul ini.</p>
+        </div>
+
+        <!-- ===== PERINGATAN KUOTA RPM ===== -->
+        <div id="rpmQuotaWarning" class="rpm-warning" style="display:none;">
+            <i class="fas fa-exclamation-triangle"></i> Buat RPM maksimal 2 RPM per menit karena kuota AI terbatas.
         </div>
     </div>
 
@@ -634,10 +658,18 @@
         document.getElementById('modulTahun').textContent = moduleData.tahunPenyusunan || '-';
     }
 
-    // ===== RENDER ATP TABLE (readonly) =====
+    // ===== RENDER ATP TABLE (readonly) dengan kontrol tombol & peringatan =====
     function renderATPTable() {
         const container = document.getElementById('atpTableContainer');
         const empty = document.getElementById('atpEmpty');
+        const warning = document.getElementById('rpmQuotaWarning');
+
+        // Tampilkan peringatan hanya jika canEdit true
+        if (canEdit) {
+            warning.style.display = 'block';
+        } else {
+            warning.style.display = 'none';
+        }
 
         if (!atpRows || atpRows.length === 0) {
             container.innerHTML = '';
@@ -670,6 +702,11 @@
             const materi = row.materi || '';
             const alokasi = row.alokasiJp || '';
 
+            // Tombol Buat RPM hanya muncul jika canEdit true
+            const buttonHtml = canEdit
+                ? `<button class="btn-buat-rpm" data-index="${index}" onclick="openModalFromATP(${index})"> <i class="fas fa-plus-circle"></i> Buat RPM </button>`
+                : '';
+
             html += `
                 <tr>
                     <td>${index+1}</td>
@@ -678,11 +715,7 @@
                     <td><textarea rows="2" readonly>${tujuan}</textarea></td>
                     <td><textarea rows="2" readonly>${materi}</textarea></td>
                     <td><input type="text" value="${alokasi}" readonly style="text-align:center;" /></td>
-                    <td>
-                        <button class="btn-buat-rpm" data-index="${index}" onclick="openModalFromATP(${index})" ${canEdit ? '' : 'disabled'}>
-                            <i class="fas fa-plus-circle"></i> Buat RPM
-                        </button>
-                    </td>
+                    <td>${buttonHtml}</td>
                 </tr>
             `;
         });
@@ -710,11 +743,9 @@
             const mapel = moduleData.mapel || 'Pembelajaran';
             const kelas = moduleData.kelas || '-';
             const fase = moduleData.fase || '-';
-            // Ambil data dari rpm, fallback ke default
             const semester = rpm.semester || 'Ganjil';
             const materi = rpm.materi || '-';
             const minggu = rpm.minggu || '-';
-            // Alokasi waktu tidak ditampilkan sesuai permintaan (tapi bisa ditambahkan jika perlu)
 
             html += `
                 <div class="rpm-card">
@@ -779,7 +810,7 @@
     }
 
     // ================================================================
-    // ===== GENERATE RPM =====
+    // ===== GENERATE RPM ===== (tidak diubah)
     // ================================================================
     async function generateRPM(e) {
         e.preventDefault();
@@ -798,12 +829,11 @@
 
         try {
             const rpmContent = await callGroq(tp, deskripsi);
-            // --- TAMBAHKAN semester ke object RPM ---
             const newRPM = {
                 judul: `RPM - ${moduleData.mapel || 'Pembelajaran'}`,
                 tujuanLabel: tp.tujuan.substring(0, 80) + (tp.tujuan.length > 80 ? '...' : ''),
                 tujuan: tp.tujuan,
-                semester: tp.semester || 'Ganjil',  // <-- semester dari ATP
+                semester: tp.semester || 'Ganjil',
                 materi: tp.materi || '-',
                 minggu: tp.minggu || '-',
                 alokasiWaktu: tp.alokasiJp || moduleData.jpPerMinggu || 4,
@@ -841,7 +871,7 @@
         }
     }
 
-    // ===== CALL GROQ API (tidak berubah) =====
+    // ===== CALL GROQ API (tidak diubah, sesuai permintaan) =====
     async function callGroq(tp, deskripsi) {
         const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
         const profilLulusan = [
@@ -1087,7 +1117,7 @@ BUAT PENGALAMAN BELAJAR SANGAT DETAIL dengan langkah-langkah yang jelas dan apli
     }
 
     // ================================================================
-    // ===== FORMAT KONTEN RPM =====
+    // ===== FORMAT KONTEN RPM (tidak diubah) =====
     // ================================================================
     function cleanText(text) {
         if (!text) return '';
