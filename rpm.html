@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== GAYA UTAMA ===== */
+        /* ===== GAYA UTAMA (tidak berubah) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -877,7 +877,9 @@
         }
     }
 
-    // ===== CALL GROQ API (tidak berubah) =====
+    // ================================================================
+    // ===== CALL GROQ API (PERBAIKAN PROMPT) =====
+    // ================================================================
     async function callGroq(tp, deskripsi) {
         const cp = moduleData.atp || 'Belum ada Capaian Pembelajaran.';
         const profilLulusan = [
@@ -904,25 +906,37 @@
         }
         const pertemuanStr = pertemuanList.map(p => `  ${p}\n`).join('');
 
-        const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru membuat Rencana Pembelajaran Mendalam (RPM) yang sangat detail, aplikatif, dan berbasis deep learning. Berikan jawaban dalam bahasa Indonesia yang baik dan benar.
+        // ==================== PERBAIKAN PROMPT ====================
+        const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru menyusun Rencana Pembelajaran Mendalam (RPM) yang sangat detail, aplikatif, dan berbasis deep learning. Berikan jawaban dalam bahasa Indonesia formal yang baik dan benar.
 
-FORMAT OUTPUT YANG DIWAJIBKAN:
-1. Setiap bagian (I, II, III,IV,V,VI, dst) diawali dengan huruf kapital dan titik (contoh: "I. IDENTITAS")
-2. Untuk tabel, gunakan format dengan pemisah kolom "|" (pipa) dan baris baru untuk setiap baris.
-3. Jangan gunakan simbol "**", "__", atau garis "=================".
-4. Gunakan format yang rapi dan profesional.
+ATURAN FORMAT WAJIB:
+1. Setiap bagian utama diberi nomor Romawi kapital: I., II., III., IV., V., VI.
+2. Judul bagian ditulis dengan huruf kapital semua, contoh: "I. IDENTITAS".
+3. Untuk tabel, gunakan pemisah kolom dengan tanda "|" dan setiap baris dipisahkan oleh newline. Pastikan jumlah kolom konsisten.
+4. Untuk daftar/poin, gunakan tanda "-" atau angka, tidak boleh menggunakan simbol "*", "#", "_", atau "=".
+5. Jangan gunakan garis bawah, tebal, miring, atau format markdown apapun.
+6. Setiap paragraf atau sub-bagian diberi jarak satu baris kosong.
+7. Gunakan format yang rapi, bersih, dan mudah dibaca.
 
-Untuk DESAIN PEMBELAJARAN - Praktik Pedagogis, gunakan format poin dengan 8 item:
-Berkesadaran (Mindful) : [deskripsi detail]
-Bermakna (Meaningful) : [deskripsi detail]
-Menggembirakan (Joyful) : [deskripsi detail]
-Kemitraan Pembelajaran : [deskripsi detail]
-Lintas Mata Pelajaran : [deskripsi detail]
-Lingkungan Belajar : [deskripsi detail]
-Dimensi Keterampilan : [deskripsi detail]
-Pemanfaatan Digital : [deskripsi detail]
+CONTOH FORMAT YANG DIHARAPKAN:
+I. IDENTITAS
+| Unit Kerja    | SMA Nurmilad Boarding School |
+| Nama Guru     | Budi Santoso                 |
+| ...           | ...                          |
 
-Untuk PENGALAMAN BELAJAR, BUAT SANGAT DETAIL dengan format:
+II. PROFIL LULUSAN
+| PROFIL              | DESKRIPSI INTEGRASI |
+| Keimanan & Ketakwaan | ...                 |
+| ...                 | ...                 |
+
+III. DESAIN PEMBELAJARAN
+A. Tujuan Pembelajaran: ...
+B. Praktik Pedagogis:
+| Berkesadaran (Mindful)    | ... |
+| Bermakna (Meaningful)     | ... |
+| ...                       | ... |
+
+IV. PENGALAMAN BELAJAR
 PERTEMUAN PERTAMA
 Kegiatan Awal (15 menit):
 - Salam dan doa
@@ -931,16 +945,13 @@ Kegiatan Awal (15 menit):
 - Asesmen diagnostik (jika ada)
 - Penjelasan tujuan pembelajaran
 
-Kegiatan Inti (${waktuInti} menit):
+Kegiatan Inti (xx menit):
 A. Memahami:
-  - [deskripsi detail aktivitas, metode, dan media]
-  - [aktivitas individu atau kelompok]
+  - [deskripsi detail]
 B. Mengaplikasikan:
-  - [deskripsi detail aktivitas praktik]
-  - [aktivitas kelompok atau individu]
+  - [deskripsi detail]
 C. Merefleksi:
-  - [deskripsi detail aktivitas refleksi]
-  - [presentasi atau diskusi]
+  - [deskripsi detail]
 
 Kegiatan Penutup (15 menit):
 - Refleksi bersama
@@ -949,21 +960,29 @@ Kegiatan Penutup (15 menit):
 - Pemberian tugas (pengayaan/remedial)
 - Doa dan salam
 
-(ulangi format ini untuk setiap pertemuan)
+(ulangi format di atas untuk setiap pertemuan)
 
-Untuk ASESMEN, gunakan format:
-Asesmen Awal/Diagnostik: [deskripsi detail]
-Asesmen Proses/Formatif: [deskripsi detail]
-Asesmen Sumatif: [deskripsi detail]
-Soal 1: ...
-Soal 2: ...
-Kunci Jawaban: ...`;
+V. ASESMEN
+Asesmen Awal/Diagnostik: ...
+Asesmen Proses/Formatif: ...
+Asesmen Sumatif: ...
+Soal 1: (esai)
+Soal 2: (esai)
+Soal 3: (esai)
+Soal 4: (esai)
+Soal 5: (esai)
+
+VI. BAHAN BACAAN & DAFTAR PUSTAKA
+1. ...
+2. ...
+3. ...
+
+PASTIKAN setiap bagian terisi dengan lengkap dan konsisten mengikuti format di atas. Jangan menambahkan simbol yang tidak diperlukan.`;
 
         const userPrompt = `
-Buat Rencana Pembelajaran Mendalam (RPM) dengan format berikut:
+Buat Rencana Pembelajaran Mendalam (RPM) dengan data berikut:
 
 I. IDENTITAS
-Buat tabel 2 kolom dengan data:
 - Unit Kerja    : ${moduleData.jenjang || 'SMA'} Nurmilad Boarding School
 - Nama Guru     : ${moduleData.guru || '-'}
 - Mata Pelajaran: ${moduleData.mapel || '-'}
@@ -972,52 +991,52 @@ Buat tabel 2 kolom dengan data:
 - Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
 
 II. PROFIL LULUSAN
-Pilih 3 atau 4 profil yang relevan dari daftar:
-${profilLulusan.join('\n')}
-Buat tabel 2 kolom dengan header: "PROFIL" dan "DESKRIPSI INTEGRASI"
+Pilih 3 atau 4 profil yang paling relevan dari daftar:
+${profilLulusan.map(p => `- ${p}`).join('\n')}
+Buat tabel 2 kolom: "PROFIL" dan "DESKRIPSI INTEGRASI".
 
 III. DESAIN PEMBELAJARAN
 A. Tujuan Pembelajaran: ${tp.tujuan || '-'}
-
-B. Praktik Pedagogis:
-Buat 2 kolom tanpa header
-- Berkesadaran (Mindful) : [jelaskan dengan contoh konkret dari pembelajaran]
-- Bermakna (Meaningful) : [jelaskan dengan contoh konkret]
-- Menggembirakan (Joyful) : [jelaskan dengan contoh konkret]
-- Kemitraan Pembelajaran : [jelaskan dengan contoh konkret]
-- Lintas Mata Pelajaran : [jelaskan dengan contoh konkret]
-- Lingkungan Belajar : [jelaskan dengan contoh konkret]
-- Dimensi Keterampilan : [jelaskan dengan contoh konkret]
-- Pemanfaatan Digital : [jelaskan dengan contoh konkret]
+B. Praktik Pedagogis (format tabel 2 kolom tanpa header, kolom kiri = nama praktik, kolom kanan = deskripsi):
+- Berkesadaran (Mindful) : [contoh konkret]
+- Bermakna (Meaningful) : [contoh konkret]
+- Menggembirakan (Joyful) : [contoh konkret]
+- Kemitraan Pembelajaran : [contoh konkret]
+- Lintas Mata Pelajaran : [contoh konkret]
+- Lingkungan Belajar : [contoh konkret]
+- Dimensi Keterampilan : [contoh konkret]
+- Pemanfaatan Digital : [contoh konkret]
 
 IV. PENGALAMAN BELAJAR
-Buat rincian kegiatan yang SANGAT DETAIL untuk ${jumlahPertemuan} pertemuan:
+Rincian kegiatan untuk ${jumlahPertemuan} pertemuan:
 ${pertemuanStr}
-Setiap pertemuan wajib memiliki:
-Kegiatan Awal (15 menit): salam, doa, absensi, apersepsi (2-3 pertanyaan pemantik), asesmen diagnostik (jika ada), penjelasan tujuan pembelajaran
-Kegiatan Inti (${waktuInti} menit):
-A. Memahami: [aktivitas individu/kelompok, media, metode]
-B. Mengaplikasikan: [aktivitas praktik, eksperimen, diskusi kelompok]
-C. Merefleksi: [presentasi, refleksi kritis, diskusi kelas]
-Kegiatan Penutup (15 menit): refleksi bersama, tanya jawab, penguatan konsep, pemberian tugas (pengayaan/remedial), doa dan salam
+Setiap pertemuan harus memiliki:
+- Kegiatan Awal (15 menit): salam, doa, absensi, apersepsi (2-3 pertanyaan pemantik), asesmen diagnostik (jika relevan), penjelasan tujuan pembelajaran.
+- Kegiatan Inti (${waktuInti} menit):
+  A. Memahami: aktivitas individu/kelompok, media, metode.
+  B. Mengaplikasikan: aktivitas praktik, eksperimen, diskusi kelompok.
+  C. Merefleksi: presentasi, refleksi kritis, diskusi kelas.
+- Kegiatan Penutup (15 menit): refleksi bersama, tanya jawab, penguatan konsep, pemberian tugas (pengayaan/remedial), doa dan salam.
+Berikan deskripsi yang sangat detail dan aplikatif untuk setiap langkah.
 
 V. ASESMEN
-Asesmen Awal/Diagnostik: [deskripsi detail]
-Asesmen Proses/Formatif: [deskripsi detail dengan 3-5 indikator]
-Asesmen Sumatif: [deskripsi detail]
-Soal 1: [esai]
-Soal 2: [esai]
-Soal 3: [esai]
-Soal 4: [esai]
-Soal 5: [esai]
+- Asesmen Awal/Diagnostik: [deskripsi detail]
+- Asesmen Proses/Formatif: [deskripsi detail dengan 3-5 indikator]
+- Asesmen Sumatif: [deskripsi detail]
+- Soal 1: [esai]
+- Soal 2: [esai]
+- Soal 3: [esai]
+- Soal 4: [esai]
+- Soal 5: [esai]
 
 VI. BAHAN BACAAN & DAFTAR PUSTAKA
-Minimal 3 referensi buku/jurnal/sumber belajar yang valid.
+Sebutkan minimal 3 referensi yang valid (buku, jurnal, atau sumber belajar lain).
 
 ${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
 
-Gunakan bahasa Indonesia formal. JANGAN gunakan simbol #, ##, ###,####, *, **, __, atau garis "=================".
-BUAT PENGALAMAN BELAJAR SANGAT DETAIL dengan langkah-langkah yang jelas dan aplikatif.`;
+Gunakan bahasa Indonesia formal. Ikuti format yang sudah dicontohkan. JANGAN gunakan simbol #, ##, ###, ####, *, **, __, atau garis "=================". JANGAN gunakan markdown. BUAT PENGALAMAN BELAJAR SANGAT DETAIL.`;
+
+        // ==================== AKHIR PERBAIKAN PROMPT ====================
 
         const response = await fetch(GROQ_URL, {
             method: 'POST',
@@ -1031,7 +1050,7 @@ BUAT PENGALAMAN BELAJAR SANGAT DETAIL dengan langkah-langkah yang jelas dan apli
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
-                temperature: 0.6,
+                temperature: 0.5, // sedikit diturunkan agar lebih konsisten
                 max_tokens: 4096
             })
         });
