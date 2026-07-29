@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== GAYA UTAMA (tidak berubah) ===== */
+        /* ===== GAYA UTAMA ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a; --primary-light: #2a7f9a; --primary-dark: #0d3f5a;
@@ -910,33 +910,33 @@
         const systemPrompt = `Anda adalah asisten AI profesional yang membantu guru menyusun Rencana Pembelajaran Mendalam (RPM) yang sangat detail, aplikatif, dan berbasis deep learning. Berikan jawaban dalam bahasa Indonesia formal yang baik dan benar.
 
 ATURAN FORMAT WAJIB:
-1. Setiap bagian utama diberi nomor Romawi kapital: I., II., III., IV., V., VI.
-2. Judul bagian ditulis dengan huruf kapital semua, contoh: "I. IDENTITAS".
+1. Setiap bagian utama (I. IDENTITAS, II. PROFIL LULUSAN, III. DESAIN PEMBELAJARAN, IV. PENGALAMAN BELAJAR, V. ASESMEN, VI. BAHAN BACAAN & DAFTAR PUSTAKA) harus ditulis dengan huruf TEBAL/BOLD menggunakan tanda ** di awal dan akhir, contoh: **I. IDENTITAS**.
+2. Judul bagian ditulis dengan huruf kapital semua.
 3. Untuk tabel, gunakan pemisah kolom dengan tanda "|" dan setiap baris dipisahkan oleh newline. Pastikan jumlah kolom konsisten.
 4. Untuk daftar/poin, gunakan tanda "-" atau angka, tidak boleh menggunakan simbol "*", "#", "_", atau "=".
-5. Jangan gunakan garis bawah, tebal, miring, atau format markdown apapun.
+5. Jangan gunakan garis bawah, tebal, miring, atau format markdown apapun di dalam tabel atau isi sel. HANYA judul bagian yang boleh bold.
 6. Setiap paragraf atau sub-bagian diberi jarak satu baris kosong.
 7. Gunakan format yang rapi, bersih, dan mudah dibaca.
 
 CONTOH FORMAT YANG DIHARAPKAN:
-I. IDENTITAS
+**I. IDENTITAS**
 | Unit Kerja    | SMA Nurmilad Boarding School |
 | Nama Guru     | Budi Santoso                 |
 | ...           | ...                          |
 
-II. PROFIL LULUSAN
+**II. PROFIL LULUSAN**
 | PROFIL              | DESKRIPSI INTEGRASI |
 | Keimanan & Ketakwaan | ...                 |
 | ...                 | ...                 |
 
-III. DESAIN PEMBELAJARAN
+**III. DESAIN PEMBELAJARAN**
 A. Tujuan Pembelajaran: ...
 B. Praktik Pedagogis:
 | Berkesadaran (Mindful)    | ... |
 | Bermakna (Meaningful)     | ... |
 | ...                       | ... |
 
-IV. PENGALAMAN BELAJAR
+**IV. PENGALAMAN BELAJAR**
 PERTEMUAN PERTAMA
 Kegiatan Awal (15 menit):
 - Salam dan doa
@@ -962,7 +962,7 @@ Kegiatan Penutup (15 menit):
 
 (ulangi format di atas untuk setiap pertemuan)
 
-V. ASESMEN
+**V. ASESMEN**
 Asesmen Awal/Diagnostik: ...
 Asesmen Proses/Formatif: ...
 Asesmen Sumatif: ...
@@ -972,17 +972,17 @@ Soal 3: (esai)
 Soal 4: (esai)
 Soal 5: (esai)
 
-VI. BAHAN BACAAN & DAFTAR PUSTAKA
+**VI. BAHAN BACAAN & DAFTAR PUSTAKA**
 1. ...
 2. ...
 3. ...
 
-PASTIKAN setiap bagian terisi dengan lengkap dan konsisten mengikuti format di atas. Jangan menambahkan simbol yang tidak diperlukan.`;
+PASTIKAN setiap bagian terisi dengan lengkap dan konsisten mengikuti format di atas. HANYA judul bagian yang menggunakan **bold**, isi tabel dan sel TIDAK BOLEH bold. Jangan menambahkan simbol yang tidak diperlukan.`;
 
         const userPrompt = `
 Buat Rencana Pembelajaran Mendalam (RPM) dengan data berikut:
 
-I. IDENTITAS
+**I. IDENTITAS**
 - Unit Kerja    : ${moduleData.jenjang || 'SMA'} Nurmilad Boarding School
 - Nama Guru     : ${moduleData.guru || '-'}
 - Mata Pelajaran: ${moduleData.mapel || '-'}
@@ -990,12 +990,12 @@ I. IDENTITAS
 - Materi Pokok  : ${tp.materi || '-'}
 - Alokasi Waktu : ${alokasiJP} JP (${jumlahPertemuan} pertemuan, @ ${jpPerMinggu} JP/minggu)
 
-II. PROFIL LULUSAN
+**II. PROFIL LULUSAN**
 Pilih 3 atau 4 profil yang paling relevan dari daftar:
 ${profilLulusan.map(p => `- ${p}`).join('\n')}
 Buat tabel 2 kolom: "PROFIL" dan "DESKRIPSI INTEGRASI".
 
-III. DESAIN PEMBELAJARAN
+**III. DESAIN PEMBELAJARAN**
 A. Tujuan Pembelajaran: ${tp.tujuan || '-'}
 B. Praktik Pedagogis (format tabel 2 kolom tanpa header, kolom kiri = nama praktik, kolom kanan = deskripsi):
 - Berkesadaran (Mindful) : [contoh konkret]
@@ -1007,7 +1007,7 @@ B. Praktik Pedagogis (format tabel 2 kolom tanpa header, kolom kiri = nama prakt
 - Dimensi Keterampilan : [contoh konkret]
 - Pemanfaatan Digital : [contoh konkret]
 
-IV. PENGALAMAN BELAJAR
+**IV. PENGALAMAN BELAJAR**
 Rincian kegiatan untuk ${jumlahPertemuan} pertemuan:
 ${pertemuanStr}
 Setiap pertemuan harus memiliki:
@@ -1019,7 +1019,7 @@ Setiap pertemuan harus memiliki:
 - Kegiatan Penutup (15 menit): refleksi bersama, tanya jawab, penguatan konsep, pemberian tugas (pengayaan/remedial), doa dan salam.
 Berikan deskripsi yang sangat detail dan aplikatif untuk setiap langkah.
 
-V. ASESMEN
+**V. ASESMEN**
 - Asesmen Awal/Diagnostik: [deskripsi detail]
 - Asesmen Proses/Formatif: [deskripsi detail dengan 3-5 indikator]
 - Asesmen Sumatif: [deskripsi detail]
@@ -1029,12 +1029,12 @@ V. ASESMEN
 - Soal 4: [esai]
 - Soal 5: [esai]
 
-VI. BAHAN BACAAN & DAFTAR PUSTAKA
+**VI. BAHAN BACAAN & DAFTAR PUSTAKA**
 Sebutkan minimal 3 referensi yang valid (buku, jurnal, atau sumber belajar lain).
 
 ${deskripsi ? `\nARAHAN KHUSUS: ${deskripsi}` : ''}
 
-Gunakan bahasa Indonesia formal. Ikuti format yang sudah dicontohkan. JANGAN gunakan simbol #, ##, ###, ####, *, **, __, atau garis "=================". JANGAN gunakan markdown. BUAT PENGALAMAN BELAJAR SANGAT DETAIL.`;
+Gunakan bahasa Indonesia formal. Ikuti format yang sudah dicontohkan. HANYA judul bagian yang menggunakan **bold**. JANGAN gunakan simbol #, ##, ###, ####, *, **, __, atau garis "=================" di dalam tabel atau isi sel. JANGAN gunakan markdown. BUAT PENGALAMAN BELAJAR SANGAT DETAIL.`;
 
         // ==================== AKHIR PERBAIKAN PROMPT ====================
 
@@ -1050,7 +1050,7 @@ Gunakan bahasa Indonesia formal. Ikuti format yang sudah dicontohkan. JANGAN gun
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
-                temperature: 0.5, // sedikit diturunkan agar lebih konsisten
+                temperature: 0.5,
                 max_tokens: 4096
             })
         });
@@ -1147,7 +1147,7 @@ Gunakan bahasa Indonesia formal. Ikuti format yang sudah dicontohkan. JANGAN gun
     function cleanText(text) {
         if (!text) return '';
         text = text.replace(/^[=\-]{5,}\s*$/gm, '');
-        text = text.replace(/\*\*/g, '');
+        text = text.replace(/\*\*/g, ''); // hapus bold
         text = text.replace(/__/g, '');
         text = text.replace(/_(?! )/g, '');
         text = text.replace(/\n{3,}/g, '\n\n');
@@ -1175,15 +1175,23 @@ Gunakan bahasa Indonesia formal. Ikuti format yang sudah dicontohkan. JANGAN gun
                 continue;
             }
 
-            const sectionMatch = trimmed.match(/^([A-Z])\.\s*(.*)/);
-            if (sectionMatch) {
-                const sectionLetter = sectionMatch[1];
-                const sectionTitle = sectionMatch[2].trim();
+            // Deteksi judul bagian bold dengan **
+            const boldMatch = trimmed.match(/^\*\*([IVXLCDM]+\.\s*[A-Z\s&]+)\*\*/);
+            if (boldMatch) {
+                const title = boldMatch[1].trim();
+                html += `<div class="section-title">${title}</div>`;
                 inSectionC = false;
                 inPraktekPedagogis = false;
                 inPertemuan = false;
+                continue;
+            }
 
-                if (sectionLetter === 'C' && sectionTitle.toUpperCase().includes('CAPAIAN PEMBELAJARAN')) {
+            // Deteksi sub-bagian seperti A. Tujuan Pembelajaran:
+            const subMatch = trimmed.match(/^([A-D])\.\s*(.*)/);
+            if (subMatch) {
+                const letter = subMatch[1];
+                const content = subMatch[2].trim();
+                if (letter === 'C' && content.toUpperCase().includes('CAPAIAN PEMBELAJARAN')) {
                     inSectionC = true;
                     html += `<div class="section-title">C. CAPAIAN PEMBELAJARAN</div>`;
                     if (cpFromFirebase) {
@@ -1193,46 +1201,12 @@ Gunakan bahasa Indonesia formal. Ikuti format yang sudah dicontohkan. JANGAN gun
                     }
                     continue;
                 }
-
-                if (sectionLetter === 'D' && sectionTitle.toUpperCase().includes('DESAIN PEMBELAJARAN')) {
-                    html += `<div class="section-title">D. DESAIN PEMBELAJARAN</div>`;
-                    const tp = getSelectedTP();
-                    if (tp) {
-                        html += `<div class="sub-title">1. Tujuan Pembelajaran</div>`;
-                        html += `<div class="text-block">${tp}</div>`;
-                    }
+                if (letter === 'B' && content.toUpperCase().includes('PRAKTIK PEDAGOGIS')) {
                     inPraktekPedagogis = true;
-                    html += `<div class="sub-title">2. Praktik Pedagogis</div>`;
+                    html += `<div class="sub-title">B. Praktik Pedagogis</div>`;
                     continue;
                 }
-
-                if (inPraktekPedagogis && trimmed.includes('(') && trimmed.includes(')')) {
-                    html += `<div class="praktek-item">${trimmed}</div>`;
-                    continue;
-                }
-
-                if (sectionLetter === 'E' && sectionTitle.toUpperCase().includes('PENGALAMAN BELAJAR')) {
-                    html += `<div class="section-title">E. PENGALAMAN BELAJAR</div>`;
-                    inPertemuan = true;
-                    continue;
-                }
-
-                if (sectionLetter === 'F' && sectionTitle.toUpperCase().includes('ASESMEN')) {
-                    html += `<div class="section-title">F. ASESMEN</div>`;
-                    continue;
-                }
-
-                if (sectionLetter === 'G' && sectionTitle.toUpperCase().includes('BAHAN BACAAN')) {
-                    html += `<div class="section-title">G. BAHAN BACAAN &amp; DAFTAR PUSTAKA</div>`;
-                    continue;
-                }
-
-                const isSubSection = sectionTitle.includes(':') || sectionTitle.includes('-');
-                if (!isSubSection) {
-                    html += `<div class="section-title">${sectionLetter}. ${sectionTitle}</div>`;
-                } else {
-                    html += `<div class="sub-title">${trimmed}</div>`;
-                }
+                html += `<div class="sub-title">${letter}. ${content}</div>`;
                 continue;
             }
 
@@ -1241,7 +1215,7 @@ Gunakan bahasa Indonesia formal. Ikuti format yang sudah dicontohkan. JANGAN gun
                     inSectionC = false;
                     const dMatch = trimmed.match(/^D\.\s*(.*)/);
                     if (dMatch) {
-                        html += `<div class="section-title">D. ${dMatch[1].trim()}</div>`;
+                        html += `<div class="sub-title">D. ${dMatch[1].trim()}</div>`;
                         const tp = getSelectedTP();
                         if (tp) {
                             html += `<div class="sub-title">1. Tujuan Pembelajaran</div>`;
