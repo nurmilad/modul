@@ -1,101 +1,942 @@
-// ===== KALENDER =====
-function renderKalender(tahunAjaran) {
-    const container = document.getElementById('kalenderContainer');
-    if (!container) return;
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modul NBS - Perangkat</title>
 
-    // Parse tahun ajaran "2025/2026" -> tahun mulai = 2025
-    const startYear = parseInt(tahunAjaran.split('/')[0]);
-    const endYear = startYear + 1;
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js">
+    </script>
 
-    // Nama bulan (Juli s.d Juni)
-    const namaBulan = [
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'
-    ];
-    // Bulan dalam angka (0-based) untuk setiap bulan di tahun ajaran
-    // Juli = 6, Agustus = 7, ..., Desember = 11, Januari = 0, ..., Juni = 5
-    const bulanIndex = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
-    // Tahun untuk setiap bulan (beberapa di startYear, sisanya di endYear)
-    const tahunBulan = bulanIndex.map((b, i) => (i < 6 ? startYear : endYear));
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
-    // Nama hari (dimulai Sabtu)
-    const namaHari = ['Sabtu', 'Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at'];
-
-    let html = '';
-    for (let i = 0; i < 12; i++) {
-        const bulan = bulanIndex[i];
-        const tahun = tahunBulan[i];
-        const nama = namaBulan[i];
-
-        // Jumlah hari dalam bulan
-        const daysInMonth = new Date(tahun, bulan + 1, 0).getDate();
-        // Hari pertama bulan (0=Sabtu, 1=Ahad, ... 6=Jum'at) karena kita set week start = Sabtu
-        const firstDay = new Date(tahun, bulan, 1).getDay(); // 0=Sabtu, 1=Ahad, ..., 6=Jum'at
-
-        // Buat grid hari
-        let gridHtml = '';
-        // Nama hari header
-        for (let h = 0; h < 7; h++) {
-            gridHtml += `<div class="hari-nama">${namaHari[h]}</div>`;
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --primary: #1a5f7a;
+            --primary-light: #2a7f9a;
+            --primary-dark: #0d3f5a;
+            --secondary: #f39c12;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.25s ease;
+            --header-height: 64px;
         }
-        // Tanggal kosong sebelum hari pertama
-        for (let k = 0; k < firstDay; k++) {
-            gridHtml += `<div class="tanggal luar-bulan"></div>`;
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
         }
-        // Tanggal
-        for (let d = 1; d <= daysInMonth; d++) {
-            // Hari dalam minggu untuk tanggal d (0=Sabtu, ..., 6=Jum'at)
-            const dayOfWeek = (firstDay + d - 1) % 7;
-            const isJumat = (dayOfWeek === 6); // Jum'at = index 6
-            const kelas = isJumat ? 'tanggal jumat' : 'tanggal';
-            gridHtml += `<div class="${kelas}">${d}</div>`;
+        .sidebar {
+            width: 240px;
+            background: var(--primary-dark);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 1000;
+            transition: transform var(--transition);
+            overflow-y: auto;
         }
-        // Tambahkan sel kosong di akhir agar grid rapi
-        const totalCells = firstDay + daysInMonth;
-        const remaining = (7 - (totalCells % 7)) % 7;
-        for (let r = 0; r < remaining; r++) {
-            gridHtml += `<div class="tanggal luar-bulan"></div>`;
+        .sidebar-brand {
+            padding: 20px 24px;
+            font-size: 20px;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-brand i {
+            font-size: 26px;
+            color: var(--secondary);
+        }
+        .sidebar-brand small {
+            font-size: 12px;
+            font-weight: 400;
+            opacity: 0.7;
+            display: block;
+            margin-top: 2px;
+        }
+        .sidebar-menu {
+            padding: 16px 12px;
+            flex: 1;
+        }
+        .sidebar-menu .menu-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.5;
+            padding: 8px 12px 4px;
+            font-weight: 600;
+        }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: var(--transition);
+            cursor: pointer;
+            margin-bottom: 2px;
+        }
+        .sidebar-menu a:hover {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+        }
+        .sidebar-menu a.active {
+            background: rgba(255,255,255,0.14);
+            color: #fff;
+        }
+        .sidebar-menu a i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            font-size: 13px;
+            opacity: 0.6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        html += `
-            <div class="kalender-bulan">
-                <div class="bulan-header">${nama} ${tahun}</div>
-                <div class="hari-grid">${gridHtml}</div>
+        .main {
+            margin-left: 240px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: var(--header-height);
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 500;
+            backdrop-filter: blur(8px);
+            background: rgba(255,255,255,0.92);
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-left .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .topbar-left h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-right .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg);
+            padding: 6px 14px 6px 10px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .topbar-right .user-badge i {
+            font-size: 18px;
+            color: var(--primary);
+        }
+        .topbar-right .logout-btn {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .topbar-right .logout-btn:hover {
+            background: #fee2e2;
+            border-color: #f87171;
+            color: #dc2626;
+        }
+
+        .page-content {
+            padding: 28px 32px 40px;
+            flex: 1;
+        }
+
+        .perangkat-header {
+            margin-bottom: 24px;
+        }
+        .perangkat-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+        }
+        .perangkat-header p {
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .perangkat-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .perangkat-tabs button {
+            padding: 10px 22px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            margin-bottom: -2px;
+        }
+        .perangkat-tabs button:hover {
+            color: var(--text);
+        }
+        .perangkat-tabs button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeUp 0.25s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(12px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+
+        .perangkat-content {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            padding: 28px 32px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .perangkat-content h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+        .perangkat-content h3 {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 16px 0 8px;
+            color: var(--text);
+        }
+        .perangkat-content h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 12px 0 6px;
+            color: var(--primary-dark);
+        }
+        .perangkat-content p {
+            line-height: 1.7;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .perangkat-content ul,
+        .perangkat-content ol {
+            padding-left: 24px;
+            margin-bottom: 10px;
+        }
+        .perangkat-content li {
+            line-height: 1.7;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .perangkat-content .section-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--primary-dark);
+            margin: 14px 0 6px;
+            padding: 4px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+        .perangkat-content .sub-section {
+            margin-left: 16px;
+        }
+        .perangkat-content .signature {
+            margin-top: 20px;
+            text-align: right;
+            font-style: italic;
+        }
+        .perangkat-content .signature strong {
+            font-style: normal;
+        }
+
+        .badge-count {
+            background: var(--secondary);
+            color: #fff;
+            font-size: 11px;
+            padding: 1px 8px;
+            border-radius: 40px;
+            margin-left: 6px;
+        }
+
+        /* ===== KALENDER ===== */
+        .kalender-bulan {
+            background: #fff;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .kalender-bulan .bulan-header {
+            background: var(--primary);
+            color: #fff;
+            padding: 8px 10px;
+            font-weight: 700;
+            font-size: 15px;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+        .kalender-bulan .hari-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            font-size: 12px;
+        }
+        .kalender-bulan .hari-grid .hari-nama {
+            background: var(--bg);
+            padding: 4px 2px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 10px;
+            color: var(--text-light);
+            border-bottom: 1px solid var(--border);
+        }
+        .kalender-bulan .hari-grid .tanggal {
+            padding: 6px 2px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            border-bottom: 1px solid #f1f5f9;
+            transition: 0.1s;
+        }
+        .kalender-bulan .hari-grid .tanggal.jumat {
+            color: #dc2626;
+            font-weight: 700;
+        }
+        .kalender-bulan .hari-grid .tanggal.luar-bulan {
+            color: #cbd5e1;
+            font-weight: 400;
+        }
+        .kalender-bulan .hari-grid .tanggal:hover {
+            background: var(--primary-bg);
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            animation: slideUp 0.3s ease;
+            max-width: 360px;
+        }
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-info { background: var(--primary); }
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(16px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main {
+                margin-left: 0;
+            }
+            .topbar-left .hamburger {
+                display: block;
+            }
+            .page-content {
+                padding: 16px;
+            }
+            .topbar {
+                padding: 0 16px;
+            }
+            .perangkat-content {
+                padding: 16px;
+                max-height: 60vh;
+            }
+            .perangkat-tabs button {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+            #kalenderContainer {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px;
+            }
+        }
+        @media (max-width: 480px) {
+            #kalenderContainer {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-book-open"></i>
+            <div>
+                Modul NBS
+                <small>Perangkat</small>
             </div>
-        `;
-    }
-    container.innerHTML = html;
-}
+        </div>
+        <nav class="sidebar-menu">
+            <div class="menu-label">Navigasi</div>
+            <a href="index.html"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="admin.html"><i class="fas fa-user-shield"></i> Admin</a>
+            <a href="guru.html"><i class="fas fa-chalkboard-teacher"></i> Guru</a>
+            <a class="active" href="perangkat.html"><i class="fas fa-tools"></i> Perangkat</a>
+        </nav>
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#10b981;font-size:10px;"></i>
+            <span id="sidebarUser">Pengunjung</span>
+        </div>
+    </aside>
 
-function populateTahunAjaran() {
-    const select = document.getElementById('tahunAjaranSelect');
-    if (!select) return;
-    const start = 2025;
-    const end = 2035;
-    for (let y = start; y <= end; y++) {
-        const option = document.createElement('option');
-        option.value = `${y}/${y+1}`;
-        option.textContent = `${y}/${y+1}`;
-        select.appendChild(option);
-    }
-    // Default pilih tahun pertama
-    select.value = '2025/2026';
-}
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <h2 id="pageTitle">Perangkat Guru</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="user-badge">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="topbarUser">Guest</span>
+                </div>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+            </div>
+        </header>
 
-// Event listener untuk perubahan tahun
-function initKalender() {
-    populateTahunAjaran();
-    const select = document.getElementById('tahunAjaranSelect');
-    if (select) {
-        renderKalender(select.value);
-        select.addEventListener('change', function() {
-            renderKalender(this.value);
+        <!-- PAGE CONTENT -->
+        <div class="page-content">
+            <div class="perangkat-header">
+                <h1>Perangkat Guru <small>Kode Etik, Ikrar, Tata Tertib, Pembiasaan, dan Kalender Pendidikan</small></h1>
+            </div>
+
+            <!-- Tabs -->
+            <div class="perangkat-tabs">
+                <button class="active" data-tab="tab-kode-etik" onclick="switchTab('tab-kode-etik')">📜 Kode Etik</button>
+                <button data-tab="tab-ikrar" onclick="switchTab('tab-ikrar')">🤝 Ikrar Guru</button>
+                <button data-tab="tab-tata-tertib" onclick="switchTab('tab-tata-tertib')">📋 Tata Tertib</button>
+                <button data-tab="tab-pembiasaan" onclick="switchTab('tab-pembiasaan')">🌟 Pembiasaan</button>
+                <button data-tab="tab-kalender" onclick="switchTab('tab-kalender')">📅 Kalender</button>
+            </div>
+
+            <!-- KODE ETIK -->
+            <div class="tab-content active" id="tab-kode-etik">
+                <div class="perangkat-content">
+                    <h2>KODE ETIK GURU INDONESIA</h2>
+                    <p><strong>KATA PENGANTAR</strong></p>
+                    <p>Kode Etik Guru Indonesia adalah pedoman sikap, tingkah laku, dan perbuatan guru dalam melaksanakan tugas pengabdiannya sebagai pendidik. Kode etik ini wajib dipatuhi oleh setiap guru di Indonesia demi menjaga kehormatan, martabat, dan mutu profesi guru.</p>
+
+                    <div class="section-title">BAGIAN I: HUBUNGAN GURU DENGAN PESERTA DIDIK</div>
+                    <ul>
+                        <li>Guru berperilaku adil dan tidak diskriminatif terhadap semua peserta didik.</li>
+                        <li>Guru membimbing peserta didik untuk memahami, menghayati, dan mengamalkan hak dan kewajibannya.</li>
+                        <li>Guru menghormati hak peserta didik untuk mendapatkan informasi, ilmu pengetahuan, dan bimbingan secara optimal.</li>
+                        <li>Guru menciptakan suasana belajar yang aman, nyaman, kondusif, dan menyenangkan.</li>
+                        <li>Guru melindungi peserta didik dari segala bentuk kekerasan, pelecehan, dan tindakan asusila.</li>
+                        <li>Guru merahasiakan data pribadi peserta didik, kecuali demi kepentingan hukum dan pendidikan.</li>
+                    </ul>
+
+                    <div class="section-title">BAGIAN II: HUBUNGAN GURU DENGAN ORANG TUA/WALI MURID</div>
+                    <ul>
+                        <li>Guru membina hubungan kerja sama yang harmonis dan efektif dengan orang tua/wali murid.</li>
+                        <li>Guru memberikan informasi yang jujur, objektif, dan berkala mengenai perkembangan peserta didik kepada orang tua/wali murid.</li>
+                        <li>Guru menghargai masukan, saran, dan kritik yang membangun dari orang tua/wali murid demi kemajuan pendidikan.</li>
+                        <li>Guru menjaga kerahasiaan informasi keluarga peserta didik yang bersifat pribadi.</li>
+                    </ul>
+
+                    <div class="section-title">BAGIAN III: HUBUNGAN GURU DENGAN MASYARAKAT</div>
+                    <ul>
+                        <li>Guru beradaptasi dan membaur secara positif dengan lingkungan masyarakat tempat tinggal maupun tempat bertugas.</li>
+                        <li>Guru mengakomodasi kebudayaan, nilai sosial, dan norma yang berlaku di masyarakat setempat dalam proses pendidikan.</li>
+                        <li>Guru bekerja sama dengan masyarakat untuk memecahkan masalah pendidikan dan meningkatkan mutu sekolah.</li>
+                        <li>Guru menjadi teladan (role model) bagi masyarakat dalam bertindak dan bertutur kata.</li>
+                    </ul>
+
+                    <div class="section-title">BAGIAN IV: HUBUNGAN GURU DENGAN REKAN SEPROFESI</div>
+                    <ul>
+                        <li>Guru memelihara hubungan kesejawatan yang erat berdasarkan rasa saling menghormati dan menghargai.</li>
+                        <li>Guru saling berbagi ilmu pengetahuan, pengalaman, dan praktik baik demi peningkatan kompetensi bersama.</li>
+                        <li>Guru menyelesaikan perselisihan atau perbedaan pendapat sesama rekan sejawat secara kekeluargaan dan profesional.</li>
+                        <li>Guru tidak melakukan tindakan yang dapat menjatuhkan nama baik atau kehormatan rekan seprofesi di depan umum.</li>
+                    </ul>
+
+                    <div class="section-title">BAGIAN V: HUBUNGAN GURU DENGAN PROFESI DAN ORGANISASI PROFESI</div>
+                    <ul>
+                        <li>Guru menjaga nama baik, martabat, dan kehormatan profesi guru di dalam maupun di luar kedinasan.</li>
+                        <li>Guru terus mengembangkan kompetensi pedagogik, kepribadian, sosial, dan profesional secara mandiri maupun berkelanjutan.</li>
+                        <li>Guru menjadi anggota aktif organisasi profesi guru dan mematuhi AD/ART serta aturan organisasi tersebut.</li>
+                        <li>Guru memanfaatkan organisasi profesi sebagai wadah perjuangan, peningkatan mutu, dan perlindungan hukum profesi.</li>
+                    </ul>
+
+                    <div class="section-title">BAGIAN VI: HUBUNGAN GURU DENGAN SEKOLAH DAN PEMERINTAH</div>
+                    <ul>
+                        <li>Guru melaksanakan tugas dinas dengan penuh tanggung jawab, disiplin, jujur, dan berintegritas.</li>
+                        <li>Guru mematuhi segala kebijakan, peraturan, dan program kerja yang ditetapkan oleh sekolah serta pemerintah.</li>
+                        <li>Guru memberikan kontribusi nyata dalam upaya menyukseskan program pembangunan pendidikan nasional.</li>
+                        <li>Guru bersikap netral, profesional, dan tidak memanfaatkan fasilitas negara atau jabatan untuk kepentingan politik praktis.</li>
+                    </ul>
+
+                    <div class="section-title">BAGIAN VII: SANKSI DAN PELANGGARAN</div>
+                    <ul>
+                        <li>Setiap pelanggaran terhadap Kode Etik Guru Indonesia akan dikenakan sanksi moral, sanksi organisasi, atau administratif sesuai tingkat pelanggarannya.</li>
+                        <li>Pemberian sanksi dilakukan oleh Dewan Kehormatan Guru atau lembaga berwenang setelah melalui proses klarifikasi dan verifikasi yang adil.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- IKRAR -->
+            <div class="tab-content" id="tab-ikrar">
+                <div class="perangkat-content">
+                    <h2>IKRAR GURU INDONESIA</h2>
+                    <p><em>Kami Guru Indonesia adalah insan pendidik bangsa yang bertakwa kepada Tuhan Yang Maha Esa, berjanji:</em></p>
+                    <ol style="list-style-type: upper-roman; padding-left: 28px;">
+                        <li><strong>Kami Guru Indonesia</strong>, adalah setia dan taat kepada Pancasila, Undang-Undang Dasar 1945, dan Negara Kesatuan Republik Indonesia.</li>
+                        <li><strong>Kami Guru Indonesia</strong>, adalah pendidik bangsa yang profesional, yang menjunjung tinggi core nilai keilmuan, kebenaran, dan keterbukaan.</li>
+                        <li><strong>Kami Guru Indonesia</strong>, mengutamakan bimbingan dan pelayanan kepada peserta didik dalam pembentukan watak, kepribadian, serta peningkatan kecerdasan.</li>
+                        <li><strong>Kami Guru Indonesia</strong>, memelihara hubungan kesejawatan yang harmonis, serta bekerja sama untuk meningkatkan mutu dan martabat profesi.</li>
+                        <li><strong>Kami Guru Indonesia</strong>, senantiasa mengembangkan kompetensi diri untuk menghadapi tantangan zaman demi kemajuan pendidikan nasional.</li>
+                    </ol>
+                    <div class="signature">
+                        <p>Atas nama guru Indonesia</p>
+                        <p style="margin-top:20px;"><strong>Ttd.</strong></p>
+                        <p><strong id="ikrarNamaGuru">(Nama sesuai login guru)</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TATA TERTIB -->
+            <div class="tab-content" id="tab-tata-tertib">
+                <div class="perangkat-content">
+                    <h2>TATA TERTIB DAN DISIPLIN GURU</h2>
+
+                    <div class="section-title">BAB I: KETENTUAN UMUM, WAKTU KERJA, DAN KEHADIRAN</div>
+                    <ul>
+                        <li><strong>Jam Kerja Wajib:</strong> Memenuhi beban kerja wajib 37,5 jam per minggu (di luar jam istirahat) untuk melaksanakan perencanaan, pelaksanaan KBM, penilaian, serta pembimbingan murid.</li>
+                        <li><strong>Jam Kedatangan:</strong> Hadir di sekolah paling lambat 10-15 menit sebelum jam pelajaran pertama dimulai dan wajib melakukan presensi kehadiran elektronik/manual saat datang dan pulang.</li>
+                        <li><strong>Ketidakhadiran:</strong> Guru yang berhalangan hadir wajib memberikan informasi tertulis kepada Kepala Sekolah/Guru Piket disertai modul ajar/tugas mandiri terstruktur untuk murid.</li>
+                        <li><strong>Izin Sakit:</strong> Ketidakhadiran karena sakit lebih dari 3 (tiga) hari wajib menyertakan surat keterangan resmi dari dokter.</li>
+                    </ul>
+
+                    <div class="section-title">BAB II: KINERJA DAN PROSES BELAJAR MENGAJAR (KBM)</div>
+                    <ul>
+                        <li><strong>Administrasi Pembelajaran:</strong> Menyusun dan menyiapkan perangkat pembelajaran (Capaian Pembelajaran, Alur Tujuan Pembelajaran, dan Modul Ajar/RPP) berbasis kurikulum nasional yang berlaku sebelum masuk kelas.</li>
+                        <li><strong>Kondusivitas Kelas:</strong> Menjaga ketertiban, keamanan, kebersihan, serta menciptakan lingkungan belajar yang interaktif dan berpusat pada murid (student-centered).</li>
+                        <li><strong>Disiplin Mengajar:</strong> Tidak meninggalkan kelas selama KBM berlangsung serta dilarang memulangkan murid sebelum waktu yang ditentukan tanpa izin Kepala Sekolah.</li>
+                        <li><strong>Pemanfaatan Teknologi:</strong> Menggunakan gawai/laptop di kelas khusus untuk mendukung kegiatan pembelajaran digital dan administrasi kurikulum.</li>
+                        <li><strong>Evaluasi Berkala:</strong> Melaksanakan penilaian hasil belajar secara objektif, berkala, dan menginput nilai perkembangan murid secara tepat waktu pada sistem penilaian sekolah.</li>
+                    </ul>
+
+                    <div class="section-title">BAB III: ETIKA, PERILAKU, DAN SERAGAM DINAS</div>
+                    <ul>
+                        <li><strong>Etika Berpakaian:</strong> Mengenakan pakaian dinas harian (PDH), batik, atribut lengkap (tanda pengenal/pin), serta pakaian rapi dan sopan sesuai dengan regulasi hari kerja yang ditetapkan.</li>
+                        <li><strong>Keteladanan Sosial:</strong> Menampilkan sikap ramah, santun, menjaga tutur kata, dan bertindak sebagai role model yang baik di lingkungan sekolah maupun masyarakat.</li>
+                        <li><strong>Kawasan Tanpa Rokok (KTR):</strong> Dilarang keras merokok di dalam ruang kelas maupun di seluruh area lingkungan satuan pendidikan.</li>
+                        <li><strong>Anti-Kekerasan (PPKSP):</strong> Melindungi murid dari segala bentuk kekerasan fisik, kekerasan psikis, perundungan (bullying), maupun kekerasan seksual di lingkungan sekolah.</li>
+                    </ul>
+
+                    <div class="section-title">BAB IV: TUGAS TAMBAHAN DAN PENGEMBANGAN DIRI</div>
+                    <ul>
+                        <li><strong>Tugas Tambahan:</strong> Melaksanakan tugas tambahan yang diamanatkan oleh sekolah (seperti Guru Wali, Pembina Ekskul, atau Panitia Kegiatan) dengan penuh tanggung jawab demi pemenuhan ekuivalensi jam kerja.</li>
+                        <li><strong>Pengembangan Kompetensi:</strong> Mengikuti kegiatan peningkatan mutu (Kombel/Komunitas Belajar, Pelatihan Mandiri, seminar, atau lokakarya) untuk memperbarui kemampuan pedagogik dan profesional.</li>
+                    </ul>
+
+                    <div class="section-title">BAB V: SANKSI DAN PELANGGARAN</div>
+                    <ul>
+                        <li><strong>Sanksi Ringan:</strong> Teguran lisan bagi guru yang terlambat atau melanggar ketentuan administrasi tanpa alasan sah.</li>
+                        <li><strong>Sanksi Sedang:</strong> Teguran tertulis (Surat Peringatan) dan pemotongan hak tunjangan/insentif sekolah jika melakukan pelanggaran kedisiplinan berulang.</li>
+                        <li><strong>Sanksi Berat:</strong> Peninjauan kembali status kepegawaian atau pelaporan ke dinas terkait jika terbukti melakukan pelanggaran hukum, tindakan asusila, atau kekerasan terhadap murid.</li>
+                    </ul>
+
+                    <div class="signature">
+                        <p>Siap melaksanakan tata tertib,</p>
+                        <p style="margin-top:20px;"><strong id="ttdNamaGuru">(Nama guru sesuai login guru)</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PEMBIASAAN -->
+            <div class="tab-content" id="tab-pembiasaan">
+                <div class="perangkat-content">
+                    <h2>PEMBIASAAN GURU</h2>
+                    <p><em>(Pedoman Keteladanan Pendidik Berbasis 7 Kebiasaan Anak Indonesia Hebat)</em></p>
+
+                    <div class="section-title">I. KETENTUAN UTAMA</div>
+                    <p>Guru adalah teladan hidup (living role model) yang wajib mempraktikkan gerakan 7 Kebiasaan Anak Indonesia Hebat dalam perilaku sehari-hari. Pembiasaan ini menjadi cerminan profesionalisme dan keluhuran budi pekerti guru di lingkungan satuan pendidikan.</p>
+
+                    <div class="section-title">II. RUANG LINGKUP 7 PEMBIASAAN GURU</div>
+
+                    <h4>1. Pembiasaan Bangun Pagi</h4>
+                    <ul>
+                        <li>Membiasakan hadir di sekolah 15 menit sebelum bel masuk untuk menyambut murid di gerbang sekolah melalui gerakan 5S (Senyum, Sapa, Salam, Sopan, Santun).</li>
+                        <li>Mengawali hari dengan penampilan rapi, bersih, dan energi positif untuk menularkan semangat optimisme kepada seluruh warga sekolah.</li>
+                    </ul>
+
+                    <h4>2. Pembiasaan Beribadah</h4>
+                    <ul>
+                        <li>Hadir tepat waktu dan mendampingi murid dalam setiap kegiatan ibadah bersama di sekolah (seperti doa pagi, tadarus, kebaktian, atau salat berjamaah).</li>
+                        <li>Mengintegrasikan nilai-nilai keimanan, ketakwaan, dan rasa syukur dalam setiap pembukaan serta penutupan sesi pembelajaran di kelas.</li>
+                    </ul>
+
+                    <h4>3. Pembiasaan Berolahraga</h4>
+                    <ul>
+                        <li>Aktif mengikuti dan mendampingi murid dalam kegiatan senam pagi atau aktivitas kebugaran jasmani yang dijadwalkan oleh sekolah.</li>
+                        <li>Menerapkan peregangan fisik ringan (ice breaking) di sela-sela jam pelajaran untuk menjaga fokus serta kebugaran tubuh bersama murid.</li>
+                    </ul>
+
+                    <h4>4. Pembiasaan Makan Sehat</h4>
+                    <ul>
+                        <li>Menjadi teladan dengan mengonsumsi makanan dan minuman yang sehat, higienis, serta bergizi seimbang selama berada di lingkungan sekolah.</li>
+                        <li>Mendampingi murid pada jam istirahat untuk mengedukasi adab makan yang baik serta pentingnya menghindari makanan yang mengandung zat berbahaya.</li>
+                        <li>Menjaga komitmen penuh untuk tidak merokok di seluruh area sekolah demi mendukung terwujudnya Kawasan Tanpa Rokok (KTR).</li>
+                    </ul>
+
+                    <h4>5. Pembiasaan Gemar Belajar</h4>
+                    <ul>
+                        <li>Membiasakan diri membaca buku, jurnal ilmiah, atau artikel edukatif minimal 15 menit setiap hari sebagai bagian dari budaya literasi.</li>
+                        <li>Aktif memperbarui perangkat ajar, berdiskusi di Komunitas Belajar (Kombel), serta mempelajari teknologi pendidikan terbaru demi peningkatan mutu pembelajaran.</li>
+                    </ul>
+
+                    <h4>6. Pembiasaan Bermasyarakat</h4>
+                    <ul>
+                        <li>Membiasakan tutur kata yang santun, sikap ramah, empati, dan menghindari perilaku bergosip dengan sesama kolega, orang tua, maupun masyarakat.</li>
+                        <li>Terlibat langsung dalam aksi gotong royong menjaga kebersihan, keindahan, dan kelestarian lingkungan sekolah bersama murid.</li>
+                        <li>Menunjukkan sikap tanggap dan protektif untuk mencegah segala bentuk perundungan (bullying) serta kekerasan di lingkungan sekolah.</li>
+                    </ul>
+
+                    <h4>7. Pembiasaan Tidur Cepat</h4>
+                    <ul>
+                        <li>Mengelola waktu kerja di sekolah secara efektif dan efisien agar administrasi mengajar tidak menumpuk dan tidak perlu dibawa pulang ke rumah.</li>
+                        <li>Mengatur volume tugas rumah (PR) murid secara bijak agar guru dan murid memiliki waktu istirahat serta tidur malam yang cukup demi menjaga kesehatan esok hari.</li>
+                    </ul>
+
+                    <div class="section-title">III. MONITORING DAN REFLEKSI</div>
+                    <ul>
+                        <li>Guru melakukan refleksi mandiri secara berkala mengenai konsistensi penerapan 7 pembiasaan ini dalam tugas keseharian.</li>
+                        <li>Kepala Sekolah melakukan supervisi dan pendampingan kultural untuk memastikan iklim pembiasaan positif ini berjalan secara berkelanjutan.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ===== TAB KALENDER (LENGKAP) ===== -->
+            <div class="tab-content" id="tab-kalender">
+                <div class="perangkat-content" style="padding:20px 24px;max-height:none;overflow-y:visible;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+                        <h2 style="margin:0;font-size:20px;font-weight:700;color:var(--primary);">
+                            <i class="fas fa-calendar-alt"></i> Kalender Pendidikan
+                        </h2>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <label style="font-weight:600;font-size:14px;color:var(--text-light);">Tahun Ajaran:</label>
+                            <select id="tahunAjaranSelect" style="padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);font-size:14px;background:#fff;outline:none;">
+                                <!-- diisi oleh JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div id="kalenderContainer" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px;">
+                        <!-- bulan akan dirender oleh JS -->
+                    </div>
+                    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:13px;color:var(--text-light);display:flex;gap:20px;flex-wrap:wrap;">
+                        <span><span style="display:inline-block;width:14px;height:14px;background:#fee2e2;border-radius:4px;margin-right:6px;"></span> Hari Jum'at (merah)</span>
+                        <span><span style="display:inline-block;width:14px;height:14px;background:var(--bg);border-radius:4px;border:1px solid var(--border);margin-right:6px;"></span> Hari biasa</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A",
+            authDomain: "modul-fae5a.firebaseapp.com",
+            projectId: "modul-fae5a",
+            storageBucket: "modul-fae5a.firebasestorage.app",
+            messagingSenderId: "837647902643",
+            appId: "1:837647902643:web:adfa809d9f8adbeaeacdc6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ===== TOAST =====
+        function toast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = 'toast toast-' + type;
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3000);
+        }
+
+        // ===== SIDEBAR =====
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // ===== LOGOUT =====
+        function logout() {
+            localStorage.removeItem('nbs_user');
+            localStorage.removeItem('nbs_guru');
+            window.location.href = 'index.html';
+        }
+
+        // ===== SWITCH TAB =====
+        function switchTab(tabId) {
+            // Nonaktifkan semua tab
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.perangkat-tabs button').forEach(el => el.classList.remove('active'));
+            // Aktifkan tab yang dipilih
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.perangkat-tabs button[data-tab="${tabId}"]`).classList.add('active');
+        }
+
+        // ===== UPDATE NAMA GURU =====
+        function updateGuruName() {
+            const user = localStorage.getItem('nbs_guru') || localStorage.getItem('nbs_user');
+            if (user) {
+                try {
+                    const u = JSON.parse(user);
+                    const name = u.name || 'Pengunjung';
+                    document.getElementById('sidebarUser').textContent = name;
+                    document.getElementById('topbarUser').textContent = name;
+                    const ikrarName = document.getElementById('ikrarNamaGuru');
+                    const ttdName = document.getElementById('ttdNamaGuru');
+                    if (ikrarName) ikrarName.textContent = name;
+                    if (ttdName) ttdName.textContent = name;
+                } catch (e) {}
+            }
+        }
+
+        // ================================================================
+        // ===== KALENDER =====
+        // ================================================================
+        function renderKalender(tahunAjaran) {
+            const container = document.getElementById('kalenderContainer');
+            if (!container) return;
+
+            // Parse tahun ajaran "2025/2026" -> tahun mulai = 2025
+            const startYear = parseInt(tahunAjaran.split('/')[0]);
+            const endYear = startYear + 1;
+
+            // Nama bulan (Juli s.d Juni)
+            const namaBulan = [
+                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'
+            ];
+            // Bulan dalam angka (0-based) untuk setiap bulan di tahun ajaran
+            // Juli = 6, Agustus = 7, ..., Desember = 11, Januari = 0, ..., Juni = 5
+            const bulanIndex = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
+            // Tahun untuk setiap bulan (6 bulan di startYear, 6 bulan di endYear)
+            const tahunBulan = bulanIndex.map((b, i) => (i < 6 ? startYear : endYear));
+
+            // Nama hari (dimulai Sabtu)
+            const namaHari = ['Sabtu', 'Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at'];
+
+            let html = '';
+            for (let i = 0; i < 12; i++) {
+                const bulan = bulanIndex[i];
+                const tahun = tahunBulan[i];
+                const nama = namaBulan[i];
+
+                // Jumlah hari dalam bulan
+                const daysInMonth = new Date(tahun, bulan + 1, 0).getDate();
+                // Hari pertama bulan (0=Sabtu, 1=Ahad, ... 6=Jum'at)
+                const firstDay = new Date(tahun, bulan, 1).getDay();
+
+                // Buat grid hari
+                let gridHtml = '';
+                // Nama hari header
+                for (let h = 0; h < 7; h++) {
+                    gridHtml += `<div class="hari-nama">${namaHari[h]}</div>`;
+                }
+                // Tanggal kosong sebelum hari pertama
+                for (let k = 0; k < firstDay; k++) {
+                    gridHtml += `<div class="tanggal luar-bulan"></div>`;
+                }
+                // Tanggal
+                for (let d = 1; d <= daysInMonth; d++) {
+                    // Hari dalam minggu untuk tanggal d (0=Sabtu, ..., 6=Jum'at)
+                    const dayOfWeek = (firstDay + d - 1) % 7;
+                    const isJumat = (dayOfWeek === 6); // Jum'at = index 6
+                    const kelas = isJumat ? 'tanggal jumat' : 'tanggal';
+                    gridHtml += `<div class="${kelas}">${d}</div>`;
+                }
+                // Tambahkan sel kosong di akhir agar grid rapi
+                const totalCells = firstDay + daysInMonth;
+                const remaining = (7 - (totalCells % 7)) % 7;
+                for (let r = 0; r < remaining; r++) {
+                    gridHtml += `<div class="tanggal luar-bulan"></div>`;
+                }
+
+                html += `
+                    <div class="kalender-bulan">
+                        <div class="bulan-header">${nama} ${tahun}</div>
+                        <div class="hari-grid">${gridHtml}</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function populateTahunAjaran() {
+            const select = document.getElementById('tahunAjaranSelect');
+            if (!select) return;
+            const start = 2025;
+            const end = 2035;
+            for (let y = start; y <= end; y++) {
+                const option = document.createElement('option');
+                option.value = `${y}/${y+1}`;
+                option.textContent = `${y}/${y+1}`;
+                select.appendChild(option);
+            }
+            // Default pilih tahun pertama
+            select.value = '2025/2026';
+        }
+
+        function initKalender() {
+            populateTahunAjaran();
+            const select = document.getElementById('tahunAjaranSelect');
+            if (select) {
+                renderKalender(select.value);
+                select.addEventListener('change', function() {
+                    renderKalender(this.value);
+                });
+            }
+        }
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', function() {
+            updateGuruName();
+
+            // Ambil parameter tab dari URL (jika ada)
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab');
+            if (tab) {
+                const targetTab = document.getElementById(tab);
+                if (targetTab) {
+                    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                    document.querySelectorAll('.perangkat-tabs button').forEach(el => el.classList.remove('active'));
+                    targetTab.classList.add('active');
+                    const btn = document.querySelector(`.perangkat-tabs button[data-tab="${tab}"]`);
+                    if (btn) btn.classList.add('active');
+                }
+            }
+
+            // Inisialisasi kalender
+            initKalender();
+
+            // Sidebar close on mobile
+            document.addEventListener('click', function(e) {
+                const sidebar = document.getElementById('sidebar');
+                if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                    if (!sidebar.contains(e.target) && !e.target.closest('.hamburger')) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+
+            // Override switchTab agar update URL
+            const originalSwitchTab = window.switchTab;
+            window.switchTab = function(tabId) {
+                originalSwitchTab(tabId);
+                const url = new URL(window.location);
+                url.searchParams.set('tab', tabId);
+                window.history.replaceState({}, '', url);
+            };
         });
-    }
-}
 
-// Panggil initKalender saat DOM siap (jika belum diinisialisasi)
-document.addEventListener('DOMContentLoaded', function() {
-    // ... kode inisialisasi lain ...
-    initKalender();
-});
+        // Expose global
+        window.toggleSidebar = toggleSidebar;
+        window.logout = logout;
+        window.switchTab = switchTab;
+        window.toast = toast;
+        window.renderKalender = renderKalender;
+        window.initKalender = initKalender;
+    </script>
+
+</body>
+</html>
