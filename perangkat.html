@@ -19,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
+        /* ===== GAYA UTAMA ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a;
@@ -360,7 +361,6 @@
             color: var(--text-light);
             border-bottom: 1px solid var(--border);
         }
-        /* Hari Jum'at (kolom pertama) diberi warna merah */
         .kalender-bulan .hari-grid .hari-nama:first-child {
             color: #dc2626;
             font-weight: 700;
@@ -372,6 +372,8 @@
             font-weight: 500;
             border-bottom: 1px solid #f1f5f9;
             transition: 0.1s;
+            cursor: default;
+            border-radius: 4px;
         }
         .kalender-bulan .hari-grid .tanggal.jumat {
             color: #dc2626;
@@ -384,6 +386,93 @@
         .kalender-bulan .hari-grid .tanggal:hover {
             background: var(--primary-bg);
         }
+        /* Warna event dari admin */
+        .tanggal.event-libur-nasional { background: #dc2626 !important; color: #fff !important; }
+        .tanggal.event-hari-penting { background: #fbbf24 !important; color: #000 !important; }
+        .tanggal.event-jadwal-penting { background: #3b82f6 !important; color: #fff !important; }
+        .tanggal.event-kegiatan-sekolah { background: #22c55e !important; color: #000 !important; }
+        .tanggal.event-libur-pondok { background: #14b8a6 !important; color: #000 !important; }
+        .tanggal.event-sumatif { background: #f97316 !important; color: #000 !important; }
+        .tanggal.event-libur-bulanan { background: #ec4899 !important; color: #fff !important; }
+        .tanggal.multi-event { border: 2px solid var(--primary); }
+
+        .legend-events {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 20px;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        .legend-events .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-events .legend-item .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        /* ===== MODAL DETAIL EVENT (read-only) ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: var(--radius);
+            max-width: 500px;
+            width: 100%;
+            padding: 32px 36px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+            animation: modalIn 0.25s ease;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        @keyframes modalIn {
+            from { opacity:0; transform:scale(0.96) translateY(20px); }
+            to { opacity:1; transform:scale(1) translateY(0); }
+        }
+        .modal-box h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+        .modal-box .modal-sub { color: var(--text-light); font-size: 14px; margin-bottom: 20px; }
+        .modal-box .event-detail-item {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-box .event-detail-item:last-child { border-bottom: none; }
+        .modal-box .event-detail-item .label { font-weight: 600; color: var(--text-light); }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .modal-box .modal-actions button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-box .modal-actions .btn-cancel {
+            background: var(--bg);
+            color: var(--text);
+        }
+        .modal-box .modal-actions .btn-cancel:hover { background: var(--border); }
 
         .toast-container {
             position: fixed;
@@ -413,41 +502,18 @@
         }
 
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .main {
-                margin-left: 0;
-            }
-            .topbar-left .hamburger {
-                display: block;
-            }
-            .page-content {
-                padding: 16px;
-            }
-            .topbar {
-                padding: 0 16px;
-            }
-            .perangkat-content {
-                padding: 16px;
-                max-height: 60vh;
-            }
-            .perangkat-tabs button {
-                padding: 8px 14px;
-                font-size: 13px;
-            }
-            #kalenderContainer {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 12px;
-            }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; }
+            .topbar-left .hamburger { display: block; }
+            .page-content { padding: 16px; }
+            .topbar { padding: 0 16px; }
+            .perangkat-content { padding: 16px; max-height: 60vh; }
+            .perangkat-tabs button { padding: 8px 14px; font-size: 13px; }
+            #kalenderContainer { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
         }
         @media (max-width: 480px) {
-            #kalenderContainer {
-                grid-template-columns: 1fr !important;
-            }
+            #kalenderContainer { grid-template-columns: 1fr !important; }
         }
     </style>
 </head>
@@ -705,7 +771,7 @@
                 </div>
             </div>
 
-            <!-- ===== TAB KALENDER (LENGKAP - MULAI JUM'AT) ===== -->
+            <!-- ===== TAB KALENDER (TERHUBUNG DENGAN EVENT ADMIN) ===== -->
             <div class="tab-content" id="tab-kalender">
                 <div class="perangkat-content" style="padding:20px 24px;max-height:none;overflow-y:visible;">
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
@@ -725,10 +791,25 @@
                     <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:13px;color:var(--text-light);display:flex;gap:20px;flex-wrap:wrap;">
                         <span><span style="display:inline-block;width:14px;height:14px;background:#fee2e2;border-radius:4px;margin-right:6px;"></span> Hari Jum'at (merah)</span>
                         <span><span style="display:inline-block;width:14px;height:14px;background:var(--bg);border-radius:4px;border:1px solid var(--border);margin-right:6px;"></span> Hari biasa</span>
+                        <span style="margin-left:auto;font-size:12px;color:var(--text-light);"><i class="fas fa-info-circle"></i> Klik tanggal untuk detail event</span>
                     </div>
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL EVENT (read-only) -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-box">
+            <h2 id="detailTitle">Detail Event</h2>
+            <p class="modal-sub" id="detailSub">Informasi event pada tanggal yang dipilih.</p>
+            <div id="detailContent">
+                <!-- diisi oleh JS -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeDetailModal()">Tutup</button>
+            </div>
         </div>
     </div>
 
@@ -746,6 +827,10 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        // ===== STATE =====
+        let allEvents = [];
+        let currentYear = '2025/2026';
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -795,11 +880,43 @@
         }
 
         // ================================================================
-        // ===== KALENDER (MULAI HARI JUM'AT) =====
+        // ===== LOAD EVENTS FROM FIRESTORE =====
         // ================================================================
+        async function loadEvents() {
+            try {
+                const snap = await db.collection('calendar_events').get();
+                allEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderKalender(currentYear);
+            } catch (e) {
+                console.error('Gagal load events:', e);
+                toast('Gagal memuat event kalender.', 'error');
+            }
+        }
+
+        // ================================================================
+        // ===== KALENDER =====
+        // ================================================================
+        function getCategoryColor(category) {
+            const map = {
+                'libur-nasional': '#dc2626',
+                'hari-penting': '#fbbf24',
+                'jadwal-penting': '#3b82f6',
+                'kegiatan-sekolah': '#22c55e',
+                'libur-pondok': '#14b8a6',
+                'sumatif': '#f97316',
+                'libur-bulanan': '#ec4899'
+            };
+            return map[category] || '#cbd5e1';
+        }
+
+        function getCategoryClass(category) {
+            return 'event-' + category;
+        }
+
         function renderKalender(tahunAjaran) {
             const container = document.getElementById('kalenderContainer');
             if (!container) return;
+            currentYear = tahunAjaran;
 
             const startYear = parseInt(tahunAjaran.split('/')[0]);
             const endYear = startYear + 1;
@@ -809,7 +926,6 @@
             const bulanIndex = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
             const tahunBulan = bulanIndex.map((b, i) => (i < 6 ? startYear : endYear));
 
-            // URUTAN HARI DIMULAI DARI JUM'AT
             const namaHari = ['Jum\'at', 'Sabtu', 'Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis'];
 
             let html = '';
@@ -819,30 +935,49 @@
                 const nama = namaBulan[i];
 
                 const daysInMonth = new Date(tahun, bulan + 1, 0).getDate();
-                // Hari pertama bulan (0=Minggu, 1=Senin, ..., 6=Sabtu)
                 const firstDayOfWeek = new Date(tahun, bulan, 1).getDay();
-                // Mapping agar Jum'at = 0, Sabtu=1, Ahad=2, Senin=3, Selasa=4, Rabu=5, Kamis=6
-                const dayMap = [5, 6, 0, 1, 2, 3, 4]; // Minggu->5, Senin->6, Selasa->0, Rabu->1, Kamis->2, Jumat->3, Sabtu->4
+                const dayMap = [5, 6, 0, 1, 2, 3, 4];
                 const firstDay = dayMap[firstDayOfWeek];
 
                 let gridHtml = '';
-                // Header hari
                 for (let h = 0; h < 7; h++) {
-                    const isJumat = (h === 0);
-                    gridHtml += `<div class="hari-nama${isJumat ? ' hari-jumat' : ''}">${namaHari[h]}</div>`;
+                    gridHtml += `<div class="hari-nama">${namaHari[h]}</div>`;
                 }
-                // Sel kosong sebelum hari pertama
                 for (let k = 0; k < firstDay; k++) {
                     gridHtml += `<div class="tanggal luar-bulan"></div>`;
                 }
-                // Tanggal
                 for (let d = 1; d <= daysInMonth; d++) {
+                    const dateObj = new Date(tahun, bulan, d);
+                    const dateStr = dateObj.toISOString().split('T')[0];
                     const dayOfWeek = (firstDay + d - 1) % 7;
-                    const isJumat = (dayOfWeek === 0); // Jum'at = indeks 0
-                    const kelas = isJumat ? 'tanggal jumat' : 'tanggal';
-                    gridHtml += `<div class="${kelas}">${d}</div>`;
+                    const isJumat = (dayOfWeek === 0);
+                    let classNames = 'tanggal';
+                    if (isJumat) classNames += ' jumat';
+
+                    // Cek event
+                    const eventsOnDate = allEvents.filter(e => {
+                        const start = e.startDate;
+                        const end = e.endDate || start;
+                        return dateStr >= start && dateStr <= end;
+                    });
+                    if (eventsOnDate.length > 0) {
+                        const category = eventsOnDate[0].category;
+                        classNames += ' ' + getCategoryClass(category);
+                        if (eventsOnDate.length > 1) classNames += ' multi-event';
+                        // tambahkan atribut data untuk detail
+                        gridHtml += `
+                            <div class="${classNames}" data-date="${dateStr}" onclick="showEventDetail('${dateStr}')">
+                                ${d}
+                            </div>
+                        `;
+                    } else {
+                        gridHtml += `
+                            <div class="${classNames}">
+                                ${d}
+                            </div>
+                        `;
+                    }
                 }
-                // Sel kosong akhir
                 const totalCells = firstDay + daysInMonth;
                 const remaining = (7 - (totalCells % 7)) % 7;
                 for (let r = 0; r < remaining; r++) {
@@ -859,6 +994,56 @@
             container.innerHTML = html;
         }
 
+        // ================================================================
+        // ===== DETAIL EVENT MODAL =====
+        // ================================================================
+        function showEventDetail(dateStr) {
+            const events = allEvents.filter(e => {
+                const start = e.startDate;
+                const end = e.endDate || start;
+                return dateStr >= start && dateStr <= end;
+            });
+            if (events.length === 0) {
+                toast('Tidak ada event pada tanggal ini.', 'info');
+                return;
+            }
+
+            const d = new Date(dateStr + 'T00:00:00');
+            const title = `Event pada ${d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+            document.getElementById('detailTitle').textContent = title;
+            document.getElementById('detailSub').textContent = events.length + ' event ditemukan.';
+
+            let contentHtml = '';
+            events.forEach(ev => {
+                const categoryLabel = ev.category ? ev.category.replace(/-/g, ' ').toUpperCase() : 'Tidak ada kategori';
+                const color = getCategoryColor(ev.category);
+                const dateRange = ev.startDate + (ev.endDate && ev.endDate !== ev.startDate ? ' – ' + ev.endDate : '');
+                contentHtml += `
+                    <div style="padding:10px 0;border-bottom:1px solid var(--border);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+                            <strong style="font-size:16px;">${ev.name || 'Tanpa nama'}</strong>
+                            <span style="display:inline-block;padding:2px 10px;border-radius:30px;font-size:11px;font-weight:600;background:${color};color:${['#dc2626','#3b82f6','#ec4899'].includes(color) ? '#fff' : '#000'};">
+                                ${categoryLabel}
+                            </span>
+                        </div>
+                        <div style="font-size:13px;color:var(--text-light);margin-top:4px;">
+                            <i class="far fa-calendar-alt"></i> ${dateRange}
+                        </div>
+                        ${ev.description ? `<div style="margin-top:4px;font-size:14px;color:var(--text);">${ev.description}</div>` : ''}
+                    </div>
+                `;
+            });
+            document.getElementById('detailContent').innerHTML = contentHtml;
+            document.getElementById('detailModal').classList.add('open');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('open');
+        }
+
+        // ================================================================
+        // ===== POPULATE TAHUN AJARAN =====
+        // ================================================================
         function populateTahunAjaran() {
             const select = document.getElementById('tahunAjaranSelect');
             if (!select) return;
@@ -873,22 +1058,12 @@
             select.value = '2025/2026';
         }
 
-        function initKalender() {
-            populateTahunAjaran();
-            const select = document.getElementById('tahunAjaranSelect');
-            if (select) {
-                renderKalender(select.value);
-                select.addEventListener('change', function() {
-                    renderKalender(this.value);
-                });
-            }
-        }
-
+        // ================================================================
         // ===== INIT =====
+        // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             updateGuruName();
 
-            // Ambil parameter tab dari URL (jika ada)
             const params = new URLSearchParams(window.location.search);
             const tab = params.get('tab');
             if (tab) {
@@ -902,8 +1077,17 @@
                 }
             }
 
-            // Inisialisasi kalender
-            initKalender();
+            populateTahunAjaran();
+            const select = document.getElementById('tahunAjaranSelect');
+            if (select) {
+                currentYear = select.value;
+                select.addEventListener('change', function() {
+                    renderKalender(this.value);
+                });
+            }
+
+            // Load events dari Firestore
+            loadEvents();
 
             // Sidebar close on mobile
             document.addEventListener('click', function(e) {
@@ -915,7 +1099,7 @@
                 }
             });
 
-            // Override switchTab agar update URL
+            // Override switchTab untuk update URL
             const originalSwitchTab = window.switchTab;
             window.switchTab = function(tabId) {
                 originalSwitchTab(tabId);
@@ -931,7 +1115,9 @@
         window.switchTab = switchTab;
         window.toast = toast;
         window.renderKalender = renderKalender;
-        window.initKalender = initKalender;
+        window.loadEvents = loadEvents;
+        window.showEventDetail = showEventDetail;
+        window.closeDetailModal = closeDetailModal;
     </script>
 
 </body>
