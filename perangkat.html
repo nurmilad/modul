@@ -360,6 +360,11 @@
             color: var(--text-light);
             border-bottom: 1px solid var(--border);
         }
+        /* Hari Jum'at (kolom pertama) diberi warna merah */
+        .kalender-bulan .hari-grid .hari-nama:first-child {
+            color: #dc2626;
+            font-weight: 700;
+        }
         .kalender-bulan .hari-grid .tanggal {
             padding: 6px 2px;
             text-align: center;
@@ -700,7 +705,7 @@
                 </div>
             </div>
 
-            <!-- ===== TAB KALENDER (LENGKAP) ===== -->
+            <!-- ===== TAB KALENDER (LENGKAP - MULAI JUM'AT) ===== -->
             <div class="tab-content" id="tab-kalender">
                 <div class="perangkat-content" style="padding:20px 24px;max-height:none;overflow-y:visible;">
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
@@ -766,10 +771,8 @@
 
         // ===== SWITCH TAB =====
         function switchTab(tabId) {
-            // Nonaktifkan semua tab
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.perangkat-tabs button').forEach(el => el.classList.remove('active'));
-            // Aktifkan tab yang dipilih
             document.getElementById(tabId).classList.add('active');
             document.querySelector(`.perangkat-tabs button[data-tab="${tabId}"]`).classList.add('active');
         }
@@ -792,29 +795,22 @@
         }
 
         // ================================================================
-        // ===== KALENDER =====
+        // ===== KALENDER (MULAI HARI JUM'AT) =====
         // ================================================================
         function renderKalender(tahunAjaran) {
             const container = document.getElementById('kalenderContainer');
             if (!container) return;
 
-            // Parse tahun ajaran "2025/2026" -> tahun mulai = 2025
             const startYear = parseInt(tahunAjaran.split('/')[0]);
             const endYear = startYear + 1;
 
-            // Nama bulan (Juli s.d Juni)
-            const namaBulan = [
-                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'
-            ];
-            // Bulan dalam angka (0-based) untuk setiap bulan di tahun ajaran
-            // Juli = 6, Agustus = 7, ..., Desember = 11, Januari = 0, ..., Juni = 5
+            const namaBulan = ['Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+                               'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'];
             const bulanIndex = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
-            // Tahun untuk setiap bulan (6 bulan di startYear, 6 bulan di endYear)
             const tahunBulan = bulanIndex.map((b, i) => (i < 6 ? startYear : endYear));
 
-            // Nama hari (dimulai Sabtu)
-            const namaHari = ['Sabtu', 'Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at'];
+            // URUTAN HARI DIMULAI DARI JUM'AT
+            const namaHari = ['Jum\'at', 'Sabtu', 'Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis'];
 
             let html = '';
             for (let i = 0; i < 12; i++) {
@@ -822,30 +818,31 @@
                 const tahun = tahunBulan[i];
                 const nama = namaBulan[i];
 
-                // Jumlah hari dalam bulan
                 const daysInMonth = new Date(tahun, bulan + 1, 0).getDate();
-                // Hari pertama bulan (0=Sabtu, 1=Ahad, ... 6=Jum'at)
-                const firstDay = new Date(tahun, bulan, 1).getDay();
+                // Hari pertama bulan (0=Minggu, 1=Senin, ..., 6=Sabtu)
+                const firstDayOfWeek = new Date(tahun, bulan, 1).getDay();
+                // Mapping agar Jum'at = 0, Sabtu=1, Ahad=2, Senin=3, Selasa=4, Rabu=5, Kamis=6
+                const dayMap = [5, 6, 0, 1, 2, 3, 4]; // Minggu->5, Senin->6, Selasa->0, Rabu->1, Kamis->2, Jumat->3, Sabtu->4
+                const firstDay = dayMap[firstDayOfWeek];
 
-                // Buat grid hari
                 let gridHtml = '';
-                // Nama hari header
+                // Header hari
                 for (let h = 0; h < 7; h++) {
-                    gridHtml += `<div class="hari-nama">${namaHari[h]}</div>`;
+                    const isJumat = (h === 0);
+                    gridHtml += `<div class="hari-nama${isJumat ? ' hari-jumat' : ''}">${namaHari[h]}</div>`;
                 }
-                // Tanggal kosong sebelum hari pertama
+                // Sel kosong sebelum hari pertama
                 for (let k = 0; k < firstDay; k++) {
                     gridHtml += `<div class="tanggal luar-bulan"></div>`;
                 }
                 // Tanggal
                 for (let d = 1; d <= daysInMonth; d++) {
-                    // Hari dalam minggu untuk tanggal d (0=Sabtu, ..., 6=Jum'at)
                     const dayOfWeek = (firstDay + d - 1) % 7;
-                    const isJumat = (dayOfWeek === 6); // Jum'at = index 6
+                    const isJumat = (dayOfWeek === 0); // Jum'at = indeks 0
                     const kelas = isJumat ? 'tanggal jumat' : 'tanggal';
                     gridHtml += `<div class="${kelas}">${d}</div>`;
                 }
-                // Tambahkan sel kosong di akhir agar grid rapi
+                // Sel kosong akhir
                 const totalCells = firstDay + daysInMonth;
                 const remaining = (7 - (totalCells % 7)) % 7;
                 for (let r = 0; r < remaining; r++) {
@@ -873,7 +870,6 @@
                 option.textContent = `${y}/${y+1}`;
                 select.appendChild(option);
             }
-            // Default pilih tahun pertama
             select.value = '2025/2026';
         }
 
