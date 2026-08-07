@@ -398,7 +398,7 @@
             border: 1px solid rgba(0,0,0,0.08);
         }
 
-        /* ===== MODAL EVENT (baru) ===== */
+        /* ===== MODAL EVENT ===== */
         .modal-event .modal-box { max-width: 560px; }
         .modal-event .form-group { margin-bottom: 14px; }
         .modal-event .form-group label {
@@ -461,13 +461,7 @@
             color: #fff;
         }
         .modal-event .modal-actions .btn-delete-event:hover { background: #dc2626; }
-        .modal-event .modal-actions .btn-add-event {
-            background: #22c55e;
-            color: #fff;
-        }
-        .modal-event .modal-actions .btn-add-event:hover { background: #16a34a; }
 
-        /* Daftar event di dalam modal */
         .event-list {
             margin: 8px 0 16px;
             max-height: 200px;
@@ -783,13 +777,37 @@
                 <div class="admin-list" id="adminKsList"></div>
             </div>
 
+            <!-- ===== PENGATURAN TAHUN AJARAN (BARU) ===== -->
+            <div class="admin-section">
+                <h3><i class="fas fa-calendar-check"></i> Pengaturan Tahun Ajaran</h3>
+                <p style="color:var(--text-light);font-size:14px;margin-bottom:16px;">
+                    Pilih tahun ajaran yang akan digunakan di semua halaman (perangkat, guru, dll.).
+                </p>
+                <div class="admin-form" style="grid-template-columns: 1fr auto;">
+                    <div>
+                        <label>Tahun Ajaran Aktif</label>
+                        <select id="activeTahunSelect" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:#fff;outline:none;">
+                            <!-- diisi oleh JS -->
+                        </select>
+                    </div>
+                    <div class="form-actions" style="align-items:flex-end;">
+                        <button onclick="saveActiveTahun()" style="background:var(--primary);color:#fff;border:none;padding:8px 20px;border-radius:var(--radius-sm);font-weight:600;font-size:14px;cursor:pointer;height:40px;">
+                            <i class="fas fa-save"></i> Simpan Pengaturan
+                        </button>
+                    </div>
+                </div>
+                <div id="activeTahunStatus" style="margin-top:8px;font-size:13px;color:var(--text-light);">
+                    <i class="fas fa-info-circle"></i> Tahun ajaran aktif saat ini: <strong id="currentActiveTahunLabel">-</strong>
+                </div>
+            </div>
+
             <!-- ===== KALENDER EVENT ===== -->
             <div class="admin-section">
                 <h3><i class="fas fa-calendar-alt"></i> Kalender Event</h3>
                 <p style="color:var(--text-light);font-size:14px;margin-bottom:16px;">Klik tanggal untuk melihat/mengelola event. Tanggal dengan event akan memiliki warna latar sesuai kategori.</p>
                 <div class="kalender-controls">
                     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                        <label style="font-weight:600;font-size:14px;color:var(--text-light);">Tahun Ajaran:</label>
+                        <label style="font-weight:600;font-size:14px;color:var(--text-light);">Tampilkan Tahun:</label>
                         <select id="tahunAjaranSelect" class="tahun-select"></select>
                     </div>
                     <button onclick="loadCalendarEvents()" class="btn-refresh" style="background:var(--primary);color:#fff;border:none;padding:6px 16px;border-radius:var(--radius-sm);font-weight:600;cursor:pointer;">
@@ -843,13 +861,12 @@
         </div>
     </div>
 
-    <!-- MODAL EVENT (BARU) -->
+    <!-- MODAL EVENT -->
     <div class="modal-overlay modal-event" id="eventModal">
         <div class="modal-box">
             <h2 id="eventModalTitle">Event pada Tanggal</h2>
             <p class="modal-sub" id="eventModalSub">Pilih event untuk diedit atau tambah baru.</p>
 
-            <!-- Daftar event untuk tanggal yang dipilih -->
             <div id="eventListContainer">
                 <div class="event-list" id="eventList"></div>
             </div>
@@ -921,6 +938,7 @@
         let isAdmin = false;
         let editingItem = null;
         let currentEventId = null;
+        let activeTahun = '2025/2026';
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -973,10 +991,12 @@
                     loadKelas(),
                     loadMapel(),
                     loadKepsek(),
-                    loadCalendarEvents()
+                    loadCalendarEvents(),
+                    loadActiveTahun()
                 ]);
                 renderAll();
                 renderCalendar();
+                updateActiveTahunUI();
             } catch (e) {
                 toast('Gagal memuat data: ' + e.message, 'error');
             }
@@ -1002,6 +1022,23 @@
             const snap = await db.collection('calendar_events').get();
             allEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             renderCalendar();
+        }
+        async function loadActiveTahun() {
+            try {
+                const doc = await db.collection('settings').doc('appSettings').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.activeTahun) {
+                        activeTahun = data.activeTahun;
+                    }
+                }
+            } catch (e) {
+                console.warn('Gagal load active tahun:', e);
+            }
+            // Isi dropdown active tahun
+            populateActiveTahunSelect();
+            document.getElementById('activeTahunSelect').value = activeTahun;
+            updateActiveTahunUI();
         }
 
         // ===== RENDER (existing) =====
@@ -1063,6 +1100,43 @@
         }
 
         // ================================================================
+        // ===== PENGATURAN TAHUN AJARAN =====
+        // ================================================================
+        function populateActiveTahunSelect() {
+            const select = document.getElementById('activeTahunSelect');
+            if (!select) return;
+            select.innerHTML = '';
+            for (let y = 2025; y <= 2035; y++) {
+                const val = `${y}/${y+1}`;
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = val;
+                select.appendChild(opt);
+            }
+        }
+
+        function updateActiveTahunUI() {
+            document.getElementById('currentActiveTahunLabel').textContent = activeTahun;
+        }
+
+        async function saveActiveTahun() {
+            const select = document.getElementById('activeTahunSelect');
+            const tahun = select.value;
+            if (!tahun) { toast('Pilih tahun ajaran.', 'error'); return; }
+            try {
+                await db.collection('settings').doc('appSettings').set({
+                    activeTahun: tahun,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                activeTahun = tahun;
+                updateActiveTahunUI();
+                toast('Pengaturan tahun ajaran berhasil disimpan!', 'success');
+            } catch (e) {
+                toast('Gagal menyimpan: ' + e.message, 'error');
+            }
+        }
+
+        // ================================================================
         // ===== KALENDER EVENT =====
         // ================================================================
         function populateTahunAjaran() {
@@ -1070,15 +1144,15 @@
             if (!select) return;
             select.innerHTML = '';
             for (let y = 2025; y <= 2035; y++) {
+                const val = `${y}/${y+1}`;
                 const opt = document.createElement('option');
-                opt.value = `${y}/${y+1}`;
-                opt.textContent = `${y}/${y+1}`;
+                opt.value = val;
+                opt.textContent = val;
                 select.appendChild(opt);
             }
-            select.value = '2025/2026';
+            select.value = activeTahun || '2025/2026';
         }
 
-        // Fungsi helper untuk format tanggal lokal YYYY-MM-DD tanpa konversi UTC
         function formatLocalDate(year, month, day) {
             const m = String(month + 1).padStart(2, '0');
             const d = String(day).padStart(2, '0');
@@ -1107,7 +1181,7 @@
             if (!container) return;
             const select = document.getElementById('tahunAjaranSelect');
             if (!select) return;
-            const tahunAjaran = select.value;
+            const tahunAjaran = select.value || activeTahun;
             if (!tahunAjaran) return;
             const startYear = parseInt(tahunAjaran.split('/')[0]);
             const endYear = startYear + 1;
@@ -1135,9 +1209,7 @@
                     gridHtml += `<div class="tanggal-cell luar-bulan"><span class="tgl-number"></span></div>`;
                 }
                 for (let d = 1; d <= daysInMonth; d++) {
-                    // BUAT TANGGAL LOKAL tanpa konversi UTC
                     const dateStr = formatLocalDate(tahun, bulan, d);
-                    // Cari semua event yang mencakup tanggal ini
                     const eventsOnDate = allEvents.filter(e => {
                         const start = e.startDate;
                         const end = e.endDate || start;
@@ -1146,7 +1218,6 @@
                     let category = null;
                     let classNames = 'tanggal-cell';
                     if (eventsOnDate.length > 0) {
-                        // Ambil kategori pertama untuk warna latar
                         category = eventsOnDate[0].category;
                         classNames += ' ' + getCategoryClass(category);
                         if (eventsOnDate.length > 1) {
@@ -1196,14 +1267,12 @@
             document.getElementById('formTitle').textContent = 'Tambah Event Baru';
             document.getElementById('submitEventBtn').innerHTML = '<i class="fas fa-save"></i> Simpan';
 
-            // Ambil semua event untuk tanggal ini
             const events = allEvents.filter(e => {
                 const start = e.startDate;
                 const end = e.endDate || start;
                 return dateStr >= start && dateStr <= end;
             });
 
-            // Tampilkan daftar event
             const listContainer = document.getElementById('eventList');
             if (events.length === 0) {
                 listContainer.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-light);font-size:13px;">Tidak ada event pada tanggal ini.</div>';
@@ -1240,7 +1309,6 @@
             return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
         }
 
-        // Edit event tertentu (dipanggil dari tombol edit di daftar)
         function editEvent(eventId) {
             const ev = allEvents.find(e => e.id === eventId);
             if (!ev) { toast('Event tidak ditemukan.', 'error'); return; }
@@ -1288,7 +1356,6 @@
             }
         }
 
-        // Hapus event dari tombol di daftar
         async function deleteEvent(eventId) {
             if (!confirm('Hapus event ini?')) return;
             try {
@@ -1309,7 +1376,6 @@
             }
         }
 
-        // Hapus event yang sedang diedit (tombol di form)
         function deleteCurrentEvent() {
             const id = document.getElementById('eventId').value;
             if (!id) return;
@@ -1392,7 +1458,7 @@
             if (!confirm('RESET SEMUA DATA? Semua modul, guru, kelas, mapel, kepsek, dan event akan hilang. Yakin?')) return;
             if (!confirm('Ketik "YA" untuk konfirmasi.')) return;
             try {
-                const collections = ['modules', 'guru', 'kelas', 'mapel', 'kepsek', 'calendar_events'];
+                const collections = ['modules', 'guru', 'kelas', 'mapel', 'kepsek', 'calendar_events', 'settings'];
                 for (const col of collections) {
                     const snap = await db.collection(col).get();
                     for (const doc of snap.docs) await db.collection(col).doc(doc.id).delete();
@@ -1487,6 +1553,7 @@
                     if (user.role === 'admin') {
                         isAdmin = true;
                         document.getElementById('loginOverlay').style.display = 'none';
+                        populateActiveTahunSelect();
                         populateTahunAjaran();
                         loadAllData();
                         document.getElementById('tahunAjaranSelect').addEventListener('change', renderCalendar);
@@ -1495,6 +1562,7 @@
                 } catch (e) {}
             }
             document.getElementById('loginOverlay').style.display = 'flex';
+            populateActiveTahunSelect();
             populateTahunAjaran();
         });
 
@@ -1523,6 +1591,8 @@
         window.deleteCurrentEvent = deleteCurrentEvent;
         window.loadCalendarEvents = loadCalendarEvents;
         window.renderCalendar = renderCalendar;
+        window.saveActiveTahun = saveActiveTahun;
+        window.loadActiveTahun = loadActiveTahun;
     </script>
 
 </body>
