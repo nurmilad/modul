@@ -19,12 +19,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== GAYA UTAMA (tetap seperti sebelumnya) ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ===== GAYA UTAMA (tetap) ===== */
+        * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a;
             --primary-light: #2a7f9a;
@@ -35,19 +31,13 @@
             --text: #1e293b;
             --text-light: #64748b;
             --border: #e2e8f0;
-            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
             --radius: 16px;
             --radius-sm: 10px;
             --transition: 0.25s ease;
             --header-height: 64px;
         }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            min-height: 100vh;
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
         .sidebar {
             width: 240px;
             background: var(--primary-dark);
@@ -55,9 +45,7 @@
             display: flex;
             flex-direction: column;
             position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
+            top: 0; left: 0; bottom: 0;
             z-index: 1000;
             transition: transform var(--transition);
             overflow-y: auto;
@@ -66,26 +54,14 @@
             padding: 20px 24px;
             font-size: 20px;
             font-weight: 700;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        .sidebar-brand i {
-            font-size: 26px;
-            color: var(--secondary);
-        }
-        .sidebar-brand small {
-            font-size: 12px;
-            font-weight: 400;
-            opacity: 0.7;
-            display: block;
-            margin-top: 2px;
-        }
-        .sidebar-menu {
-            padding: 16px 12px;
-            flex: 1;
-        }
+        .sidebar-brand i { font-size: 26px; color: var(--secondary); }
+        .sidebar-brand small { font-size: 12px; font-weight: 400; opacity: 0.7; display: block; margin-top: 2px; }
+        .sidebar-menu { padding: 16px 12px; flex: 1; }
         .sidebar-menu .menu-label {
             font-size: 11px;
             text-transform: uppercase;
@@ -100,7 +76,7 @@
             gap: 12px;
             padding: 10px 14px;
             border-radius: var(--radius-sm);
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255,255,255,0.7);
             text-decoration: none;
             font-weight: 500;
             font-size: 14px;
@@ -108,22 +84,12 @@
             cursor: pointer;
             margin-bottom: 2px;
         }
-        .sidebar-menu a:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: #fff;
-        }
-        .sidebar-menu a.active {
-            background: rgba(255, 255, 255, 0.14);
-            color: #fff;
-        }
-        .sidebar-menu a i {
-            width: 20px;
-            text-align: center;
-            font-size: 16px;
-        }
+        .sidebar-menu a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .sidebar-menu a.active { background: rgba(255,255,255,0.14); color: #fff; }
+        .sidebar-menu a i { width: 20px; text-align: center; font-size: 16px; }
         .sidebar-footer {
             padding: 16px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255,255,255,0.08);
             font-size: 13px;
             opacity: 0.6;
             display: flex;
@@ -131,14 +97,7 @@
             gap: 8px;
         }
 
-        .main {
-            margin-left: 240px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
+        .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
         .topbar {
             height: var(--header-height);
             background: var(--card-bg);
@@ -151,30 +110,12 @@
             top: 0;
             z-index: 500;
             backdrop-filter: blur(8px);
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255,255,255,0.92);
         }
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .topbar-left .hamburger {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 20px;
-            color: var(--text);
-            cursor: pointer;
-        }
-        .topbar-left h2 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
+        .topbar-left { display: flex; align-items: center; gap: 16px; }
+        .topbar-left .hamburger { display: none; background: none; border: none; font-size: 20px; color: var(--text); cursor: pointer; }
+        .topbar-left h2 { font-size: 18px; font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
         .topbar-right .user-badge {
             display: flex;
             align-items: center;
@@ -185,10 +126,7 @@
             font-size: 13px;
             font-weight: 500;
         }
-        .topbar-right .user-badge i {
-            font-size: 18px;
-            color: var(--primary);
-        }
+        .topbar-right .user-badge i { font-size: 18px; color: var(--primary); }
         .topbar-right .logout-btn {
             background: none;
             border: 1px solid var(--border);
@@ -205,10 +143,7 @@
             color: #dc2626;
         }
 
-        .page-content {
-            padding: 28px 32px 40px;
-            flex: 1;
-        }
+        .page-content { padding: 28px 32px 40px; flex: 1; }
 
         .admin-section {
             background: var(--card-bg);
@@ -226,9 +161,7 @@
             align-items: center;
             gap: 10px;
         }
-        .admin-section h3 i {
-            color: var(--primary);
-        }
+        .admin-section h3 i { color: var(--primary); }
         .admin-form {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -257,7 +190,7 @@
         .admin-form input:focus,
         .admin-form select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.10);
+            box-shadow: 0 0 0 3px rgba(26,95,122,0.10);
         }
         .admin-form .form-actions {
             display: flex;
@@ -276,15 +209,9 @@
             color: #fff;
             height: 40px;
         }
-        .admin-form .form-actions button:hover {
-            background: var(--primary-light);
-        }
-        .admin-form .form-actions .btn-danger {
-            background: #ef4444;
-        }
-        .admin-form .form-actions .btn-danger:hover {
-            background: #dc2626;
-        }
+        .admin-form .form-actions button:hover { background: var(--primary-light); }
+        .admin-form .form-actions .btn-danger { background: #ef4444; }
+        .admin-form .form-actions .btn-danger:hover { background: #dc2626; }
 
         .admin-list {
             display: flex;
@@ -315,31 +242,14 @@
             color: var(--text-light);
             transition: var(--transition);
         }
-        .admin-list .tag .actions button:hover {
-            color: var(--primary);
-        }
-        .admin-list .tag .actions .btn-edit {
-            color: #3b82f6;
-        }
-        .admin-list .tag .actions .btn-edit:hover {
-            color: #2563eb;
-        }
-        .admin-list .tag .actions .btn-delete {
-            color: #ef4444;
-        }
-        .admin-list .tag .actions .btn-delete:hover {
-            color: #dc2626;
-        }
+        .admin-list .tag .actions button:hover { color: var(--primary); }
+        .admin-list .tag .actions .btn-edit { color: #3b82f6; }
+        .admin-list .tag .actions .btn-edit:hover { color: #2563eb; }
+        .admin-list .tag .actions .btn-delete { color: #ef4444; }
+        .admin-list .tag .actions .btn-delete:hover { color: #dc2626; }
 
-        .admin-table-wrap {
-            overflow-x: auto;
-            margin-top: 12px;
-        }
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
+        .admin-table-wrap { overflow-x: auto; margin-top: 12px; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
         .admin-table th {
             text-align: left;
             padding: 10px 12px;
@@ -347,14 +257,8 @@
             font-weight: 600;
             border-bottom: 2px solid var(--border);
         }
-        .admin-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        .admin-table .actions {
-            display: flex;
-            gap: 6px;
-        }
+        .admin-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        .admin-table .actions { display: flex; gap: 6px; }
         .admin-table .actions button {
             background: none;
             border: none;
@@ -363,23 +267,13 @@
             padding: 2px 6px;
             transition: var(--transition);
         }
-        .admin-table .actions .btn-edit {
-            color: #3b82f6;
-        }
-        .admin-table .actions .btn-edit:hover {
-            color: #2563eb;
-        }
-        .admin-table .actions .btn-delete {
-            color: #ef4444;
-        }
-        .admin-table .actions .btn-delete:hover {
-            color: #dc2626;
-        }
+        .admin-table .actions .btn-edit { color: #3b82f6; }
+        .admin-table .actions .btn-edit:hover { color: #2563eb; }
+        .admin-table .actions .btn-delete { color: #ef4444; }
+        .admin-table .actions .btn-delete:hover { color: #dc2626; }
 
         /* ===== KALENDER EVENT ===== */
-        .kalender-wrap {
-            margin-top: 8px;
-        }
+        .kalender-wrap { margin-top: 8px; }
         .kalender-controls {
             display: flex;
             justify-content: space-between;
@@ -444,15 +338,19 @@
             align-items: center;
             justify-content: center;
             flex-direction: column;
+            border-radius: 4px;
+            background-color: transparent;
         }
         .kalender-bulan .hari-grid .tanggal-cell:hover {
-            background: var(--primary-bg);
             transform: scale(1.02);
             z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .kalender-bulan .hari-grid .tanggal-cell .tgl-number {
             font-weight: 500;
             font-size: 12px;
+            position: relative;
+            z-index: 1;
         }
         .kalender-bulan .hari-grid .tanggal-cell .event-dot {
             width: 6px;
@@ -465,19 +363,22 @@
             color: #cbd5e1;
             font-weight: 400;
             cursor: default;
+            background-color: transparent !important;
         }
         .kalender-bulan .hari-grid .tanggal-cell.luar-bulan:hover {
-            background: transparent;
             transform: none;
+            box-shadow: none;
         }
-        /* Warna event (hanya dot) */
-        .event-libur-nasional .event-dot { background: #dc2626; }
-        .event-hari-penting .event-dot { background: #fbbf24; }
-        .event-jadwal-penting .event-dot { background: #3b82f6; }
-        .event-kegiatan-sekolah .event-dot { background: #22c55e; }
-        .event-libur-pondok .event-dot { background: #14b8a6; }
-        .event-sumatif .event-dot { background: #f97316; }
-        .event-libur-bulanan .event-dot { background: #ec4899; }
+        /* Warna latar sel berdasarkan kategori */
+        .tanggal-cell.event-libur-nasional { background: #dc2626 !important; color: #fff; }
+        .tanggal-cell.event-hari-penting { background: #fbbf24 !important; color: #000; }
+        .tanggal-cell.event-jadwal-penting { background: #3b82f6 !important; color: #fff; }
+        .tanggal-cell.event-kegiatan-sekolah { background: #22c55e !important; color: #000; }
+        .tanggal-cell.event-libur-pondok { background: #14b8a6 !important; color: #000; }
+        .tanggal-cell.event-sumatif { background: #f97316 !important; color: #000; }
+        .tanggal-cell.event-libur-bulanan { background: #ec4899 !important; color: #fff; }
+        /* Jika ada banyak event, gunakan warna dari event pertama yang ditemukan */
+        .tanggal-cell.multi-event { border: 2px solid var(--primary); }
 
         .legend-events {
             display: flex;
@@ -489,11 +390,7 @@
             font-size: 12px;
             color: var(--text-light);
         }
-        .legend-events .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .legend-events .legend-item { display: flex; align-items: center; gap: 6px; }
         .legend-events .legend-item .color-box {
             width: 16px;
             height: 16px;
@@ -501,13 +398,9 @@
             border: 1px solid rgba(0,0,0,0.08);
         }
 
-        /* ===== MODAL EVENT ===== */
-        .modal-event .modal-box {
-            max-width: 520px;
-        }
-        .modal-event .form-group {
-            margin-bottom: 14px;
-        }
+        /* ===== MODAL EVENT (baru) ===== */
+        .modal-event .modal-box { max-width: 560px; }
+        .modal-event .form-group { margin-bottom: 14px; }
         .modal-event .form-group label {
             font-size: 13px;
             font-weight: 500;
@@ -533,22 +426,16 @@
         .modal-event .form-group select:focus,
         .modal-event .form-group textarea:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.10);
+            box-shadow: 0 0 0 3px rgba(26,95,122,0.10);
         }
-        .modal-event .form-group textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
-        .modal-event .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+        .modal-event .form-group textarea { resize: vertical; min-height: 60px; }
+        .modal-event .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .modal-event .modal-actions {
             display: flex;
             gap: 10px;
             margin-top: 20px;
             justify-content: flex-end;
+            flex-wrap: wrap;
         }
         .modal-event .modal-actions button {
             padding: 10px 28px;
@@ -563,23 +450,77 @@
             background: var(--bg);
             color: var(--text);
         }
-        .modal-event .modal-actions .btn-cancel:hover {
-            background: var(--border);
-        }
+        .modal-event .modal-actions .btn-cancel:hover { background: var(--border); }
         .modal-event .modal-actions .btn-submit {
             background: var(--primary);
             color: #fff;
         }
-        .modal-event .modal-actions .btn-submit:hover {
-            background: var(--primary-light);
-        }
+        .modal-event .modal-actions .btn-submit:hover { background: var(--primary-light); }
         .modal-event .modal-actions .btn-delete-event {
             background: #ef4444;
             color: #fff;
         }
-        .modal-event .modal-actions .btn-delete-event:hover {
-            background: #dc2626;
+        .modal-event .modal-actions .btn-delete-event:hover { background: #dc2626; }
+        .modal-event .modal-actions .btn-add-event {
+            background: #22c55e;
+            color: #fff;
         }
+        .modal-event .modal-actions .btn-add-event:hover { background: #16a34a; }
+
+        /* Daftar event di dalam modal */
+        .event-list {
+            margin: 8px 0 16px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: #fafafa;
+        }
+        .event-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .event-list-item:last-child { border-bottom: none; }
+        .event-list-item:hover { background: var(--primary-bg); }
+        .event-list-item .event-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .event-list-item .event-info .ev-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .event-list-item .event-info .ev-category {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+        .event-list-item .event-info .ev-date {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+        .event-list-item .ev-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .event-list-item .ev-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: 0.15s;
+        }
+        .event-list-item .ev-actions .ev-edit { color: #3b82f6; }
+        .event-list-item .ev-actions .ev-edit:hover { background: #dbeafe; }
+        .event-list-item .ev-actions .ev-delete { color: #ef4444; }
+        .event-list-item .ev-actions .ev-delete:hover { background: #fee2e2; }
 
         /* LOGIN OVERLAY */
         .login-overlay {
@@ -601,14 +542,8 @@
             width: 100%;
             text-align: center;
         }
-        .login-box h2 {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-        .login-box p {
-            color: var(--text-light);
-            margin-bottom: 24px;
-        }
+        .login-box h2 { font-size: 24px; margin-bottom: 8px; }
+        .login-box p { color: var(--text-light); margin-bottom: 24px; }
         .login-box input {
             width: 100%;
             padding: 12px 16px;
@@ -634,15 +569,8 @@
             cursor: pointer;
             transition: var(--transition);
         }
-        .login-box button:hover {
-            background: var(--primary-light);
-        }
-        .login-box .error {
-            color: #ef4444;
-            font-size: 14px;
-            margin-top: 8px;
-            display: none;
-        }
+        .login-box button:hover { background: var(--primary-light); }
+        .login-box .error { color: #ef4444; font-size: 14px; margin-top: 8px; display: none; }
 
         /* EDIT MODAL (existing) */
         .modal-overlay {
@@ -656,9 +584,7 @@
             justify-content: center;
             padding: 20px;
         }
-        .modal-overlay.open {
-            display: flex;
-        }
+        .modal-overlay.open { display: flex; }
         .modal-box {
             background: #fff;
             border-radius: var(--radius);
@@ -669,22 +595,12 @@
             animation: modalIn 0.25s ease;
         }
         @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.96) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            from { opacity:0; transform:scale(0.96) translateY(20px); }
+            to { opacity:1; transform:scale(1) translateY(0); }
         }
-        .modal-box h2 {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-        .modal-box .modal-sub {
-            color: var(--text-light);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        .modal-box .form-group {
-            margin-bottom: 14px;
-        }
+        .modal-box h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+        .modal-box .modal-sub { color: var(--text-light); font-size: 14px; margin-bottom: 20px; }
+        .modal-box .form-group { margin-bottom: 14px; }
         .modal-box .form-group label {
             font-size: 13px;
             font-weight: 500;
@@ -707,7 +623,7 @@
         .modal-box .form-group input:focus,
         .modal-box .form-group select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.10);
+            box-shadow: 0 0 0 3px rgba(26,95,122,0.10);
         }
         .modal-box .modal-actions {
             display: flex;
@@ -728,16 +644,12 @@
             background: var(--bg);
             color: var(--text);
         }
-        .modal-box .modal-actions .btn-cancel:hover {
-            background: var(--border);
-        }
+        .modal-box .modal-actions .btn-cancel:hover { background: var(--border); }
         .modal-box .modal-actions .btn-submit {
             background: var(--primary);
             color: #fff;
         }
-        .modal-box .modal-actions .btn-submit:hover {
-            background: var(--primary-light);
-        }
+        .modal-box .modal-actions .btn-submit:hover { background: var(--primary-light); }
 
         /* TOAST */
         .toast-container {
@@ -755,7 +667,7 @@
             color: #fff;
             font-weight: 500;
             font-size: 14px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
             animation: slideUp 0.3s ease;
             max-width: 360px;
         }
@@ -763,8 +675,8 @@
         .toast-error { background: #ef4444; }
         .toast-info { background: var(--primary); }
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity:0; transform:translateY(16px); }
+            to { opacity:1; transform:translateY(0); }
         }
 
         @media (max-width: 768px) {
@@ -791,10 +703,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <i class="fas fa-book-open"></i>
-            <div>
-                Modul NBS
-                <small>Admin Panel</small>
-            </div>
+            <div>Modul NBS <small>Admin Panel</small></div>
         </div>
         <nav class="sidebar-menu">
             <div class="menu-label">Navigasi</div>
@@ -810,22 +719,17 @@
 
     <!-- MAIN CONTENT -->
     <div class="main">
-        <!-- TOPBAR -->
         <header class="topbar">
             <div class="topbar-left">
                 <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-                <h2 id="pageTitle">Admin Panel</h2>
+                <h2>Admin Panel</h2>
             </div>
             <div class="topbar-right">
-                <div class="user-badge">
-                    <i class="fas fa-user-cog"></i>
-                    <span id="topbarUser">Admin</span>
-                </div>
+                <div class="user-badge"><i class="fas fa-user-cog"></i> <span id="topbarUser">Admin</span></div>
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
             </div>
         </header>
 
-        <!-- PAGE CONTENT -->
         <div class="page-content" id="adminContent">
             <h1 style="font-size:24px;font-weight:700;margin-bottom:6px;">Panel Admin</h1>
             <p style="color:var(--text-light);margin-bottom:24px;">Kelola guru, jenjang-kelas-fase, mata pelajaran, kepala sekolah, dan kalender event.</p>
@@ -834,17 +738,9 @@
             <div class="admin-section">
                 <h3><i class="fas fa-users"></i> Kelola Guru</h3>
                 <div class="admin-form">
-                    <div>
-                        <label>Nama Guru</label>
-                        <input type="text" id="adminGuruName" placeholder="Nama lengkap" />
-                    </div>
-                    <div>
-                        <label>Password</label>
-                        <input type="text" id="adminGuruPass" placeholder="Password" value="guru123" />
-                    </div>
-                    <div class="form-actions">
-                        <button onclick="addGuru()"><i class="fas fa-plus"></i> Tambah</button>
-                    </div>
+                    <div><label>Nama Guru</label><input type="text" id="adminGuruName" placeholder="Nama lengkap" /></div>
+                    <div><label>Password</label><input type="text" id="adminGuruPass" placeholder="Password" value="guru123" /></div>
+                    <div class="form-actions"><button onclick="addGuru()"><i class="fas fa-plus"></i> Tambah</button></div>
                 </div>
                 <div class="admin-table-wrap">
                     <table class="admin-table">
@@ -854,62 +750,35 @@
                 </div>
             </div>
 
-            <!-- Kelas Management -->
+            <!-- Kelas -->
             <div class="admin-section">
                 <h3><i class="fas fa-school"></i> Kelola Jenjang, Kelas dan Fase</h3>
                 <div class="admin-form">
-                    <div>
-                        <label>Jenjang</label>
-                        <select id="adminKelasJenjang">
-                            <option value="SMP">SMP</option>
-                            <option value="SMA">SMA</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Nama Kelas</label>
-                        <input type="text" id="adminKelasInput" placeholder="Contoh: VII-A, X-1" />
-                    </div>
-                    <div>
-                        <label>Fase (opsional)</label>
-                        <input type="text" id="adminFaseInput" placeholder="Contoh: D, E, F" />
-                    </div>
-                    <div class="form-actions">
-                        <button onclick="addKelas()"><i class="fas fa-plus"></i> Tambah</button>
-                    </div>
+                    <div><label>Jenjang</label><select id="adminKelasJenjang"><option value="SMP">SMP</option><option value="SMA">SMA</option></select></div>
+                    <div><label>Nama Kelas</label><input type="text" id="adminKelasInput" placeholder="Contoh: VII-A, X-1" /></div>
+                    <div><label>Fase (opsional)</label><input type="text" id="adminFaseInput" placeholder="Contoh: D, E, F" /></div>
+                    <div class="form-actions"><button onclick="addKelas()"><i class="fas fa-plus"></i> Tambah</button></div>
                 </div>
                 <div class="admin-list" id="adminKelasList"></div>
             </div>
 
-            <!-- Mata Pelajaran -->
+            <!-- Mapel -->
             <div class="admin-section">
                 <h3><i class="fas fa-book"></i> Kelola Mata Pelajaran</h3>
                 <div class="admin-form">
-                    <div>
-                        <label>Nama Mata Pelajaran</label>
-                        <input type="text" id="adminMapelInput" placeholder="Matematika" />
-                    </div>
-                    <div class="form-actions">
-                        <button onclick="addMapel()"><i class="fas fa-plus"></i> Tambah</button>
-                    </div>
+                    <div><label>Nama Mata Pelajaran</label><input type="text" id="adminMapelInput" placeholder="Matematika" /></div>
+                    <div class="form-actions"><button onclick="addMapel()"><i class="fas fa-plus"></i> Tambah</button></div>
                 </div>
                 <div class="admin-list" id="adminMapelList"></div>
             </div>
 
-            <!-- Kepala Sekolah -->
+            <!-- Kepsek -->
             <div class="admin-section">
                 <h3><i class="fas fa-user-tie"></i> Kelola Kepala Sekolah</h3>
                 <div class="admin-form">
-                    <div>
-                        <label>Nama Kepala Sekolah</label>
-                        <input type="text" id="adminKsName" placeholder="Nama" />
-                    </div>
-                    <div>
-                        <label>NIP</label>
-                        <input type="text" id="adminKsNip" placeholder="NIP" />
-                    </div>
-                    <div class="form-actions">
-                        <button onclick="addKepsek()"><i class="fas fa-plus"></i> Tambah</button>
-                    </div>
+                    <div><label>Nama Kepala Sekolah</label><input type="text" id="adminKsName" placeholder="Nama" /></div>
+                    <div><label>NIP</label><input type="text" id="adminKsNip" placeholder="NIP" /></div>
+                    <div class="form-actions"><button onclick="addKepsek()"><i class="fas fa-plus"></i> Tambah</button></div>
                 </div>
                 <div class="admin-list" id="adminKsList"></div>
             </div>
@@ -917,8 +786,7 @@
             <!-- ===== KALENDER EVENT ===== -->
             <div class="admin-section">
                 <h3><i class="fas fa-calendar-alt"></i> Kalender Event</h3>
-                <p style="color:var(--text-light);font-size:14px;margin-bottom:16px;">Klik pada tanggal untuk menambah atau mengedit event.</p>
-
+                <p style="color:var(--text-light);font-size:14px;margin-bottom:16px;">Klik tanggal untuk melihat/mengelola event. Tanggal dengan event akan memiliki warna latar sesuai kategori.</p>
                 <div class="kalender-controls">
                     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                         <label style="font-weight:600;font-size:14px;color:var(--text-light);">Tahun Ajaran:</label>
@@ -928,12 +796,7 @@
                         <i class="fas fa-sync"></i> Refresh
                     </button>
                 </div>
-
-                <div class="kalender-grid" id="kalenderContainer">
-                    <!-- akan di-render oleh JS -->
-                </div>
-
-                <!-- Legend -->
+                <div class="kalender-grid" id="kalenderContainer"></div>
                 <div class="legend-events">
                     <span class="legend-item"><span class="color-box" style="background:#dc2626;"></span> Libur Nasional</span>
                     <span class="legend-item"><span class="color-box" style="background:#fbbf24;"></span> Hari Penting</span>
@@ -980,11 +843,20 @@
         </div>
     </div>
 
-    <!-- MODAL EVENT -->
+    <!-- MODAL EVENT (BARU) -->
     <div class="modal-overlay modal-event" id="eventModal">
         <div class="modal-box">
-            <h2 id="eventModalTitle">Tambah Event</h2>
-            <p class="modal-sub" id="eventModalSub">Isi data event untuk tanggal yang dipilih.</p>
+            <h2 id="eventModalTitle">Event pada Tanggal</h2>
+            <p class="modal-sub" id="eventModalSub">Pilih event untuk diedit atau tambah baru.</p>
+
+            <!-- Daftar event untuk tanggal yang dipilih -->
+            <div id="eventListContainer">
+                <div class="event-list" id="eventList"></div>
+            </div>
+
+            <hr style="margin:12px 0;border-color:var(--border);" />
+
+            <h3 style="font-size:16px;font-weight:600;margin-bottom:6px;" id="formTitle">Tambah Event Baru</h3>
             <form id="eventForm" onsubmit="saveEvent(event)">
                 <input type="hidden" id="eventId" />
                 <input type="hidden" id="eventDate" />
@@ -1021,8 +893,8 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="closeEventModal()">Batal</button>
-                    <button type="button" class="btn-delete-event" id="deleteEventBtn" style="display:none;" onclick="deleteEvent()"><i class="fas fa-trash"></i> Hapus</button>
-                    <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Simpan</button>
+                    <button type="button" class="btn-delete-event" id="deleteEventBtn" style="display:none;" onclick="deleteCurrentEvent()"><i class="fas fa-trash"></i> Hapus Event Ini</button>
+                    <button type="submit" class="btn-submit" id="submitEventBtn"><i class="fas fa-save"></i> Simpan</button>
                 </div>
             </form>
         </div>
@@ -1031,7 +903,6 @@
     <!-- TOAST CONTAINER -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- FIREBASE -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyC5ETgu3Ufat1a_iM_n81Lir7sLUwI4p5A",
@@ -1045,13 +916,11 @@
         const db = firebase.firestore();
 
         // ===== STATE =====
-        let allGuru = [];
-        let allKelas = [];
-        let allMapel = [];
-        let allKepsek = [];
+        let allGuru = [], allKelas = [], allMapel = [], allKepsek = [];
         let allEvents = [];
         let isAdmin = false;
         let editingItem = null;
+        let currentEventId = null; // untuk edit event
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -1194,7 +1063,7 @@
         }
 
         // ================================================================
-        // ===== KALENDER EVENT (PERBAIKAN MAPPING HARI) =====
+        // ===== KALENDER EVENT =====
         // ================================================================
         function populateTahunAjaran() {
             const select = document.getElementById('tahunAjaranSelect');
@@ -1207,6 +1076,23 @@
                 select.appendChild(opt);
             }
             select.value = '2025/2026';
+        }
+
+        function getCategoryColor(category) {
+            const map = {
+                'libur-nasional': '#dc2626',
+                'hari-penting': '#fbbf24',
+                'jadwal-penting': '#3b82f6',
+                'kegiatan-sekolah': '#22c55e',
+                'libur-pondok': '#14b8a6',
+                'sumatif': '#f97316',
+                'libur-bulanan': '#ec4899'
+            };
+            return map[category] || '#cbd5e1';
+        }
+
+        function getCategoryClass(category) {
+            return 'event-' + category;
         }
 
         function renderCalendar() {
@@ -1223,7 +1109,6 @@
             const bulanIndex = [6,7,8,9,10,11,0,1,2,3,4,5];
             const tahunBulan = bulanIndex.map((b,i) => i < 6 ? startYear : endYear);
 
-            // Nama hari dimulai dari Jum'at
             const namaHari = ['Jum\'at', 'Sabtu', 'Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis'];
 
             let html = '';
@@ -1232,37 +1117,38 @@
                 const tahun = tahunBulan[i];
                 const nama = namaBulan[i];
                 const daysInMonth = new Date(tahun, bulan + 1, 0).getDate();
-                // Mapping yang benar: (jsDay + 2) % 7
-                // jsDay: 0=Minggu, 1=Senin, 2=Selasa, 3=Rabu, 4=Kamis, 5=Jum'at, 6=Sabtu
-                // Hasil: 0=Jum'at, 1=Sabtu, 2=Ahad, 3=Senin, 4=Selasa, 5=Rabu, 6=Kamis
                 const jsDay = new Date(tahun, bulan, 1).getDay();
                 const firstDay = (jsDay + 2) % 7;
 
                 let gridHtml = '';
-                // header hari
                 for (let h = 0; h < 7; h++) {
                     gridHtml += `<div class="hari-nama">${namaHari[h]}</div>`;
                 }
-                // kosong awal
                 for (let k = 0; k < firstDay; k++) {
                     gridHtml += `<div class="tanggal-cell luar-bulan"><span class="tgl-number"></span></div>`;
                 }
-                // tanggal
                 for (let d = 1; d <= daysInMonth; d++) {
                     const dateObj = new Date(tahun, bulan, d);
                     const dateStr = dateObj.toISOString().split('T')[0];
+                    // Cari semua event yang mencakup tanggal ini
                     const eventsOnDate = allEvents.filter(e => {
                         const start = e.startDate;
                         const end = e.endDate || start;
                         return dateStr >= start && dateStr <= end;
                     });
                     let category = null;
+                    let classNames = 'tanggal-cell';
                     if (eventsOnDate.length > 0) {
+                        // Ambil kategori pertama untuk warna latar
                         category = eventsOnDate[0].category;
+                        classNames += ' ' + getCategoryClass(category);
+                        if (eventsOnDate.length > 1) {
+                            classNames += ' multi-event';
+                        }
                     }
-                    const dotHtml = category ? `<span class="event-dot event-${category}"></span>` : '';
+                    const dotHtml = category ? `<span class="event-dot" style="background:${getCategoryColor(category)};"></span>` : '';
                     gridHtml += `
-                        <div class="tanggal-cell" data-date="${dateStr}" onclick="openEventModal('${dateStr}')">
+                        <div class="${classNames}" data-date="${dateStr}" onclick="openEventModal('${dateStr}')">
                             <span class="tgl-number">${d}</span>
                             ${dotHtml}
                         </div>
@@ -1284,48 +1170,83 @@
             container.innerHTML = html;
         }
 
-        // ===== EVENT MODAL =====
+        // ================================================================
+        // ===== EVENT MODAL (multi event) =====
+        // ================================================================
+        let currentDate = null; // string YYYY-MM-DD
+
         function openEventModal(dateStr) {
             if (!isAdmin) { toast('Silakan login sebagai admin.', 'error'); return; }
+            currentDate = dateStr;
             document.getElementById('eventDate').value = dateStr;
-            document.getElementById('eventStart').value = dateStr;
-            document.getElementById('eventEnd').value = '';
+            document.getElementById('eventId').value = '';
             document.getElementById('eventName').value = '';
             document.getElementById('eventCategory').value = 'libur-nasional';
+            document.getElementById('eventStart').value = dateStr;
+            document.getElementById('eventEnd').value = '';
             document.getElementById('eventDesc').value = '';
-            document.getElementById('eventId').value = '';
             document.getElementById('deleteEventBtn').style.display = 'none';
-            document.getElementById('eventModalTitle').textContent = 'Tambah Event';
-            document.getElementById('eventModalSub').textContent = `Tanggal: ${formatDateDisplay(dateStr)}`;
+            document.getElementById('formTitle').textContent = 'Tambah Event Baru';
+            document.getElementById('submitEventBtn').innerHTML = '<i class="fas fa-save"></i> Simpan';
 
+            // Ambil semua event untuk tanggal ini
             const events = allEvents.filter(e => {
                 const start = e.startDate;
                 const end = e.endDate || start;
                 return dateStr >= start && dateStr <= end;
             });
-            if (events.length > 0) {
-                const ev = events[0];
-                document.getElementById('eventId').value = ev.id;
-                document.getElementById('eventName').value = ev.name || '';
-                document.getElementById('eventCategory').value = ev.category || 'libur-nasional';
-                document.getElementById('eventStart').value = ev.startDate || dateStr;
-                document.getElementById('eventEnd').value = ev.endDate || '';
-                document.getElementById('eventDesc').value = ev.description || '';
-                document.getElementById('deleteEventBtn').style.display = 'inline-flex';
-                document.getElementById('eventModalTitle').textContent = 'Edit Event';
-                document.getElementById('eventModalSub').textContent = `Edit event untuk tanggal ${formatDateDisplay(dateStr)}`;
+
+            // Tampilkan daftar event
+            const listContainer = document.getElementById('eventList');
+            if (events.length === 0) {
+                listContainer.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-light);font-size:13px;">Tidak ada event pada tanggal ini.</div>';
+            } else {
+                listContainer.innerHTML = events.map(ev => `
+                    <div class="event-list-item" data-id="${ev.id}">
+                        <div class="event-info">
+                            <span class="ev-name">${ev.name || 'Tanpa nama'}</span>
+                            <span class="ev-category">${ev.category || 'Tanpa kategori'}</span>
+                            <span class="ev-date">${ev.startDate} ${ev.endDate && ev.endDate !== ev.startDate ? '– '+ev.endDate : ''}</span>
+                        </div>
+                        <div class="ev-actions">
+                            <button class="ev-edit" onclick="editEvent('${ev.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="ev-delete" onclick="deleteEvent('${ev.id}')" title="Hapus"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
             }
+
+            document.getElementById('eventModalTitle').textContent = `Event pada ${formatDateDisplay(dateStr)}`;
+            document.getElementById('eventModalSub').textContent = `Klik event untuk mengedit, atau tambahkan event baru di bawah.`;
             document.getElementById('eventModal').classList.add('open');
         }
 
         function closeEventModal() {
             document.getElementById('eventModal').classList.remove('open');
+            currentDate = null;
+            currentEventId = null;
         }
 
         function formatDateDisplay(dateStr) {
             if (!dateStr) return '';
             const d = new Date(dateStr + 'T00:00:00');
             return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        // Edit event tertentu (dipanggil dari tombol edit di daftar)
+        function editEvent(eventId) {
+            const ev = allEvents.find(e => e.id === eventId);
+            if (!ev) { toast('Event tidak ditemukan.', 'error'); return; }
+            currentEventId = eventId;
+            document.getElementById('eventId').value = eventId;
+            document.getElementById('eventName').value = ev.name || '';
+            document.getElementById('eventCategory').value = ev.category || 'libur-nasional';
+            document.getElementById('eventStart').value = ev.startDate || currentDate;
+            document.getElementById('eventEnd').value = ev.endDate || '';
+            document.getElementById('eventDesc').value = ev.description || '';
+            document.getElementById('deleteEventBtn').style.display = 'inline-flex';
+            document.getElementById('formTitle').textContent = 'Edit Event';
+            document.getElementById('submitEventBtn').innerHTML = '<i class="fas fa-save"></i> Perbarui';
         }
 
         async function saveEvent(e) {
@@ -1354,23 +1275,40 @@
                 }
                 closeEventModal();
                 await loadCalendarEvents();
+                renderCalendar();
             } catch (err) {
                 toast('Gagal menyimpan event: ' + err.message, 'error');
             }
         }
 
-        async function deleteEvent() {
-            const id = document.getElementById('eventId').value;
-            if (!id) return;
+        // Hapus event dari tombol di daftar
+        async function deleteEvent(eventId) {
             if (!confirm('Hapus event ini?')) return;
             try {
-                await db.collection('calendar_events').doc(id).delete();
+                await db.collection('calendar_events').doc(eventId).delete();
                 toast('Event dihapus.', 'info');
-                closeEventModal();
+                // Jika modal terbuka dan kita menghapus event yang sedang diedit, tutup form edit
+                if (document.getElementById('eventModal').classList.contains('open')) {
+                    // Refresh daftar event
+                    const dateStr = document.getElementById('eventDate').value;
+                    if (dateStr) {
+                        openEventModal(dateStr); // reopen untuk refresh
+                    } else {
+                        closeEventModal();
+                    }
+                }
                 await loadCalendarEvents();
+                renderCalendar();
             } catch (err) {
                 toast('Gagal hapus: ' + err.message, 'error');
             }
+        }
+
+        // Hapus event yang sedang diedit (tombol di form)
+        function deleteCurrentEvent() {
+            const id = document.getElementById('eventId').value;
+            if (!id) return;
+            deleteEvent(id);
         }
 
         // ================================================================
@@ -1574,8 +1512,10 @@
         window.submitEdit = submitEdit;
         window.openEventModal = openEventModal;
         window.closeEventModal = closeEventModal;
+        window.editEvent = editEvent;
         window.saveEvent = saveEvent;
         window.deleteEvent = deleteEvent;
+        window.deleteCurrentEvent = deleteCurrentEvent;
         window.loadCalendarEvents = loadCalendarEvents;
         window.renderCalendar = renderCalendar;
     </script>
