@@ -546,7 +546,7 @@
                 </div>
             </div>
 
-            <!-- ===== TAB KALENDER (TERHUBUNG DENGAN EVENT ADMIN) ===== -->
+            <!-- ===== TAB KALENDER (hanya tahun aktif) ===== -->
             <div class="tab-content" id="tab-kalender">
                 <div class="perangkat-content" style="padding:20px 24px;max-height:none;overflow-y:visible;">
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
@@ -554,8 +554,7 @@
                             <i class="fas fa-calendar-alt"></i> Kalender Pendidikan
                         </h2>
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <label style="font-weight:600;font-size:14px;color:var(--text-light);">Tahun Ajaran:</label>
-                            <select id="tahunAjaranSelect" style="padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);font-size:14px;background:#fff;outline:none;"></select>
+                            <span style="font-weight:600;font-size:14px;color:var(--text-light);">Tahun Ajaran: <span id="displayActiveTahun">-</span></span>
                         </div>
                     </div>
                     <div id="kalenderContainer" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px;"></div>
@@ -607,7 +606,7 @@
         const db = firebase.firestore();
 
         let allEvents = [];
-        let currentYear = '2025/2026';
+        let activeTahun = '2025/2026';
 
         function toast(msg, type = 'info') {
             const container = document.getElementById('toastContainer');
@@ -652,13 +651,31 @@
         }
 
         // ================================================================
-        // ===== LOAD EVENTS FROM FIRESTORE =====
+        // ===== LOAD ACTIVE TAHUN & EVENTS =====
         // ================================================================
+        async function loadActiveTahun() {
+            try {
+                const doc = await db.collection('settings').doc('appSettings').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.activeTahun) {
+                        activeTahun = data.activeTahun;
+                    }
+                }
+            } catch (e) {
+                console.warn('Gagal load active tahun:', e);
+                // fallback
+                activeTahun = '2025/2026';
+            }
+            document.getElementById('displayActiveTahun').textContent = activeTahun;
+        }
+
         async function loadEvents() {
             try {
+                await loadActiveTahun(); // muat tahun aktif dulu
                 const snap = await db.collection('calendar_events').get();
                 allEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderKalender(currentYear);
+                renderKalender(activeTahun);
             } catch (e) {
                 console.error('Gagal load events:', e);
                 toast('Gagal memuat event kalender.', 'error');
@@ -666,7 +683,7 @@
         }
 
         // ================================================================
-        // ===== KALENDER (PERBAIKAN MAPPING HARI) =====
+        // ===== KALENDER =====
         // ================================================================
         function getCategoryColor(category) {
             const map = {
@@ -688,7 +705,6 @@
         function renderKalender(tahunAjaran) {
             const container = document.getElementById('kalenderContainer');
             if (!container) return;
-            currentYear = tahunAjaran;
 
             const startYear = parseInt(tahunAjaran.split('/')[0]);
             const endYear = startYear + 1;
@@ -698,7 +714,6 @@
             const bulanIndex = [6,7,8,9,10,11,0,1,2,3,4,5];
             const tahunBulan = bulanIndex.map((b,i) => i < 6 ? startYear : endYear);
 
-            // URUTAN HARI: Jum'at = 0, Sabtu=1, Ahad=2, Senin=3, Selasa=4, Rabu=5, Kamis=6
             const namaHari = ['Jum\'at', 'Sabtu', 'Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis'];
 
             let html = '';
@@ -708,22 +723,16 @@
                 const nama = namaBulan[i];
 
                 const daysInMonth = new Date(tahun, bulan + 1, 0).getDate();
-                // getDay(): 0=Minggu, 1=Senin, ..., 6=Sabtu
                 const jsDay = new Date(tahun, bulan, 1).getDay();
-                // Rumus yang benar: (jsDay + 2) % 7
-                // Mapping: 0=Jum'at, 1=Sabtu, 2=Ahad, 3=Senin, 4=Selasa, 5=Rabu, 6=Kamis
                 const firstDay = (jsDay + 2) % 7;
 
                 let gridHtml = '';
-                // Header hari
                 for (let h = 0; h < 7; h++) {
                     gridHtml += `<div class="hari-nama">${namaHari[h]}</div>`;
                 }
-                // Kosong awal
                 for (let k = 0; k < firstDay; k++) {
                     gridHtml += `<div class="tanggal luar-bulan"></div>`;
                 }
-                // Tanggal
                 for (let d = 1; d <= daysInMonth; d++) {
                     const dateObj = new Date(tahun, bulan, d);
                     const dateStr = dateObj.toISOString().split('T')[0];
@@ -732,7 +741,6 @@
                     let classNames = 'tanggal';
                     if (isJumat) classNames += ' jumat';
 
-                    // Cek event
                     const eventsOnDate = allEvents.filter(e => {
                         const start = e.startDate;
                         const end = e.endDate || start;
@@ -751,7 +759,6 @@
                         gridHtml += `<div class="${classNames}">${d}</div>`;
                     }
                 }
-                // Sisa kosong
                 const totalCells = firstDay + daysInMonth;
                 const remaining = (7 - (totalCells % 7)) % 7;
                 for (let r = 0; r < remaining; r++) {
@@ -817,22 +824,6 @@
         }
 
         // ================================================================
-        // ===== POPULATE TAHUN AJARAN =====
-        // ================================================================
-        function populateTahunAjaran() {
-            const select = document.getElementById('tahunAjaranSelect');
-            if (!select) return;
-            select.innerHTML = '';
-            for (let y = 2025; y <= 2035; y++) {
-                const opt = document.createElement('option');
-                opt.value = `${y}/${y+1}`;
-                opt.textContent = `${y}/${y+1}`;
-                select.appendChild(opt);
-            }
-            select.value = '2025/2026';
-        }
-
-        // ================================================================
         // ===== INIT =====
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
@@ -851,15 +842,7 @@
                 }
             }
 
-            populateTahunAjaran();
-            const select = document.getElementById('tahunAjaranSelect');
-            if (select) {
-                currentYear = select.value;
-                select.addEventListener('change', function() {
-                    renderKalender(this.value);
-                });
-            }
-
+            // Load data
             loadEvents();
 
             document.addEventListener('click', function(e) {
