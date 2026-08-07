@@ -19,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
+        /* ===== GAYA UTAMA (tetap seperti sebelumnya) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -74,9 +75,6 @@
             font-size: 26px;
             color: var(--secondary);
         }
-        .sidebar-brand span {
-            color: #fff;
-        }
         .sidebar-brand small {
             font-size: 12px;
             font-weight: 400;
@@ -131,9 +129,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-        .sidebar-footer i {
-            font-size: 14px;
         }
 
         .main {
@@ -381,6 +376,211 @@
             color: #dc2626;
         }
 
+        /* ===== KALENDER EVENT ===== */
+        .kalender-wrap {
+            margin-top: 8px;
+        }
+        .kalender-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .kalender-controls .tahun-select {
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-size: 14px;
+            background: #fff;
+            outline: none;
+        }
+        .kalender-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .kalender-bulan {
+            background: #fff;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .kalender-bulan .bulan-header {
+            background: var(--primary);
+            color: #fff;
+            padding: 6px 8px;
+            font-weight: 700;
+            font-size: 14px;
+            text-align: center;
+        }
+        .kalender-bulan .hari-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            font-size: 11px;
+        }
+        .kalender-bulan .hari-grid .hari-nama {
+            background: var(--bg);
+            padding: 3px 2px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 9px;
+            color: var(--text-light);
+            border-bottom: 1px solid var(--border);
+        }
+        .kalender-bulan .hari-grid .tanggal-cell {
+            padding: 4px 2px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: 0.15s;
+            position: relative;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .kalender-bulan .hari-grid .tanggal-cell:hover {
+            background: var(--primary-bg);
+            transform: scale(1.02);
+            z-index: 2;
+        }
+        .kalender-bulan .hari-grid .tanggal-cell .tgl-number {
+            font-weight: 500;
+            font-size: 12px;
+        }
+        .kalender-bulan .hari-grid .tanggal-cell .event-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+        .kalender-bulan .hari-grid .tanggal-cell.luar-bulan {
+            color: #cbd5e1;
+            font-weight: 400;
+            cursor: default;
+        }
+        .kalender-bulan .hari-grid .tanggal-cell.luar-bulan:hover {
+            background: transparent;
+            transform: none;
+        }
+        /* Warna event (hanya dot) */
+        .event-libur-nasional .event-dot { background: #dc2626; }
+        .event-hari-penting .event-dot { background: #fbbf24; }
+        .event-jadwal-penting .event-dot { background: #3b82f6; }
+        .event-kegiatan-sekolah .event-dot { background: #22c55e; }
+        .event-libur-pondok .event-dot { background: #14b8a6; }
+        .event-sumatif .event-dot { background: #f97316; }
+        .event-libur-bulanan .event-dot { background: #ec4899; }
+
+        .legend-events {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 20px;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        .legend-events .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-events .legend-item .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        /* ===== MODAL EVENT ===== */
+        .modal-event .modal-box {
+            max-width: 520px;
+        }
+        .modal-event .form-group {
+            margin-bottom: 14px;
+        }
+        .modal-event .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .modal-event .form-group input,
+        .modal-event .form-group select,
+        .modal-event .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+        .modal-event .form-group input:focus,
+        .modal-event .form-group select:focus,
+        .modal-event .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 95, 122, 0.10);
+        }
+        .modal-event .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .modal-event .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .modal-event .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .modal-event .modal-actions button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-event .modal-actions .btn-cancel {
+            background: var(--bg);
+            color: var(--text);
+        }
+        .modal-event .modal-actions .btn-cancel:hover {
+            background: var(--border);
+        }
+        .modal-event .modal-actions .btn-submit {
+            background: var(--primary);
+            color: #fff;
+        }
+        .modal-event .modal-actions .btn-submit:hover {
+            background: var(--primary-light);
+        }
+        .modal-event .modal-actions .btn-delete-event {
+            background: #ef4444;
+            color: #fff;
+        }
+        .modal-event .modal-actions .btn-delete-event:hover {
+            background: #dc2626;
+        }
+
         /* LOGIN OVERLAY */
         .login-overlay {
             position: fixed;
@@ -444,7 +644,7 @@
             display: none;
         }
 
-        /* EDIT MODAL */
+        /* EDIT MODAL (existing) */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -577,6 +777,11 @@
             .admin-form { grid-template-columns: 1fr; }
             .login-box { padding: 24px; }
             .modal-box { padding: 20px; }
+            .kalender-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .modal-event .form-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .kalender-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -623,7 +828,7 @@
         <!-- PAGE CONTENT -->
         <div class="page-content" id="adminContent">
             <h1 style="font-size:24px;font-weight:700;margin-bottom:6px;">Panel Admin</h1>
-            <p style="color:var(--text-light);margin-bottom:24px;">Kelola guru, jenjang-kelas-fase, mata pelajaran, dan kepala sekolah.</p>
+            <p style="color:var(--text-light);margin-bottom:24px;">Kelola guru, jenjang-kelas-fase, mata pelajaran, kepala sekolah, dan kalender event.</p>
 
             <!-- Guru Management -->
             <div class="admin-section">
@@ -649,7 +854,7 @@
                 </div>
             </div>
 
-            <!-- Kelas Management - DIUBAH: Jenjang, Kelas, Fase -->
+            <!-- Kelas Management -->
             <div class="admin-section">
                 <h3><i class="fas fa-school"></i> Kelola Jenjang, Kelas dan Fase</h3>
                 <div class="admin-form">
@@ -709,11 +914,42 @@
                 <div class="admin-list" id="adminKsList"></div>
             </div>
 
+            <!-- ===== KALENDER EVENT (BARU) ===== -->
+            <div class="admin-section">
+                <h3><i class="fas fa-calendar-alt"></i> Kalender Event</h3>
+                <p style="color:var(--text-light);font-size:14px;margin-bottom:16px;">Klik pada tanggal untuk menambah atau mengedit event.</p>
+
+                <div class="kalender-controls">
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <label style="font-weight:600;font-size:14px;color:var(--text-light);">Tahun Ajaran:</label>
+                        <select id="tahunAjaranSelect" class="tahun-select"></select>
+                    </div>
+                    <button onclick="loadCalendarEvents()" class="btn-refresh" style="background:var(--primary);color:#fff;border:none;padding:6px 16px;border-radius:var(--radius-sm);font-weight:600;cursor:pointer;">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+
+                <div class="kalender-grid" id="kalenderContainer">
+                    <!-- akan di-render oleh JS -->
+                </div>
+
+                <!-- Legend -->
+                <div class="legend-events">
+                    <span class="legend-item"><span class="color-box" style="background:#dc2626;"></span> Libur Nasional</span>
+                    <span class="legend-item"><span class="color-box" style="background:#fbbf24;"></span> Hari Penting</span>
+                    <span class="legend-item"><span class="color-box" style="background:#3b82f6;"></span> Jadwal Penting</span>
+                    <span class="legend-item"><span class="color-box" style="background:#22c55e;"></span> Kegiatan Sekolah</span>
+                    <span class="legend-item"><span class="color-box" style="background:#14b8a6;"></span> Libur Pondok</span>
+                    <span class="legend-item"><span class="color-box" style="background:#f97316;"></span> Sumatif</span>
+                    <span class="legend-item"><span class="color-box" style="background:#ec4899;"></span> Libur Bulanan</span>
+                </div>
+            </div>
+
             <!-- Reset Data -->
             <div class="admin-section" style="border-left:4px solid #ef4444;">
                 <h3 style="color:#ef4444;"><i class="fas fa-trash"></i> Data Berbahaya</h3>
                 <button onclick="resetAllData()" style="background:#ef4444;color:#fff;border:none;padding:10px 24px;border-radius:var(--radius-sm);font-weight:600;cursor:pointer;">Reset Semua Data</button>
-                <span style="margin-left:12px;font-size:13px;color:var(--text-light);">(Hapus semua modul &amp; data admin)</span>
+                <span style="margin-left:12px;font-size:13px;color:var(--text-light);">(Hapus semua modul, data admin &amp; event kalender)</span>
             </div>
         </div>
     </div>
@@ -729,17 +965,63 @@
         </div>
     </div>
 
-    <!-- EDIT MODAL -->
+    <!-- EDIT MODAL (existing) -->
     <div class="modal-overlay" id="editModal">
         <div class="modal-box">
             <h2 id="editModalTitle">Edit Data</h2>
             <p class="modal-sub" id="editModalSub">Ubah data sesuai kebutuhan.</p>
             <form id="editForm" onsubmit="submitEdit(event)">
-                <div id="editFormFields">
-                    <!-- Fields will be generated by JavaScript -->
-                </div>
+                <div id="editFormFields"></div>
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="closeEditModal()">Batal</button>
+                    <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EVENT (BARU) -->
+    <div class="modal-overlay modal-event" id="eventModal">
+        <div class="modal-box">
+            <h2 id="eventModalTitle">Tambah Event</h2>
+            <p class="modal-sub" id="eventModalSub">Isi data event untuk tanggal yang dipilih.</p>
+            <form id="eventForm" onsubmit="saveEvent(event)">
+                <input type="hidden" id="eventId" />
+                <input type="hidden" id="eventDate" />
+                <div class="form-group">
+                    <label>Nama Event</label>
+                    <input type="text" id="eventName" placeholder="Nama event..." required />
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select id="eventCategory" required>
+                        <option value="libur-nasional">Libur Nasional</option>
+                        <option value="hari-penting">Hari Penting</option>
+                        <option value="jadwal-penting">Jadwal Penting</option>
+                        <option value="kegiatan-sekolah">Kegiatan Sekolah</option>
+                        <option value="libur-pondok">Libur Pondok</option>
+                        <option value="sumatif">Sumatif</option>
+                        <option value="libur-bulanan">Libur Bulanan</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tanggal Mulai</label>
+                        <input type="date" id="eventStart" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Selesai</label>
+                        <input type="date" id="eventEnd" />
+                        <small style="color:var(--text-light);font-size:11px;">Kosongkan jika hanya 1 hari</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi (opsional)</label>
+                    <textarea id="eventDesc" rows="2" placeholder="Deskripsi tambahan..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEventModal()">Batal</button>
+                    <button type="button" class="btn-delete-event" id="deleteEventBtn" style="display:none;" onclick="deleteEvent()"><i class="fas fa-trash"></i> Hapus</button>
                     <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Simpan</button>
                 </div>
             </form>
@@ -767,25 +1049,11 @@
         let allKelas = [];
         let allMapel = [];
         let allKepsek = [];
+        let allEvents = []; // array of { id, name, category, startDate, endDate, description }
         let isAdmin = false;
-        let editingItem = null; // { collection, id, data }
-
-        // ===== LOGIN =====
-        function verifyAdmin() {
-            const pass = document.getElementById('adminPasswordInput').value;
-            if (pass === 'admin123') {
-                isAdmin = true;
-                document.getElementById('loginOverlay').style.display = 'none';
-                toast('Selamat datang, Admin!', 'success');
-                loadAllData();
-            } else {
-                document.getElementById('loginError').style.display = 'block';
-            }
-        }
-
-        document.getElementById('adminPasswordInput').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') verifyAdmin();
-        });
+        let editingItem = null;
+        let currentEventId = null;
+        let selectedDate = null; // string "YYYY-MM-DD"
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -812,16 +1080,36 @@
             toast('Telah keluar.', 'info');
         }
 
-        // ===== LOAD DATA =====
+        // ===== LOGIN =====
+        function verifyAdmin() {
+            const pass = document.getElementById('adminPasswordInput').value;
+            if (pass === 'admin123') {
+                isAdmin = true;
+                document.getElementById('loginOverlay').style.display = 'none';
+                toast('Selamat datang, Admin!', 'success');
+                loadAllData();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+        document.getElementById('adminPasswordInput').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') verifyAdmin();
+        });
+
+        // ================================================================
+        // ===== LOAD DATA (existing + event) =====
+        // ================================================================
         async function loadAllData() {
             try {
                 await Promise.all([
                     loadGuru(),
                     loadKelas(),
                     loadMapel(),
-                    loadKepsek()
+                    loadKepsek(),
+                    loadCalendarEvents()
                 ]);
                 renderAll();
+                renderCalendar();
             } catch (e) {
                 toast('Gagal memuat data: ' + e.message, 'error');
             }
@@ -831,23 +1119,25 @@
             const snap = await db.collection('guru').orderBy('name').get();
             allGuru = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
-
         async function loadKelas() {
             const snap = await db.collection('kelas').orderBy('name').get();
             allKelas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
-
         async function loadMapel() {
             const snap = await db.collection('mapel').orderBy('name').get();
             allMapel = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
-
         async function loadKepsek() {
             const snap = await db.collection('kepsek').orderBy('name').get();
             allKepsek = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
 
-        // ===== RENDER =====
+        async function loadCalendarEvents() {
+            const snap = await db.collection('calendar_events').get();
+            allEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        // ===== RENDER (existing) =====
         function renderAll() {
             renderGuru();
             renderKelas();
@@ -868,7 +1158,6 @@
                 </tr>
             `).join('');
         }
-
         function renderKelas() {
             const container = document.getElementById('adminKelasList');
             container.innerHTML = allKelas.map(k => `
@@ -881,7 +1170,6 @@
                 </span>
             `).join('');
         }
-
         function renderMapel() {
             const container = document.getElementById('adminMapelList');
             container.innerHTML = allMapel.map(m => `
@@ -894,7 +1182,6 @@
                 </span>
             `).join('');
         }
-
         function renderKepsek() {
             const container = document.getElementById('adminKsList');
             container.innerHTML = allKepsek.map(k => `
@@ -908,7 +1195,283 @@
             `).join('');
         }
 
-        // ===== EDIT MODAL =====
+        // ================================================================
+        // ===== KALENDER EVENT =====
+        // ================================================================
+        function populateTahunAjaran() {
+            const select = document.getElementById('tahunAjaranSelect');
+            if (!select) return;
+            select.innerHTML = '';
+            for (let y = 2025; y <= 2035; y++) {
+                const opt = document.createElement('option');
+                opt.value = `${y}/${y+1}`;
+                opt.textContent = `${y}/${y+1}`;
+                select.appendChild(opt);
+            }
+            select.value = '2025/2026';
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById('kalenderContainer');
+            if (!container) return;
+            const tahunAjaran = document.getElementById('tahunAjaranSelect').value;
+            const startYear = parseInt(tahunAjaran.split('/')[0]);
+            const endYear = startYear + 1;
+
+            const namaBulan = ['Juli','Agustus','September','Oktober','November','Desember','Januari','Februari','Maret','April','Mei','Juni'];
+            const bulanIndex = [6,7,8,9,10,11,0,1,2,3,4,5];
+            const tahunBulan = bulanIndex.map((b,i) => i < 6 ? startYear : endYear);
+
+            // Nama hari dimulai dari Jum'at
+            const namaHari = ['Jum\'at', 'Sabtu', 'Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis'];
+
+            let html = '';
+            for (let i = 0; i < 12; i++) {
+                const bulan = bulanIndex[i];
+                const tahun = tahunBulan[i];
+                const nama = namaBulan[i];
+                const daysInMonth = new Date(tahun, bulan + 1, 0).getDate();
+                // firstDay: 0=Jum'at, 1=Sabtu, ... 6=Kamis
+                const firstDay = new Date(tahun, bulan, 1).getDay();
+
+                let gridHtml = '';
+                // header hari
+                for (let h = 0; h < 7; h++) {
+                    gridHtml += `<div class="hari-nama">${namaHari[h]}</div>`;
+                }
+                // kosong awal
+                for (let k = 0; k < firstDay; k++) {
+                    gridHtml += `<div class="tanggal-cell luar-bulan"><span class="tgl-number"></span></div>`;
+                }
+                // tanggal
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateObj = new Date(tahun, bulan, d);
+                    const dateStr = dateObj.toISOString().split('T')[0];
+                    // cek event untuk tanggal ini
+                    const eventsOnDate = allEvents.filter(e => {
+                        const start = e.startDate;
+                        const end = e.endDate || start;
+                        return dateStr >= start && dateStr <= end;
+                    });
+                    // ambil kategori pertama untuk dot (prioritas: ambil yang pertama)
+                    let category = null;
+                    if (eventsOnDate.length > 0) {
+                        category = eventsOnDate[0].category;
+                    }
+                    const dotHtml = category ? `<span class="event-dot event-${category}"></span>` : '';
+                    const dayOfWeek = (firstDay + d - 1) % 7; // 0=Jum'at
+                    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 1); // Jum'at, Sabtu (libur weekend)
+
+                    gridHtml += `
+                        <div class="tanggal-cell" data-date="${dateStr}" onclick="openEventModal('${dateStr}')">
+                            <span class="tgl-number">${d}</span>
+                            ${dotHtml}
+                        </div>
+                    `;
+                }
+                // sisa kosong akhir
+                const totalCells = firstDay + daysInMonth;
+                const remaining = (7 - (totalCells % 7)) % 7;
+                for (let r = 0; r < remaining; r++) {
+                    gridHtml += `<div class="tanggal-cell luar-bulan"><span class="tgl-number"></span></div>`;
+                }
+
+                html += `
+                    <div class="kalender-bulan">
+                        <div class="bulan-header">${nama} ${tahun}</div>
+                        <div class="hari-grid">${gridHtml}</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // ===== EVENT MODAL =====
+        function openEventModal(dateStr) {
+            if (!isAdmin) { toast('Silakan login sebagai admin.', 'error'); return; }
+            selectedDate = dateStr;
+            document.getElementById('eventDate').value = dateStr;
+            document.getElementById('eventStart').value = dateStr;
+            document.getElementById('eventEnd').value = '';
+            document.getElementById('eventName').value = '';
+            document.getElementById('eventCategory').value = 'libur-nasional';
+            document.getElementById('eventDesc').value = '';
+            document.getElementById('eventId').value = '';
+            document.getElementById('deleteEventBtn').style.display = 'none';
+            document.getElementById('eventModalTitle').textContent = 'Tambah Event';
+            document.getElementById('eventModalSub').textContent = `Tanggal: ${formatDateDisplay(dateStr)}`;
+
+            // cek apakah ada event di tanggal ini
+            const events = allEvents.filter(e => {
+                const start = e.startDate;
+                const end = e.endDate || start;
+                return dateStr >= start && dateStr <= end;
+            });
+            if (events.length > 0) {
+                const ev = events[0]; // ambil pertama
+                document.getElementById('eventId').value = ev.id;
+                document.getElementById('eventName').value = ev.name || '';
+                document.getElementById('eventCategory').value = ev.category || 'libur-nasional';
+                document.getElementById('eventStart').value = ev.startDate || dateStr;
+                document.getElementById('eventEnd').value = ev.endDate || '';
+                document.getElementById('eventDesc').value = ev.description || '';
+                document.getElementById('deleteEventBtn').style.display = 'inline-flex';
+                document.getElementById('eventModalTitle').textContent = 'Edit Event';
+                document.getElementById('eventModalSub').textContent = `Edit event untuk tanggal ${formatDateDisplay(dateStr)}`;
+            }
+
+            document.getElementById('eventModal').classList.add('open');
+        }
+
+        function closeEventModal() {
+            document.getElementById('eventModal').classList.remove('open');
+        }
+
+        function formatDateDisplay(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        async function saveEvent(e) {
+            e.preventDefault();
+            if (!isAdmin) { toast('Silakan login sebagai admin.', 'error'); return; }
+            const id = document.getElementById('eventId').value;
+            const name = document.getElementById('eventName').value.trim();
+            const category = document.getElementById('eventCategory').value;
+            const startDate = document.getElementById('eventStart').value;
+            const endDate = document.getElementById('eventEnd').value || startDate;
+            const description = document.getElementById('eventDesc').value.trim();
+
+            if (!name) { toast('Nama event wajib diisi.', 'error'); return; }
+            if (!startDate) { toast('Tanggal mulai wajib diisi.', 'error'); return; }
+
+            const data = { name, category, startDate, endDate, description, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+
+            try {
+                if (id) {
+                    await db.collection('calendar_events').doc(id).update(data);
+                    toast('Event diperbarui!', 'success');
+                } else {
+                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('calendar_events').add(data);
+                    toast('Event ditambahkan!', 'success');
+                }
+                closeEventModal();
+                await loadCalendarEvents();
+                renderCalendar();
+            } catch (err) {
+                toast('Gagal menyimpan event: ' + err.message, 'error');
+            }
+        }
+
+        async function deleteEvent() {
+            const id = document.getElementById('eventId').value;
+            if (!id) return;
+            if (!confirm('Hapus event ini?')) return;
+            try {
+                await db.collection('calendar_events').doc(id).delete();
+                toast('Event dihapus.', 'info');
+                closeEventModal();
+                await loadCalendarEvents();
+                renderCalendar();
+            } catch (err) {
+                toast('Gagal hapus: ' + err.message, 'error');
+            }
+        }
+
+        // ================================================================
+        // ===== CRUD OPERATIONS (existing) =====
+        // ================================================================
+        // ... (semua fungsi addGuru, deleteGuru, addKelas, dll. tetap sama seperti sebelumnya) ...
+        // Untuk menghemat, saya sisipkan yang penting, sisanya sama persis.
+
+        async function addGuru() {
+            const name = document.getElementById('adminGuruName').value.trim();
+            const pass = document.getElementById('adminGuruPass').value.trim() || 'guru123';
+            if (!name) { toast('Masukkan nama guru.', 'error'); return; }
+            if (allGuru.some(g => g.name === name)) { toast('Guru sudah ada.', 'error'); return; }
+            try {
+                await db.collection('guru').add({ name, password: pass });
+                toast('Guru ditambahkan!', 'success');
+                document.getElementById('adminGuruName').value = '';
+                await loadGuru();
+                renderGuru();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+        async function deleteGuru(id) {
+            if (!confirm('Hapus guru ini?')) return;
+            try { await db.collection('guru').doc(id).delete(); toast('Guru dihapus.', 'info'); await loadGuru(); renderGuru(); } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+        async function addKelas() {
+            const jenjang = document.getElementById('adminKelasJenjang').value;
+            const name = document.getElementById('adminKelasInput').value.trim();
+            const fase = document.getElementById('adminFaseInput').value.trim();
+            if (!name) { toast('Masukkan nama kelas.', 'error'); return; }
+            try {
+                await db.collection('kelas').add({ jenjang, name, fase });
+                toast('Kelas ditambahkan!', 'success');
+                document.getElementById('adminKelasInput').value = '';
+                document.getElementById('adminFaseInput').value = '';
+                await loadKelas();
+                renderKelas();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+        async function deleteKelas(id) {
+            if (!confirm('Hapus kelas ini?')) return;
+            try { await db.collection('kelas').doc(id).delete(); toast('Kelas dihapus.', 'info'); await loadKelas(); renderKelas(); } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+        async function addMapel() {
+            const name = document.getElementById('adminMapelInput').value.trim();
+            if (!name) { toast('Masukkan nama mapel.', 'error'); return; }
+            if (allMapel.some(m => m.name === name)) { toast('Mapel sudah ada.', 'error'); return; }
+            try {
+                await db.collection('mapel').add({ name });
+                toast('Mapel ditambahkan!', 'success');
+                document.getElementById('adminMapelInput').value = '';
+                await loadMapel();
+                renderMapel();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+        async function deleteMapel(id) {
+            if (!confirm('Hapus mapel ini?')) return;
+            try { await db.collection('mapel').doc(id).delete(); toast('Mapel dihapus.', 'info'); await loadMapel(); renderMapel(); } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+        async function addKepsek() {
+            const name = document.getElementById('adminKsName').value.trim();
+            const nip = document.getElementById('adminKsNip').value.trim();
+            if (!name) { toast('Masukkan nama kepala sekolah.', 'error'); return; }
+            try {
+                await db.collection('kepsek').add({ name, nip });
+                toast('Kepala sekolah ditambahkan!', 'success');
+                document.getElementById('adminKsName').value = '';
+                document.getElementById('adminKsNip').value = '';
+                await loadKepsek();
+                renderKepsek();
+            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+        async function deleteKepsek(id) {
+            if (!confirm('Hapus kepala sekolah ini?')) return;
+            try { await db.collection('kepsek').doc(id).delete(); toast('Kepala sekolah dihapus.', 'info'); await loadKepsek(); renderKepsek(); } catch (e) { toast('Gagal: ' + e.message, 'error'); }
+        }
+
+        async function resetAllData() {
+            if (!confirm('RESET SEMUA DATA? Semua modul, guru, kelas, mapel, kepsek, dan event akan hilang. Yakin?')) return;
+            if (!confirm('Ketik "YA" untuk konfirmasi.')) return;
+            try {
+                const collections = ['modules', 'guru', 'kelas', 'mapel', 'kepsek', 'calendar_events'];
+                for (const col of collections) {
+                    const snap = await db.collection(col).get();
+                    for (const doc of snap.docs) await db.collection(col).doc(doc.id).delete();
+                }
+                toast('Semua data telah direset.', 'info');
+                await loadAllData();
+                renderAll();
+                renderCalendar();
+            } catch (e) { toast('Gagal reset: ' + e.message, 'error'); }
+        }
+
+        // ===== EDIT MODAL (existing) =====
         function openEditModal(collection, id) {
             let item;
             if (collection === 'guru') item = allGuru.find(g => g.id === id);
@@ -916,75 +1479,46 @@
             else if (collection === 'mapel') item = allMapel.find(m => m.id === id);
             else if (collection === 'kepsek') item = allKepsek.find(k => k.id === id);
             if (!item) { toast('Data tidak ditemukan.', 'error'); return; }
-
             editingItem = { collection, id, data: { ...item } };
             document.getElementById('editModalTitle').textContent = 'Edit ' + collection.charAt(0).toUpperCase() + collection.slice(1);
             document.getElementById('editModalSub').textContent = 'Ubah data ' + (item.name || item.nama || '');
-
             let fields = '';
             if (collection === 'guru') {
                 fields = `
-                    <div class="form-group">
-                        <label>Nama Guru</label>
-                        <input type="text" id="editGuruName" value="${item.name || ''}" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="text" id="editGuruPass" value="${item.password || ''}" />
-                    </div>
+                    <div class="form-group"><label>Nama Guru</label><input type="text" id="editGuruName" value="${item.name || ''}" required /></div>
+                    <div class="form-group"><label>Password</label><input type="text" id="editGuruPass" value="${item.password || ''}" /></div>
                 `;
             } else if (collection === 'kelas') {
                 fields = `
-                    <div class="form-group">
-                        <label>Jenjang</label>
+                    <div class="form-group"><label>Jenjang</label>
                         <select id="editKelasJenjang">
                             <option value="SMP" ${item.jenjang === 'SMP' ? 'selected' : ''}>SMP</option>
                             <option value="SMA" ${item.jenjang === 'SMA' ? 'selected' : ''}>SMA</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Nama Kelas</label>
-                        <input type="text" id="editKelasName" value="${item.name || ''}" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Fase (opsional)</label>
-                        <input type="text" id="editKelasFase" value="${item.fase || ''}" />
-                    </div>
+                    <div class="form-group"><label>Nama Kelas</label><input type="text" id="editKelasName" value="${item.name || ''}" required /></div>
+                    <div class="form-group"><label>Fase (opsional)</label><input type="text" id="editKelasFase" value="${item.fase || ''}" /></div>
                 `;
             } else if (collection === 'mapel') {
-                fields = `
-                    <div class="form-group">
-                        <label>Nama Mata Pelajaran</label>
-                        <input type="text" id="editMapelName" value="${item.name || ''}" required />
-                    </div>
-                `;
+                fields = `<div class="form-group"><label>Nama Mata Pelajaran</label><input type="text" id="editMapelName" value="${item.name || ''}" required /></div>`;
             } else if (collection === 'kepsek') {
                 fields = `
-                    <div class="form-group">
-                        <label>Nama Kepala Sekolah</label>
-                        <input type="text" id="editKepsekName" value="${item.name || ''}" required />
-                    </div>
-                    <div class="form-group">
-                        <label>NIP</label>
-                        <input type="text" id="editKepsekNip" value="${item.nip || ''}" />
-                    </div>
+                    <div class="form-group"><label>Nama Kepala Sekolah</label><input type="text" id="editKepsekName" value="${item.name || ''}" required /></div>
+                    <div class="form-group"><label>NIP</label><input type="text" id="editKepsekNip" value="${item.nip || ''}" /></div>
                 `;
             }
             document.getElementById('editFormFields').innerHTML = fields;
             document.getElementById('editModal').classList.add('open');
         }
-
         function closeEditModal() {
             document.getElementById('editModal').classList.remove('open');
             editingItem = null;
         }
-
         function submitEdit(e) {
             e.preventDefault();
             if (!editingItem) return;
             const { collection, id } = editingItem;
             let updateData = {};
-
             if (collection === 'guru') {
                 const name = document.getElementById('editGuruName').value.trim();
                 const pass = document.getElementById('editGuruPass').value.trim();
@@ -1006,132 +1540,14 @@
                 if (!name) { toast('Nama kepala sekolah wajib diisi.', 'error'); return; }
                 updateData = { name, nip };
             }
-
-            // Update Firestore
             db.collection(collection).doc(id).update(updateData)
-                .then(() => {
-                    toast('Data berhasil diperbarui!', 'success');
-                    closeEditModal();
-                    loadAllData();
-                })
-                .catch(err => {
-                    toast('Gagal update: ' + err.message, 'error');
-                });
+                .then(() => { toast('Data berhasil diperbarui!', 'success'); closeEditModal(); loadAllData(); })
+                .catch(err => { toast('Gagal update: ' + err.message, 'error'); });
         }
 
-        // ===== CRUD OPERATIONS =====
-        async function addGuru() {
-            const name = document.getElementById('adminGuruName').value.trim();
-            const pass = document.getElementById('adminGuruPass').value.trim() || 'guru123';
-            if (!name) { toast('Masukkan nama guru.', 'error'); return; }
-            if (allGuru.some(g => g.name === name)) { toast('Guru sudah ada.', 'error'); return; }
-            try {
-                await db.collection('guru').add({ name, password: pass });
-                toast('Guru ditambahkan!', 'success');
-                document.getElementById('adminGuruName').value = '';
-                await loadGuru();
-                renderGuru();
-            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
-        }
-
-        async function deleteGuru(id) {
-            if (!confirm('Hapus guru ini?')) return;
-            try {
-                await db.collection('guru').doc(id).delete();
-                toast('Guru dihapus.', 'info');
-                await loadGuru();
-                renderGuru();
-            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
-        }
-
-        async function addKelas() {
-            const jenjang = document.getElementById('adminKelasJenjang').value;
-            const name = document.getElementById('adminKelasInput').value.trim();
-            const fase = document.getElementById('adminFaseInput').value.trim();
-            if (!name) { toast('Masukkan nama kelas.', 'error'); return; }
-            try {
-                await db.collection('kelas').add({ jenjang, name, fase });
-                toast('Kelas ditambahkan!', 'success');
-                document.getElementById('adminKelasInput').value = '';
-                document.getElementById('adminFaseInput').value = '';
-                await loadKelas();
-                renderKelas();
-            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
-        }
-
-        async function deleteKelas(id) {
-            if (!confirm('Hapus kelas ini?')) return;
-            try {
-                await db.collection('kelas').doc(id).delete();
-                toast('Kelas dihapus.', 'info');
-                await loadKelas();
-                renderKelas();
-            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
-        }
-
-        async function addMapel() {
-            const name = document.getElementById('adminMapelInput').value.trim();
-            if (!name) { toast('Masukkan nama mapel.', 'error'); return; }
-            if (allMapel.some(m => m.name === name)) { toast('Mapel sudah ada.', 'error'); return; }
-            try {
-                await db.collection('mapel').add({ name });
-                toast('Mapel ditambahkan!', 'success');
-                document.getElementById('adminMapelInput').value = '';
-                await loadMapel();
-                renderMapel();
-            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
-        }
-
-        async function deleteMapel(id) {
-            if (!confirm('Hapus mapel ini?')) return;
-            try {
-                await db.collection('mapel').doc(id).delete();
-                toast('Mapel dihapus.', 'info');
-                await loadMapel();
-                renderMapel();
-            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
-        }
-
-        async function addKepsek() {
-            const name = document.getElementById('adminKsName').value.trim();
-            const nip = document.getElementById('adminKsNip').value.trim();
-            if (!name) { toast('Masukkan nama kepala sekolah.', 'error'); return; }
-            try {
-                await db.collection('kepsek').add({ name, nip });
-                toast('Kepala sekolah ditambahkan!', 'success');
-                document.getElementById('adminKsName').value = '';
-                document.getElementById('adminKsNip').value = '';
-                await loadKepsek();
-                renderKepsek();
-            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
-        }
-
-        async function deleteKepsek(id) {
-            if (!confirm('Hapus kepala sekolah ini?')) return;
-            try {
-                await db.collection('kepsek').doc(id).delete();
-                toast('Kepala sekolah dihapus.', 'info');
-                await loadKepsek();
-                renderKepsek();
-            } catch (e) { toast('Gagal: ' + e.message, 'error'); }
-        }
-
-        async function resetAllData() {
-            if (!confirm('RESET SEMUA DATA? Semua modul, guru, kelas, mapel, dan kepsek akan hilang. Yakin?')) return;
-            if (!confirm('Ketik "YA" untuk konfirmasi.')) return;
-            try {
-                const collections = ['modules', 'guru', 'kelas', 'mapel', 'kepsek'];
-                for (const col of collections) {
-                    const snap = await db.collection(col).get();
-                    for (const doc of snap.docs) await db.collection(col).doc(doc.id).delete();
-                }
-                toast('Semua data telah direset.', 'info');
-                await loadAllData();
-                renderAll();
-            } catch (e) { toast('Gagal reset: ' + e.message, 'error'); }
-        }
-
+        // ================================================================
         // ===== INIT =====
+        // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const saved = localStorage.getItem('nbs_user');
             if (saved) {
@@ -1140,17 +1556,23 @@
                     if (user.role === 'admin') {
                         isAdmin = true;
                         document.getElementById('loginOverlay').style.display = 'none';
+                        populateTahunAjaran();
                         loadAllData();
+                        // event listener tahun ajaran
+                        document.getElementById('tahunAjaranSelect').addEventListener('change', renderCalendar);
                         return;
                     }
                 } catch (e) {}
             }
             document.getElementById('loginOverlay').style.display = 'flex';
+            populateTahunAjaran();
         });
 
         // Expose global
         window.toggleSidebar = toggleSidebar;
         window.logout = logout;
+        window.verifyAdmin = verifyAdmin;
+        window.toast = toast;
         window.addGuru = addGuru;
         window.deleteGuru = deleteGuru;
         window.addKelas = addKelas;
@@ -1160,11 +1582,15 @@
         window.addKepsek = addKepsek;
         window.deleteKepsek = deleteKepsek;
         window.resetAllData = resetAllData;
-        window.verifyAdmin = verifyAdmin;
-        window.toast = toast;
         window.openEditModal = openEditModal;
         window.closeEditModal = closeEditModal;
         window.submitEdit = submitEdit;
+        window.openEventModal = openEventModal;
+        window.closeEventModal = closeEventModal;
+        window.saveEvent = saveEvent;
+        window.deleteEvent = deleteEvent;
+        window.loadCalendarEvents = loadCalendarEvents;
+        window.renderCalendar = renderCalendar;
     </script>
 
 </body>
