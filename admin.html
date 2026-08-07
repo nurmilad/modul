@@ -914,7 +914,7 @@
                 <div class="admin-list" id="adminKsList"></div>
             </div>
 
-            <!-- ===== KALENDER EVENT (BARU) ===== -->
+            <!-- ===== KALENDER EVENT ===== -->
             <div class="admin-section">
                 <h3><i class="fas fa-calendar-alt"></i> Kalender Event</h3>
                 <p style="color:var(--text-light);font-size:14px;margin-bottom:16px;">Klik pada tanggal untuk menambah atau mengedit event.</p>
@@ -980,7 +980,7 @@
         </div>
     </div>
 
-    <!-- MODAL EVENT (BARU) -->
+    <!-- MODAL EVENT -->
     <div class="modal-overlay modal-event" id="eventModal">
         <div class="modal-box">
             <h2 id="eventModalTitle">Tambah Event</h2>
@@ -1132,7 +1132,6 @@
         async function loadCalendarEvents() {
             const snap = await db.collection('calendar_events').get();
             allEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            // Setelah load event, refresh kalender
             renderCalendar();
         }
 
@@ -1195,7 +1194,7 @@
         }
 
         // ================================================================
-        // ===== KALENDER EVENT (diperbaiki) =====
+        // ===== KALENDER EVENT (PERBAIKAN MAPPING HARI) =====
         // ================================================================
         function populateTahunAjaran() {
             const select = document.getElementById('tahunAjaranSelect');
@@ -1233,11 +1232,11 @@
                 const tahun = tahunBulan[i];
                 const nama = namaBulan[i];
                 const daysInMonth = new Date(tahun, bulan + 1, 0).getDate();
-                // Hari pertama bulan dalam JS: 0=Minggu, 1=Senin, ..., 6=Sabtu
-                // Kita mapping ke indeks kita: Jum'at = 0, Sabtu=1, ..., Kamis=6
-                // Mapping: (jsDay + 5) % 7 => 0=Jum'at, 1=Sabtu, 2=Ahad, 3=Senin, 4=Selasa, 5=Rabu, 6=Kamis
+                // Mapping yang benar: (jsDay + 2) % 7
+                // jsDay: 0=Minggu, 1=Senin, 2=Selasa, 3=Rabu, 4=Kamis, 5=Jum'at, 6=Sabtu
+                // Hasil: 0=Jum'at, 1=Sabtu, 2=Ahad, 3=Senin, 4=Selasa, 5=Rabu, 6=Kamis
                 const jsDay = new Date(tahun, bulan, 1).getDay();
-                const firstDay = (jsDay + 5) % 7;
+                const firstDay = (jsDay + 2) % 7;
 
                 let gridHtml = '';
                 // header hari
@@ -1354,7 +1353,7 @@
                     toast('Event ditambahkan!', 'success');
                 }
                 closeEventModal();
-                await loadCalendarEvents(); // akan memicu render ulang
+                await loadCalendarEvents();
             } catch (err) {
                 toast('Gagal menyimpan event: ' + err.message, 'error');
             }
