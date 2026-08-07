@@ -1049,11 +1049,9 @@
         let allKelas = [];
         let allMapel = [];
         let allKepsek = [];
-        let allEvents = []; // array of { id, name, category, startDate, endDate, description }
+        let allEvents = [];
         let isAdmin = false;
         let editingItem = null;
-        let currentEventId = null;
-        let selectedDate = null; // string "YYYY-MM-DD"
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -1097,7 +1095,7 @@
         });
 
         // ================================================================
-        // ===== LOAD DATA (existing + event) =====
+        // ===== LOAD DATA =====
         // ================================================================
         async function loadAllData() {
             try {
@@ -1131,10 +1129,11 @@
             const snap = await db.collection('kepsek').orderBy('name').get();
             allKepsek = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
-
         async function loadCalendarEvents() {
             const snap = await db.collection('calendar_events').get();
             allEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            // Setelah load event, refresh kalender
+            renderCalendar();
         }
 
         // ===== RENDER (existing) =====
@@ -1196,7 +1195,7 @@
         }
 
         // ================================================================
-        // ===== KALENDER EVENT =====
+        // ===== KALENDER EVENT (diperbaiki) =====
         // ================================================================
         function populateTahunAjaran() {
             const select = document.getElementById('tahunAjaranSelect');
@@ -1214,7 +1213,10 @@
         function renderCalendar() {
             const container = document.getElementById('kalenderContainer');
             if (!container) return;
-            const tahunAjaran = document.getElementById('tahunAjaranSelect').value;
+            const select = document.getElementById('tahunAjaranSelect');
+            if (!select) return;
+            const tahunAjaran = select.value;
+            if (!tahunAjaran) return;
             const startYear = parseInt(tahunAjaran.split('/')[0]);
             const endYear = startYear + 1;
 
@@ -1231,8 +1233,11 @@
                 const tahun = tahunBulan[i];
                 const nama = namaBulan[i];
                 const daysInMonth = new Date(tahun, bulan + 1, 0).getDate();
-                // firstDay: 0=Jum'at, 1=Sabtu, ... 6=Kamis
-                const firstDay = new Date(tahun, bulan, 1).getDay();
+                // Hari pertama bulan dalam JS: 0=Minggu, 1=Senin, ..., 6=Sabtu
+                // Kita mapping ke indeks kita: Jum'at = 0, Sabtu=1, ..., Kamis=6
+                // Mapping: (jsDay + 5) % 7 => 0=Jum'at, 1=Sabtu, 2=Ahad, 3=Senin, 4=Selasa, 5=Rabu, 6=Kamis
+                const jsDay = new Date(tahun, bulan, 1).getDay();
+                const firstDay = (jsDay + 5) % 7;
 
                 let gridHtml = '';
                 // header hari
@@ -1247,21 +1252,16 @@
                 for (let d = 1; d <= daysInMonth; d++) {
                     const dateObj = new Date(tahun, bulan, d);
                     const dateStr = dateObj.toISOString().split('T')[0];
-                    // cek event untuk tanggal ini
                     const eventsOnDate = allEvents.filter(e => {
                         const start = e.startDate;
                         const end = e.endDate || start;
                         return dateStr >= start && dateStr <= end;
                     });
-                    // ambil kategori pertama untuk dot (prioritas: ambil yang pertama)
                     let category = null;
                     if (eventsOnDate.length > 0) {
                         category = eventsOnDate[0].category;
                     }
                     const dotHtml = category ? `<span class="event-dot event-${category}"></span>` : '';
-                    const dayOfWeek = (firstDay + d - 1) % 7; // 0=Jum'at
-                    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 1); // Jum'at, Sabtu (libur weekend)
-
                     gridHtml += `
                         <div class="tanggal-cell" data-date="${dateStr}" onclick="openEventModal('${dateStr}')">
                             <span class="tgl-number">${d}</span>
@@ -1269,7 +1269,6 @@
                         </div>
                     `;
                 }
-                // sisa kosong akhir
                 const totalCells = firstDay + daysInMonth;
                 const remaining = (7 - (totalCells % 7)) % 7;
                 for (let r = 0; r < remaining; r++) {
@@ -1289,7 +1288,6 @@
         // ===== EVENT MODAL =====
         function openEventModal(dateStr) {
             if (!isAdmin) { toast('Silakan login sebagai admin.', 'error'); return; }
-            selectedDate = dateStr;
             document.getElementById('eventDate').value = dateStr;
             document.getElementById('eventStart').value = dateStr;
             document.getElementById('eventEnd').value = '';
@@ -1301,14 +1299,13 @@
             document.getElementById('eventModalTitle').textContent = 'Tambah Event';
             document.getElementById('eventModalSub').textContent = `Tanggal: ${formatDateDisplay(dateStr)}`;
 
-            // cek apakah ada event di tanggal ini
             const events = allEvents.filter(e => {
                 const start = e.startDate;
                 const end = e.endDate || start;
                 return dateStr >= start && dateStr <= end;
             });
             if (events.length > 0) {
-                const ev = events[0]; // ambil pertama
+                const ev = events[0];
                 document.getElementById('eventId').value = ev.id;
                 document.getElementById('eventName').value = ev.name || '';
                 document.getElementById('eventCategory').value = ev.category || 'libur-nasional';
@@ -1319,7 +1316,6 @@
                 document.getElementById('eventModalTitle').textContent = 'Edit Event';
                 document.getElementById('eventModalSub').textContent = `Edit event untuk tanggal ${formatDateDisplay(dateStr)}`;
             }
-
             document.getElementById('eventModal').classList.add('open');
         }
 
@@ -1358,8 +1354,7 @@
                     toast('Event ditambahkan!', 'success');
                 }
                 closeEventModal();
-                await loadCalendarEvents();
-                renderCalendar();
+                await loadCalendarEvents(); // akan memicu render ulang
             } catch (err) {
                 toast('Gagal menyimpan event: ' + err.message, 'error');
             }
@@ -1374,7 +1369,6 @@
                 toast('Event dihapus.', 'info');
                 closeEventModal();
                 await loadCalendarEvents();
-                renderCalendar();
             } catch (err) {
                 toast('Gagal hapus: ' + err.message, 'error');
             }
@@ -1383,9 +1377,6 @@
         // ================================================================
         // ===== CRUD OPERATIONS (existing) =====
         // ================================================================
-        // ... (semua fungsi addGuru, deleteGuru, addKelas, dll. tetap sama seperti sebelumnya) ...
-        // Untuk menghemat, saya sisipkan yang penting, sisanya sama persis.
-
         async function addGuru() {
             const name = document.getElementById('adminGuruName').value.trim();
             const pass = document.getElementById('adminGuruPass').value.trim() || 'guru123';
@@ -1466,8 +1457,6 @@
                 }
                 toast('Semua data telah direset.', 'info');
                 await loadAllData();
-                renderAll();
-                renderCalendar();
             } catch (e) { toast('Gagal reset: ' + e.message, 'error'); }
         }
 
@@ -1558,7 +1547,6 @@
                         document.getElementById('loginOverlay').style.display = 'none';
                         populateTahunAjaran();
                         loadAllData();
-                        // event listener tahun ajaran
                         document.getElementById('tahunAjaranSelect').addEventListener('change', renderCalendar);
                         return;
                     }
