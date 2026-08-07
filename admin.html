@@ -920,7 +920,7 @@
         let allEvents = [];
         let isAdmin = false;
         let editingItem = null;
-        let currentEventId = null; // untuk edit event
+        let currentEventId = null;
 
         // ===== TOAST =====
         function toast(msg, type = 'info') {
@@ -1078,6 +1078,13 @@
             select.value = '2025/2026';
         }
 
+        // Fungsi helper untuk format tanggal lokal YYYY-MM-DD tanpa konversi UTC
+        function formatLocalDate(year, month, day) {
+            const m = String(month + 1).padStart(2, '0');
+            const d = String(day).padStart(2, '0');
+            return `${year}-${m}-${d}`;
+        }
+
         function getCategoryColor(category) {
             const map = {
                 'libur-nasional': '#dc2626',
@@ -1128,8 +1135,8 @@
                     gridHtml += `<div class="tanggal-cell luar-bulan"><span class="tgl-number"></span></div>`;
                 }
                 for (let d = 1; d <= daysInMonth; d++) {
-                    const dateObj = new Date(tahun, bulan, d);
-                    const dateStr = dateObj.toISOString().split('T')[0];
+                    // BUAT TANGGAL LOKAL tanpa konversi UTC
+                    const dateStr = formatLocalDate(tahun, bulan, d);
                     // Cari semua event yang mencakup tanggal ini
                     const eventsOnDate = allEvents.filter(e => {
                         const start = e.startDate;
@@ -1173,7 +1180,7 @@
         // ================================================================
         // ===== EVENT MODAL (multi event) =====
         // ================================================================
-        let currentDate = null; // string YYYY-MM-DD
+        let currentDate = null;
 
         function openEventModal(dateStr) {
             if (!isAdmin) { toast('Silakan login sebagai admin.', 'error'); return; }
@@ -1287,12 +1294,10 @@
             try {
                 await db.collection('calendar_events').doc(eventId).delete();
                 toast('Event dihapus.', 'info');
-                // Jika modal terbuka dan kita menghapus event yang sedang diedit, tutup form edit
                 if (document.getElementById('eventModal').classList.contains('open')) {
-                    // Refresh daftar event
                     const dateStr = document.getElementById('eventDate').value;
                     if (dateStr) {
-                        openEventModal(dateStr); // reopen untuk refresh
+                        openEventModal(dateStr);
                     } else {
                         closeEventModal();
                     }
