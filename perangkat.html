@@ -828,7 +828,7 @@
         }
 
         // ================================================================
-        // ===== KALENDER =====
+        // ===== KALENDER (PERBAIKAN FORMAT TANGGAL LOKAL) =====
         // ================================================================
         function getCategoryColor(category) {
             const map = {
@@ -845,6 +845,13 @@
 
         function getCategoryClass(category) {
             return 'event-' + category;
+        }
+
+        // Fungsi format tanggal lokal (sama dengan admin)
+        function formatLocalDate(year, month, day) {
+            const m = String(month + 1).padStart(2, '0');
+            const d = String(day).padStart(2, '0');
+            return `${year}-${m}-${d}`;
         }
 
         function renderKalender(tahunAjaran) {
@@ -879,8 +886,8 @@
                     gridHtml += `<div class="tanggal luar-bulan"></div>`;
                 }
                 for (let d = 1; d <= daysInMonth; d++) {
-                    const dateObj = new Date(tahun, bulan, d);
-                    const dateStr = dateObj.toISOString().split('T')[0];
+                    // Gunakan formatLocalDate (bukan toISOString)
+                    const dateStr = formatLocalDate(tahun, bulan, d);
                     const dayOfWeek = (firstDay + d - 1) % 7;
                     const isJumat = (dayOfWeek === 0);
                     let classNames = 'tanggal';
