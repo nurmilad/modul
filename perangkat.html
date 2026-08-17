@@ -19,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
+        /* ===== GAYA UTAMA ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --primary: #1a5f7a;
@@ -205,6 +206,7 @@
             padding: 28px 32px;
             max-height: 70vh;
             overflow-y: auto;
+            position: relative;
         }
         .perangkat-content h2 {
             font-size: 20px;
@@ -260,6 +262,32 @@
         .perangkat-content .signature strong {
             font-style: normal;
         }
+
+        /* Tombol cetak di dalam tab */
+        .print-btn {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 12px;
+            z-index: 10;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .print-btn:hover {
+            background: var(--primary-light);
+            transform: scale(1.02);
+        }
+        .print-btn i { font-size: 16px; }
 
         /* ===== KALENDER ===== */
         .kalender-bulan {
@@ -432,6 +460,147 @@
             to { opacity:1; transform:translateY(0); }
         }
 
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            body * { visibility: hidden; }
+            .print-content, .print-content * { visibility: visible; }
+            .print-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 20px 25px;
+                background: #fff;
+                color: #000;
+                font-size: 11pt;
+                line-height: 1.5;
+                font-family: 'Times New Roman', Times, serif;
+            }
+            .print-content .no-print { display: none !important; }
+            .print-content .print-title {
+                font-size: 18pt;
+                font-weight: 700;
+                text-align: center;
+                margin-bottom: 10px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .print-content .print-sub {
+                text-align: center;
+                font-size: 12pt;
+                margin-bottom: 14px;
+                color: #333;
+            }
+            .print-content .print-section-title {
+                font-weight: 700;
+                font-size: 13pt;
+                margin: 12px 0 6px;
+                border-bottom: 1px solid #999;
+                padding-bottom: 3px;
+            }
+            .print-content .print-body {
+                font-size: 11pt;
+                line-height: 1.6;
+            }
+            .print-content .print-body ul,
+            .print-content .print-body ol {
+                padding-left: 24px;
+                margin: 4px 0 8px;
+            }
+            .print-content .print-body li {
+                margin-bottom: 2px;
+            }
+            .print-content .print-body .signature {
+                margin-top: 24px;
+                text-align: right;
+                font-style: italic;
+            }
+            .print-content .print-body .signature strong {
+                font-style: normal;
+            }
+
+            /* Kalender print */
+            .print-content .kalender-grid-print {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                margin: 10px 0;
+            }
+            .print-content .kalender-bulan-print {
+                border: 1px solid #999;
+                border-radius: 4px;
+                overflow: hidden;
+                background: #fff;
+            }
+            .print-content .kalender-bulan-print .bulan-header-print {
+                background: #1a5f7a;
+                color: #fff;
+                padding: 4px 6px;
+                font-weight: 700;
+                font-size: 11pt;
+                text-align: center;
+            }
+            .print-content .kalender-bulan-print .hari-grid-print {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                font-size: 8pt;
+            }
+            .print-content .kalender-bulan-print .hari-grid-print .hari-nama-print {
+                background: #f0f4f8;
+                padding: 2px 1px;
+                text-align: center;
+                font-weight: 600;
+                font-size: 7pt;
+                border-bottom: 1px solid #ccc;
+            }
+            .print-content .kalender-bulan-print .hari-grid-print .hari-nama-print:first-child {
+                color: #dc2626;
+            }
+            .print-content .kalender-bulan-print .hari-grid-print .tanggal-print {
+                padding: 3px 1px;
+                text-align: center;
+                font-size: 8pt;
+                border-bottom: 1px solid #eee;
+            }
+            .print-content .kalender-bulan-print .hari-grid-print .tanggal-print.jumat-print {
+                color: #dc2626;
+                font-weight: 700;
+            }
+            .print-content .kalender-bulan-print .hari-grid-print .tanggal-print.luar-bulan-print {
+                color: #ccc;
+            }
+            /* Warna event untuk print */
+            .print-content .tanggal-print.event-libur-nasional { background: #dc2626 !important; color: #fff !important; }
+            .print-content .tanggal-print.event-hari-penting { background: #fbbf24 !important; color: #000 !important; }
+            .print-content .tanggal-print.event-jadwal-penting { background: #3b82f6 !important; color: #fff !important; }
+            .print-content .tanggal-print.event-kegiatan-sekolah { background: #22c55e !important; color: #000 !important; }
+            .print-content .tanggal-print.event-libur-pondok { background: #14b8a6 !important; color: #000 !important; }
+            .print-content .tanggal-print.event-sumatif { background: #f97316 !important; color: #000 !important; }
+            .print-content .tanggal-print.event-libur-bulanan { background: #ec4899 !important; color: #fff !important; }
+            .print-content .tanggal-print.multi-event-print { border: 2px solid #1a5f7a; }
+
+            .print-content .legend-print {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px 16px;
+                margin-top: 12px;
+                font-size: 8pt;
+                border-top: 1px solid #999;
+                padding-top: 8px;
+            }
+            .print-content .legend-print .legend-item-print {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .print-content .legend-print .color-box-print {
+                width: 12px;
+                height: 12px;
+                border: 1px solid #999;
+                border-radius: 2px;
+            }
+        }
+
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
@@ -497,7 +666,8 @@
 
             <!-- ===== KODE ETIK ===== -->
             <div class="tab-content active" id="tab-kode-etik">
-                <div class="perangkat-content">
+                <div class="perangkat-content" id="kodeEtikContent">
+                    <button class="print-btn" onclick="printTab('kodeEtikContent', 'Kode Etik Guru Indonesia')"><i class="fas fa-print"></i> Cetak</button>
                     <h2>KODE ETIK GURU INDONESIA</h2>
                     <p><strong>KATA PENGANTAR</strong></p>
                     <p>Kode Etik Guru Indonesia adalah pedoman sikap, tingkah laku, dan perbuatan guru dalam melaksanakan tugas pengabdiannya sebagai pendidik. Kode etik ini wajib dipatuhi oleh setiap guru di Indonesia demi menjaga kehormatan, martabat, dan mutu profesi guru.</p>
@@ -562,7 +732,8 @@
 
             <!-- ===== IKRAR ===== -->
             <div class="tab-content" id="tab-ikrar">
-                <div class="perangkat-content">
+                <div class="perangkat-content" id="ikrarContent">
+                    <button class="print-btn" onclick="printTab('ikrarContent', 'Ikrar Guru Indonesia')"><i class="fas fa-print"></i> Cetak</button>
                     <h2>IKRAR GURU INDONESIA</h2>
                     <p><em>Kami Guru Indonesia adalah insan pendidik bangsa yang bertakwa kepada Tuhan Yang Maha Esa, berjanji:</em></p>
                     <ol style="list-style-type: upper-roman; padding-left: 28px;">
@@ -582,7 +753,8 @@
 
             <!-- ===== TATA TERTIB ===== -->
             <div class="tab-content" id="tab-tata-tertib">
-                <div class="perangkat-content">
+                <div class="perangkat-content" id="tataTertibContent">
+                    <button class="print-btn" onclick="printTab('tataTertibContent', 'Tata Tertib dan Disiplin Guru')"><i class="fas fa-print"></i> Cetak</button>
                     <h2>TATA TERTIB DAN DISIPLIN GURU</h2>
 
                     <div class="section-title">BAB I: KETENTUAN UMUM, WAKTU KERJA, DAN KEHADIRAN</div>
@@ -632,7 +804,8 @@
 
             <!-- ===== PEMBIASAAN ===== -->
             <div class="tab-content" id="tab-pembiasaan">
-                <div class="perangkat-content">
+                <div class="perangkat-content" id="pembiasaanContent">
+                    <button class="print-btn" onclick="printTab('pembiasaanContent', 'Pembiasaan Guru')"><i class="fas fa-print"></i> Cetak</button>
                     <h2>PEMBIASAAN GURU</h2>
                     <p><em>(Pedoman Keteladanan Pendidik Berbasis 7 Kebiasaan Anak Indonesia Hebat)</em></p>
 
@@ -693,9 +866,10 @@
                 </div>
             </div>
 
-            <!-- ===== KALENDER (hanya tahun aktif) ===== -->
+            <!-- ===== KALENDER ===== -->
             <div class="tab-content" id="tab-kalender">
-                <div class="perangkat-content" style="padding:20px 24px;max-height:none;overflow-y:visible;">
+                <div class="perangkat-content" id="kalenderContent" style="padding:20px 24px;max-height:none;overflow-y:visible;">
+                    <button class="print-btn" onclick="printKalender()"><i class="fas fa-print"></i> Cetak Kalender</button>
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
                         <h2 style="margin:0;font-size:20px;font-weight:700;color:var(--primary);">
                             <i class="fas fa-calendar-alt"></i> Kalender Pendidikan
@@ -797,6 +971,155 @@
         }
 
         // ================================================================
+        // ===== PRINT FUNCTIONS =====
+        // ================================================================
+        function printTab(contentId, title) {
+            const content = document.getElementById(contentId);
+            if (!content) return;
+
+            // Clone content untuk print
+            const clone = content.cloneNode(true);
+            // Hapus tombol print dari clone
+            const printBtn = clone.querySelector('.print-btn');
+            if (printBtn) printBtn.remove();
+
+            // Buat container print
+            const printContainer = document.createElement('div');
+            printContainer.className = 'print-content';
+            printContainer.innerHTML = `
+                <div class="print-title">${title}</div>
+                <div class="print-body">${clone.innerHTML}</div>
+            `;
+
+            // Sembunyikan semua, tampilkan print container
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.write(`
+                <html><head><title>${title}</title>
+                <style>
+                    /* Copy semua style print dari head */
+                    ${document.querySelector('style').innerHTML}
+                </style>
+                </head><body>
+                ${printContainer.outerHTML}
+                <script>
+                    window.onload = function() { window.print(); window.close(); }
+                <\/script>
+                </body></html>
+            `);
+            printWindow.document.close();
+        }
+
+        function printKalender() {
+            // Ambil data kalender saat ini
+            const container = document.getElementById('kalenderContainer');
+            if (!container) return;
+            const tahun = document.getElementById('displayActiveTahun').textContent || activeTahun;
+
+            // Buat salinan grid kalender untuk print
+            const gridClone = container.cloneNode(true);
+            // Hapus event listener onclick dari clone
+            gridClone.querySelectorAll('[onclick]').forEach(el => el.removeAttribute('onclick'));
+
+            // Buat container print
+            const printContainer = document.createElement('div');
+            printContainer.className = 'print-content';
+
+            // Bangun HTML kalender untuk print
+            let kalenderHtml = `
+                <div class="print-title">KALENDER PENDIDIKAN</div>
+                <div class="print-sub">Tahun Ajaran: ${tahun}</div>
+                <div class="kalender-grid-print">
+            `;
+
+            // Ambil semua bulan dari grid
+            const bulanElements = gridClone.querySelectorAll('.kalender-bulan');
+            bulanElements.forEach(bulan => {
+                // Clone bulan
+                const bulanClone = bulan.cloneNode(true);
+                // Ubah class untuk print
+                bulanClone.className = 'kalender-bulan-print';
+                // Ubah header
+                const header = bulanClone.querySelector('.bulan-header');
+                if (header) header.className = 'bulan-header-print';
+                // Ubah grid hari
+                const grid = bulanClone.querySelector('.hari-grid');
+                if (grid) {
+                    grid.className = 'hari-grid-print';
+                    // Ubah setiap elemen di dalam grid
+                    grid.querySelectorAll('.hari-nama').forEach(el => el.className = 'hari-nama-print');
+                    grid.querySelectorAll('.tanggal').forEach(el => {
+                        el.className = 'tanggal-print';
+                        if (el.classList.contains('jumat')) el.classList.add('jumat-print');
+                        if (el.classList.contains('luar-bulan')) el.classList.add('luar-bulan-print');
+                        if (el.classList.contains('event-libur-nasional')) el.classList.add('event-libur-nasional');
+                        if (el.classList.contains('event-hari-penting')) el.classList.add('event-hari-penting');
+                        if (el.classList.contains('event-jadwal-penting')) el.classList.add('event-jadwal-penting');
+                        if (el.classList.contains('event-kegiatan-sekolah')) el.classList.add('event-kegiatan-sekolah');
+                        if (el.classList.contains('event-libur-pondok')) el.classList.add('event-libur-pondok');
+                        if (el.classList.contains('event-sumatif')) el.classList.add('event-sumatif');
+                        if (el.classList.contains('event-libur-bulanan')) el.classList.add('event-libur-bulanan');
+                        if (el.classList.contains('multi-event')) el.classList.add('multi-event-print');
+                    });
+                }
+                kalenderHtml += bulanClone.outerHTML;
+            });
+
+            kalenderHtml += `
+                </div>
+                <div class="legend-print">
+                    <span class="legend-item-print"><span class="color-box-print" style="background:#dc2626;"></span> Libur Nasional</span>
+                    <span class="legend-item-print"><span class="color-box-print" style="background:#fbbf24;"></span> Hari Penting</span>
+                    <span class="legend-item-print"><span class="color-box-print" style="background:#3b82f6;"></span> Jadwal Penting</span>
+                    <span class="legend-item-print"><span class="color-box-print" style="background:#22c55e;"></span> Kegiatan Sekolah</span>
+                    <span class="legend-item-print"><span class="color-box-print" style="background:#14b8a6;"></span> Libur Pondok</span>
+                    <span class="legend-item-print"><span class="color-box-print" style="background:#f97316;"></span> Sumatif</span>
+                    <span class="legend-item-print"><span class="color-box-print" style="background:#ec4899;"></span> Libur Bulanan</span>
+                    <span class="legend-item-print"><span class="color-box-print" style="background:#fee2e2;border-color:#dc2626;"></span> Hari Jum'at (merah)</span>
+                </div>
+            `;
+
+            printContainer.innerHTML = kalenderHtml;
+
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.write(`
+                <html><head><title>Kalender Pendidikan</title>
+                <style>
+                    /* Copy semua style print dari head */
+                    ${document.querySelector('style').innerHTML}
+                    /* Tambahan untuk print kalender */
+                    .print-content .kalender-grid-print { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+                    .print-content .kalender-bulan-print { border: 1px solid #999; border-radius: 4px; overflow: hidden; }
+                    .print-content .kalender-bulan-print .bulan-header-print { background: #1a5f7a; color: #fff; padding: 4px 6px; font-weight: 700; font-size: 10pt; text-align: center; }
+                    .print-content .kalender-bulan-print .hari-grid-print { display: grid; grid-template-columns: repeat(7,1fr); font-size: 7pt; }
+                    .print-content .kalender-bulan-print .hari-grid-print .hari-nama-print { background: #f0f4f8; padding: 2px 1px; text-align: center; font-weight: 600; font-size: 6pt; border-bottom: 1px solid #ccc; }
+                    .print-content .kalender-bulan-print .hari-grid-print .hari-nama-print:first-child { color: #dc2626; }
+                    .print-content .kalender-bulan-print .hari-grid-print .tanggal-print { padding: 2px 1px; text-align: center; font-size: 7pt; border-bottom: 1px solid #eee; }
+                    .print-content .kalender-bulan-print .hari-grid-print .tanggal-print.jumat-print { color: #dc2626; font-weight: 700; }
+                    .print-content .kalender-bulan-print .hari-grid-print .tanggal-print.luar-bulan-print { color: #ccc; }
+                    .print-content .tanggal-print.event-libur-nasional { background: #dc2626 !important; color: #fff !important; }
+                    .print-content .tanggal-print.event-hari-penting { background: #fbbf24 !important; color: #000 !important; }
+                    .print-content .tanggal-print.event-jadwal-penting { background: #3b82f6 !important; color: #fff !important; }
+                    .print-content .tanggal-print.event-kegiatan-sekolah { background: #22c55e !important; color: #000 !important; }
+                    .print-content .tanggal-print.event-libur-pondok { background: #14b8a6 !important; color: #000 !important; }
+                    .print-content .tanggal-print.event-sumatif { background: #f97316 !important; color: #000 !important; }
+                    .print-content .tanggal-print.event-libur-bulanan { background: #ec4899 !important; color: #fff !important; }
+                    .print-content .tanggal-print.multi-event-print { border: 2px solid #1a5f7a; }
+                    .print-content .legend-print { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; font-size: 7pt; border-top: 1px solid #999; padding-top: 6px; }
+                    .print-content .legend-print .legend-item-print { display: flex; align-items: center; gap: 4px; }
+                    .print-content .legend-print .color-box-print { width: 10px; height: 10px; border: 1px solid #999; border-radius: 2px; }
+                    @media print { body * { visibility: hidden; } .print-content, .print-content * { visibility: visible; } .print-content { position: absolute; left: 0; top: 0; width: 100%; padding: 10px; } }
+                </style>
+                </head><body>
+                ${printContainer.outerHTML}
+                <script>
+                    window.onload = function() { window.print(); window.close(); }
+                <\/script>
+                </body></html>
+            `);
+            printWindow.document.close();
+        }
+
+        // ================================================================
         // ===== LOAD ACTIVE TAHUN & EVENTS =====
         // ================================================================
         async function loadActiveTahun() {
@@ -828,7 +1151,7 @@
         }
 
         // ================================================================
-        // ===== KALENDER (PERBAIKAN FORMAT TANGGAL LOKAL) =====
+        // ===== KALENDER =====
         // ================================================================
         function getCategoryColor(category) {
             const map = {
@@ -847,7 +1170,6 @@
             return 'event-' + category;
         }
 
-        // Fungsi format tanggal lokal (sama dengan admin)
         function formatLocalDate(year, month, day) {
             const m = String(month + 1).padStart(2, '0');
             const d = String(day).padStart(2, '0');
@@ -886,7 +1208,6 @@
                     gridHtml += `<div class="tanggal luar-bulan"></div>`;
                 }
                 for (let d = 1; d <= daysInMonth; d++) {
-                    // Gunakan formatLocalDate (bukan toISOString)
                     const dateStr = formatLocalDate(tahun, bulan, d);
                     const dayOfWeek = (firstDay + d - 1) % 7;
                     const isJumat = (dayOfWeek === 0);
@@ -1023,6 +1344,8 @@
         window.loadEvents = loadEvents;
         window.showEventDetail = showEventDetail;
         window.closeDetailModal = closeDetailModal;
+        window.printTab = printTab;
+        window.printKalender = printKalender;
     </script>
 </body>
 </html>
